@@ -1,0 +1,33 @@
+#region script change log	
+#Created by Carl Webster
+#Sr. Solutions Architect, Choice Solutions, LLC
+#webster@carlwebster.com
+#@carlwebster on Twitter
+#http://www.CarlWebster.com
+#Created on February 10, 2016
+
+#Version 1.06 13-Feb-2017
+#	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
+
+#Version 1.05 7-Nov-2016
+#	Added Chinese language support
+
+#Version 1.04 22-Oct-2016
+#	More refinement of HTML output
+
+#Version 1.03 19-Oct-2016
+#	Fixed formatting issues with HTML headings output
+
+#Version 1.02 19-Aug-2016
+#	Fixed several misspelled words
+
+#Version 1.01 16-Aug-2016
+#	Added support for the four Record Types created by implementing DNSSEC
+#		NSec
+#		NSec3
+#		NSec3Param
+#		RRSig
+
+#Version 1.00 released to the community on July 25, 2016
+
+
