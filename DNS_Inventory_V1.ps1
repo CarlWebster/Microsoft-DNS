@@ -117,8 +117,8 @@
 .PARAMETER AddDateTime
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2016 at 6PM is 2016-07-25_1800.
-	Output filename will be ReportName_2016-07-25_1800.docx (or .pdf).
+	July 25, 2017 at 6PM is 2017-07-25_1800.
+	Output filename will be ReportName_2017-07-25_1800.docx (or .pdf).
 	This parameter is disabled by default.
 .PARAMETER ComputerName
 	Specifies a computer to use to run the script against.
@@ -247,8 +247,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2016 at 6PM is 2016-07-25_1800.
-	Output filename will be DNS_2016-07-25_1800.docx
+	July 25, 2017 at 6PM is 2017-07-25_1800.
+	Output filename will be DomainName_DNS_2017-07-25_1800.docx
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -PDF -AddDateTime
 	
@@ -263,8 +263,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2016 at 6PM is 2016-07-25_1800.
-	Output filename will be DNS_2016-07-25_1800.PDF
+	July 25, 2017 at 6PM is 2017-07-25_1800.
+	Output filename will be DomainName_DNS_2017-07-25_1800.PDF
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -Folder \\FileServer\ShareName
 	
@@ -447,7 +447,9 @@ Param(
 #	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
 #
 #Version 1.07 11-Nov-2017
-#	Added Scavenge Server(s) to Zone Properties General section.
+#	Added Scavenge Server(s) to Zone Properties General section
+#	Added the domain name of the computer used for -ComputerName to the output filename
+#	For Word/PDF output added the domain name of the computer used for -ComputerName to the report title
 #
 #HTML functions contributed by Ken Avram October 2014
 #HTML Functions FormatHTMLTable and AddHTMLTable modified by Jake Rutski May 2015
@@ -3296,9 +3298,10 @@ Function AbortScript
 Function ProcessScriptStart
 {
 	$script:startTime = Get-Date
-	[string]$Script:Title = "DNS Inventory Report"
 
 	$ComputerName = TestComputerName $ComputerName
+	$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
+	[string]$Script:Title = "DNS Inventory Report for $Script:RptDomain"
 }
 
 Function ProcessScriptEnd
@@ -6440,7 +6443,7 @@ Function OutputConditionalForwarder
 
 ProcessScriptStart
 
-SetFileName1andFileName2 "DNS"
+SetFileName1andFileName2 "$($Script:RptDomain)_DNS"
 
 ProcessDNSServer
 
