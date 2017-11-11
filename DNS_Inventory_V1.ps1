@@ -329,9 +329,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.06
+	VERSION: 1.07
 	AUTHOR: Carl Webster - Sr. Solutions Architect - Choice Solutions, LLC
-	LASTEDIT: February 13, 2017
+	LASTEDIT: November 11, 2017
 #>
 
 #endregion
@@ -445,6 +445,9 @@ Param(
 #
 #Version 1.06 13-Feb-2017
 #	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
+#
+#Version 1.07 11-Nov-2017
+#	Added Scavenge Server(s) to Zone Properties General section.
 #
 #HTML functions contributed by Ken Avram October 2014
 #HTML Functions FormatHTMLTable and AddHTMLTable modified by Jake Rutski May 2015
@@ -3812,7 +3815,7 @@ Function OutputDNSServer
 	{
 		$EnableScavenging = "Not Selected"
 	}
-
+	
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Advanced"
@@ -3889,7 +3892,7 @@ Function OutputDNSServer
 		Line 0 "Enable automatic scavenging of stale records`t: " $EnableScavenging
 		If($EnableScavenging -eq "Selected")
 		{
-			Line 1 "Scavenging period: " $ScavengingInterval
+			Line 0 "Scavenging period`t`t`t`t: " $ScavengingInterval
 		}
 		Line 0 ""
 	}
@@ -4308,6 +4311,25 @@ Function OutputLookupZone
 		{
 			$EnableScavenging = "Unknown"
 		}
+		
+		$ScavengeServers = @()
+		
+		If($ZoneAging.ScavengeServers -is [array])
+		{
+			ForEach($Item in $ZoneAging.ScavengeServers)
+			{
+				$ScavengeServers += $ZoneAging.ScavengeServers.IPAddressToString
+			}
+		}
+		Else
+		{
+			$ScavengeServers += $ZoneAging.ScavengeServers.IPAddressToString
+		}
+		
+		If($ScavengeServers.Count -eq 0)
+		{
+			$ScavengeServers += "Not Configured"
+		}
 	}
 	
 	If($MSWord -or $PDF)
@@ -4335,6 +4357,18 @@ Function OutputLookupZone
 			{
 				$ScriptInformation += @{ Data = "No-refresh interval"; Value = $NorefreshInterval; }
 				$ScriptInformation += @{ Data = "Refresh interval"; Value = $RefreshInterval; }
+			}
+			$ScriptInformation += @{ Data = "Scavenge servers"; Value = $ScavengeServers[0]; }
+			
+			$cnt = -1
+			ForEach($ScavengeServer in $ScavengeServers)
+			{
+				$cnt++
+				
+				If($cnt -gt 0)
+				{
+					$ScriptInformation += @{ Data = ""; Value = $ScavengeServer; }
+				}
 			}
 		}
 		$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -4378,6 +4412,18 @@ Function OutputLookupZone
 				Line 2 "No-refresh interval`t`t: " $NorefreshInterval
 				Line 2 "Refresh interval`t`t: " $RefreshInterval
 			}
+			Line 2 "Scavenge servers`t`t: " $ScavengeServers[0]
+			
+			$cnt = -1
+			ForEach($ScavengeServer in $ScavengeServers)
+			{
+				$cnt++
+				
+				If($cnt -gt 0)
+				{
+					Line 6 "  " $ScavengeServer
+				}
+			}
 		}
 		Line 0 ""
 	}
@@ -4406,6 +4452,15 @@ Function OutputLookupZone
 			{
 				$rowdata += @(,('No-refresh interval',($htmlsilver -bor $htmlbold),$NorefreshInterval,$htmlwhite))
 				$rowdata += @(,('Refresh interval',($htmlsilver -bor $htmlbold),$RefreshInterval,$htmlwhite))
+			}
+			$rowdata += @(,('Scavenge servers',($htmlsilver -bor $htmlbold),$ScavengeServers[0],$htmlwhite))
+			
+			$cnt = 1
+			ForEach($Item in $ScavengeServers)
+			{
+				$cnt++
+				$ScriptInformation += @{ Data = ""; Value = $Item; }
+				$rowdata += @(,(' ',($htmlsilver -bor $htmlbold),$Item,$htmlwhite))
 			}
 		}
 

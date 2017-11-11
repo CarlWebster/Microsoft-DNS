@@ -6,6 +6,9 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 1.07 11-Nov-2017
+#	Added Scavenge Server(s) to Zone Properties General section.
+
 #Version 1.06 13-Feb-2017
 #	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
 
