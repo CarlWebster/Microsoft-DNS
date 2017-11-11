@@ -646,10 +646,10 @@ Else
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date): MSWord is $($MSWord)"
-		Write-Verbose "$(Get-Date): PDF is $($PDF)"
-		Write-Verbose "$(Get-Date): Text is $($Text)"
-		Write-Verbose "$(Get-Date): HTML is $($HTML)"
+		Write-Verbose "$(Get-Date): MSWord is $MSWord"
+		Write-Verbose "$(Get-Date): PDF is $PDF"
+		Write-Verbose "$(Get-Date): Text is $Text"
+		Write-Verbose "$(Get-Date): HTML is $HTML"
 	}
 	Write-Error "Unable to determine output parameter.  Script cannot continue"
 	Exit
@@ -691,7 +691,7 @@ If($MSWord -or $PDF)
 {
 	#try and fix the issue with the $CompanyName variable
 	$Script:CoName = $CompanyName
-	Write-Verbose "$(Get-Date): CoName is $($Script:CoName)"
+	Write-Verbose "$(Get-Date): CoName is $Script:CoName"
 	
 	#the following values were attained from 
 	#http://groovy.codehaus.org/modules/scriptom/1.6.0/scriptom-office-2K3-tlb/apidocs/
@@ -1280,7 +1280,7 @@ Function SetupWord
 		Write-Error "`n`n`t`tUnable to determine the Word language value.`n`n`t`tScript cannot continue.`n`n"
 		AbortScript
 	}
-	Write-Verbose "$(Get-Date): Word language value is $($Script:WordLanguageValue)"
+	Write-Verbose "$(Get-Date): Word language value is $Script:WordLanguageValue"
 	
 	$Script:WordCultureCode = GetCulture $Script:WordLanguageValue
 	
@@ -1327,13 +1327,13 @@ Function SetupWord
 		Else
 		{
 			$Script:CoName = $TmpName
-			Write-Verbose "$(Get-Date): Updated company name to $($Script:CoName)"
+			Write-Verbose "$(Get-Date): Updated company name to $Script:CoName"
 		}
 	}
 
 	If($Script:WordCultureCode -ne "en-")
 	{
-		Write-Verbose "$(Get-Date): Check Default Cover Page for $($WordCultureCode)"
+		Write-Verbose "$(Get-Date): Check Default Cover Page for $WordCultureCode"
 		[bool]$CPChanged = $False
 		Switch ($Script:WordCultureCode)
 		{
@@ -1436,11 +1436,11 @@ Function SetupWord
 
 		If($CPChanged)
 		{
-			Write-Verbose "$(Get-Date): Changed Default Cover Page from Sideline to $($CoverPage)"
+			Write-Verbose "$(Get-Date): Changed Default Cover Page from Sideline to $CoverPage"
 		}
 	}
 
-	Write-Verbose "$(Get-Date): Validate cover page $($CoverPage) for culture code $($Script:WordCultureCode)"
+	Write-Verbose "$(Get-Date): Validate cover page $($CoverPage) for culture code $Script:WordCultureCode"
 	[bool]$ValidCP = $False
 	
 	$ValidCP = ValidateCoverPage $Script:WordVersion $CoverPage $Script:WordCultureCode
@@ -1448,9 +1448,9 @@ Function SetupWord
 	If(!$ValidCP)
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Verbose "$(Get-Date): Word language value $($Script:WordLanguageValue)"
-		Write-Verbose "$(Get-Date): Culture code $($Script:WordCultureCode)"
-		Write-Error "`n`n`t`tFor $($Script:WordProduct), $($CoverPage) is not a valid Cover Page option.`n`n`t`tScript cannot continue.`n`n"
+		Write-Verbose "$(Get-Date): Word language value $Script:WordLanguageValue"
+		Write-Verbose "$(Get-Date): Culture code $Script:WordCultureCode"
+		Write-Error "`n`n`t`tFor $Script:WordProduct, $CoverPage is not a valid Cover Page option.`n`n`t`tScript cannot continue.`n`n"
 		AbortScript
 	}
 
@@ -1469,7 +1469,7 @@ Function SetupWord
 	#word 2010/2013/2016
 	$BuildingBlocksCollection = $Script:Word.Templates | Where {$_.name -eq "Built-In Building Blocks.dotx"}
 
-	Write-Verbose "$(Get-Date): Attempt to load cover page $($CoverPage)"
+	Write-Verbose "$(Get-Date): Attempt to load cover page $CoverPage"
 	$part = $Null
 
 	$BuildingBlocksCollection | 
@@ -1502,8 +1502,8 @@ Function SetupWord
 
 	If(!$Script:CoverPagesExist)
 	{
-		Write-Verbose "$(Get-Date): Cover Pages are not installed or the Cover Page $($CoverPage) does not exist."
-		Write-Warning "Cover Pages are not installed or the Cover Page $($CoverPage) does not exist."
+		Write-Verbose "$(Get-Date): Cover Pages are not installed or the Cover Page $CoverPage does not exist."
+		Write-Warning "Cover Pages are not installed or the Cover Page $CoverPage does not exist."
 		Write-Warning "This report will not have a Cover Page."
 	}
 
@@ -1547,12 +1547,12 @@ Function SetupWord
 		$Script:Selection.InsertNewPage()
 
 		#table of contents
-		Write-Verbose "$(Get-Date): Table of Contents - $($Script:MyHash.Word_TableOfContents)"
+		Write-Verbose "$(Get-Date): Table of Contents - $Script:MyHash.Word_TableOfContents"
 		$toc = $BuildingBlocks.BuildingBlockEntries.Item($Script:MyHash.Word_TableOfContents)
 		If($Null -eq $toc)
 		{
 			Write-Verbose "$(Get-Date): "
-			Write-Verbose "$(Get-Date): Table of Content - $($Script:MyHash.Word_TableOfContents) could not be retrieved."
+			Write-Verbose "$(Get-Date): Table of Content - $Script:MyHash.Word_TableOfContents could not be retrieved."
 			Write-Warning "This report will not have a Table of Contents."
 		}
 		Else
@@ -1625,7 +1625,7 @@ Function UpdateDocumentProperties
 			}
 			Else
 			{
-				[string]$abstract = "$($AbstractTitle) for $($Script:CoName)"
+				[string]$abstract = "$AbstractTitle for $Script:CoName"
 			}
 
 			$ab.Text = $abstract
@@ -2888,55 +2888,55 @@ Function ShowScriptOptions
 {
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): Add DateTime  : $($AddDateTime)"
+	Write-Verbose "$(Get-Date): Add DateTime  : $AddDateTime"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Company Name  : $($Script:CoName)"
+		Write-Verbose "$(Get-Date): Company Name  : $Script:CoName"
 	}
-	Write-Verbose "$(Get-Date): Computer Name : $($ComputerName)"
+	Write-Verbose "$(Get-Date): Computer Name : $ComputerName"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Cover Page    : $($CoverPage)"
+		Write-Verbose "$(Get-Date): Cover Page    : $CoverPage"
 	}
-	Write-Verbose "$(Get-Date): Details       : $($Details)"
-	Write-Verbose "$(Get-Date): Dev           : $($Dev)"
+	Write-Verbose "$(Get-Date): Details       : $Details"
+	Write-Verbose "$(Get-Date): Dev           : $Dev"
 	If($Dev)
 	{
-		Write-Verbose "$(Get-Date): DevErrorFile  : $($Script:DevErrorFile)"
+		Write-Verbose "$(Get-Date): DevErrorFile  : $Script:DevErrorFile"
 	}
-	Write-Verbose "$(Get-Date): Filename1     : $($Script:Filename1)"
+	Write-Verbose "$(Get-Date): Filename1     : $Script:Filename1"
 	If($PDF)
 	{
-		Write-Verbose "$(Get-Date): Filename2     : $($Script:Filename2)"
+		Write-Verbose "$(Get-Date): Filename2     : $Script:Filename2"
 	}
-	Write-Verbose "$(Get-Date): Folder        : $($Folder)"
-	Write-Verbose "$(Get-Date): From          : $($From)"
-	Write-Verbose "$(Get-Date): Save As HTML  : $($HTML)"
-	Write-Verbose "$(Get-Date): Save As PDF   : $($PDF)"
-	Write-Verbose "$(Get-Date): Save As Text  : $($Text)"
-	Write-Verbose "$(Get-Date): Save As Word  : $($MSWord)"
-	Write-Verbose "$(Get-Date): Script Info   : $($ScriptInfo)"
-	Write-Verbose "$(Get-Date): Smtp Port     : $($SmtpPort)"
-	Write-Verbose "$(Get-Date): Smtp Server   : $($SmtpServer)"
-	Write-Verbose "$(Get-Date): Title         : $($Script:Title)"
-	Write-Verbose "$(Get-Date): To            : $($To)"
-	Write-Verbose "$(Get-Date): Use SSL       : $($UseSSL)"
+	Write-Verbose "$(Get-Date): Folder        : $Folder"
+	Write-Verbose "$(Get-Date): From          : $From"
+	Write-Verbose "$(Get-Date): Save As HTML  : $HTML"
+	Write-Verbose "$(Get-Date): Save As PDF   : $PDF"
+	Write-Verbose "$(Get-Date): Save As Text  : $Text"
+	Write-Verbose "$(Get-Date): Save As Word  : $MSWord"
+	Write-Verbose "$(Get-Date): Script Info   : $ScriptInfo"
+	Write-Verbose "$(Get-Date): Smtp Port     : $SmtpPort"
+	Write-Verbose "$(Get-Date): Smtp Server   : $SmtpServer"
+	Write-Verbose "$(Get-Date): Title         : $Script:Title"
+	Write-Verbose "$(Get-Date): To            : $To"
+	Write-Verbose "$(Get-Date): Use SSL       : $UseSSL"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): User Name     : $($UserName)"
+		Write-Verbose "$(Get-Date): User Name     : $UserName"
 	}
 	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): OS Detected   : $($Script:RunningOS)"
-	Write-Verbose "$(Get-Date): PSUICulture   : $($PSUICulture)"
-	Write-Verbose "$(Get-Date): PSCulture     : $($PSCulture)"
+	Write-Verbose "$(Get-Date): OS Detected   : $Script:RunningOS"
+	Write-Verbose "$(Get-Date): PSUICulture   : $PSUICulture"
+	Write-Verbose "$(Get-Date): PSCulture     : $PSCulture"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Word version  : $($WordProduct)"
-		Write-Verbose "$(Get-Date): Word language : $($Script:WordLanguageValue)"
+		Write-Verbose "$(Get-Date): Word version  : $WordProduct"
+		Write-Verbose "$(Get-Date): Word language : $Script:WordLanguageValue"
 	}
 	Write-Verbose "$(Get-Date): PoSH version  : $($Host.Version)"
 	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): Script start  : $($Script:StartTime)"
+	Write-Verbose "$(Get-Date): Script start  : $Script:StartTime"
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): "
 }
@@ -2971,7 +2971,7 @@ Function SaveandCloseDocumentandShutdownWord
 				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
 			}
 		}
-		Write-Verbose "$(Get-Date): Running $($Script:WordProduct) and detected operating system $($Script:RunningOS)"
+		Write-Verbose "$(Get-Date): Running $Script:WordProduct and detected operating system $Script:RunningOS"
 		$saveFormat = [Enum]::Parse([Microsoft.Office.Interop.Word.WdSaveFormat], "wdFormatDocumentDefault")
 		$Script:Doc.SaveAs([REF]$Script:FileName1, [ref]$SaveFormat)
 		If($PDF)
@@ -2999,7 +2999,7 @@ Function SaveandCloseDocumentandShutdownWord
 				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
 			}
 		}
-		Write-Verbose "$(Get-Date): Running $($Script:WordProduct) and detected operating system $($Script:RunningOS)"
+		Write-Verbose "$(Get-Date): Running $Script:WordProduct and detected operating system $Script:RunningOS"
 		$Script:Doc.SaveAs2([REF]$Script:FileName1, [ref]$wdFormatDocumentDefault)
 		If($PDF)
 		{
@@ -3019,7 +3019,7 @@ Function SaveandCloseDocumentandShutdownWord
 			$cnt++
 			If($cnt -gt 1)
 			{
-				Write-Verbose "$(Get-Date): Waiting another 10 seconds to allow Word to fully close (try # $($cnt))"
+				Write-Verbose "$(Get-Date): Waiting another 10 seconds to allow Word to fully close (try # $cnt)"
 				Start-Sleep -Seconds 10
 				$Script:Word.Quit()
 				If($cnt -gt 2)
@@ -3033,12 +3033,12 @@ Function SaveandCloseDocumentandShutdownWord
 					$wordprocess = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}).Id
 					If($wordprocess -gt 0)
 					{
-						Write-Verbose "$(Get-Date): Attempting to stop WinWord process # $($wordprocess)"
+						Write-Verbose "$(Get-Date): Attempting to stop WinWord process # $wordprocess"
 						Stop-Process $wordprocess -EA 0
 					}
 				}
 			}
-			Write-Verbose "$(Get-Date): Attempting to delete $($Script:FileName1) since only $($Script:FileName2) is needed (try # $($cnt))"
+			Write-Verbose "$(Get-Date): Attempting to delete $Script:FileName1 since only $Script:FileName2 is needed (try # $cnt)"
 			Remove-Item $Script:FileName1 -EA 0 4>$Null
 		}
 	}
@@ -3062,7 +3062,7 @@ Function SaveandCloseDocumentandShutdownWord
 	$wordprocess = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}).Id
 	If($null -ne $wordprocess -and $wordprocess -gt 0)
 	{
-		Write-Verbose "$(Get-Date): WinWord process is still running. Attempting to stop WinWord process # $($wordprocess)"
+		Write-Verbose "$(Get-Date): WinWord process is still running. Attempting to stop WinWord process # $wordprocess"
 		Stop-Process $wordprocess -EA 0
 	}
 }
@@ -3148,16 +3148,16 @@ Function TestComputerName
 	{
 		#get computer name
 		#first test to make sure the computer is reachable
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is online and reachable"
+		Write-Verbose "$(Get-Date): Testing to see if $CName is online and reachable"
 		If(Test-Connection -ComputerName $CName -quiet)
 		{
-			Write-Verbose "$(Get-Date): Server $($CName) is online."
+			Write-Verbose "$(Get-Date): Server $CName is online."
 		}
 		Else
 		{
-			Write-Verbose "$(Get-Date): Computer $($CName) is offline"
+			Write-Verbose "$(Get-Date): Computer $CName is offline"
 			$ErrorActionPreference = $SaveEAPreference
-			Write-Error "`n`n`t`tComputer $($CName) is offline.`nScript cannot continue.`n`n"
+			Write-Error "`n`n`t`tComputer $CName is offline.`nScript cannot continue.`n`n"
 			Exit
 		}
 	}
@@ -3166,7 +3166,7 @@ Function TestComputerName
 	If($CName -eq "localhost")
 	{
 		$CName = $env:ComputerName
-		Write-Verbose "$(Get-Date): Computer name has been renamed from localhost to $($CName)"
+		Write-Verbose "$(Get-Date): Computer name has been renamed from localhost to $CName"
 	}
 
 	#if computer name is an IP address, get host name from DNS
@@ -3180,11 +3180,11 @@ Function TestComputerName
 		If($? -and $Null -ne $Result)
 		{
 			$CName = $Result.HostName
-			Write-Verbose "$(Get-Date): Computer name has been renamed from $($ip) to $($CName)"
+			Write-Verbose "$(Get-Date): Computer name has been renamed from $($ip) to $CName"
 		}
 		Else
 		{
-			Write-Warning "Unable to resolve $($CName) to a hostname"
+			Write-Warning "Unable to resolve $CName to a hostname"
 		}
 	}
 	Else
@@ -3196,7 +3196,7 @@ Function TestComputerName
 	If($Null -ne $Results)
 	{
 		#the computer is a dns server
-		Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+		Write-Verbose "$(Get-Date): Computer $CName is a DNS Server"
 		Write-Verbose "$(Get-Date): "
 		$Script:DNSServerData = $Results
 		Return $CName
@@ -3204,9 +3204,9 @@ Function TestComputerName
 	ElseIf($Null -eq $Results)
 	{
 		#the computer is not a dns server
-		Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
+		Write-Verbose "$(Get-Date): Computer $CName is not a DNS Server"
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tComputer $($CName) is not a DNS Server.`n`n`t`tRerun the script using -ComputerName with a valid DNS server name.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "`n`n`t`tComputer $CName is not a DNS Server.`n`n`t`tRerun the script using -ComputerName with a valid DNS server name.`n`n`t`tScript cannot continue.`n`n"
 		Exit
 	}
 
@@ -3232,28 +3232,28 @@ Function ProcessDocumentOutput
 
 	If($PDF)
 	{
-		If(Test-Path "$($Script:FileName2)")
+		If(Test-Path "$Script:FileName2")
 		{
-			Write-Verbose "$(Get-Date): $($Script:FileName2) is ready for use"
+			Write-Verbose "$(Get-Date): $Script:FileName2 is ready for use"
 			$GotFile = $True
 		}
 		Else
 		{
-			Write-Warning "$(Get-Date): Unable to save the output file, $($Script:FileName2)"
-			Write-Error "Unable to save the output file, $($Script:FileName2)"
+			Write-Warning "$(Get-Date): Unable to save the output file, $Script:FileName2"
+			Write-Error "Unable to save the output file, $Script:FileName2"
 		}
 	}
 	Else
 	{
-		If(Test-Path "$($Script:FileName1)")
+		If(Test-Path $Script:FileName1)
 		{
-			Write-Verbose "$(Get-Date): $($Script:FileName1) is ready for use"
+			Write-Verbose "$(Get-Date): $Script:FileName1 is ready for use"
 			$GotFile = $True
 		}
 		Else
 		{
-			Write-Warning "$(Get-Date): Unable to save the output file, $($Script:FileName1)"
-			Write-Error "Unable to save the output file, $($Script:FileName1)"
+			Write-Warning "$(Get-Date): Unable to save the output file, $Script:FileName1"
+			Write-Error "Unable to save the output file, $Script:FileName1"
 		}
 	}
 	
@@ -3307,7 +3307,7 @@ Function ProcessScriptEnd
 	Write-Verbose "$(Get-Date): "
 
 	#http://poshtips.com/measuring-elapsed-time-in-powershell/
-	Write-Verbose "$(Get-Date): Script started: $($Script:StartTime)"
+	Write-Verbose "$(Get-Date): Script started: $Script:StartTime"
 	Write-Verbose "$(Get-Date): Script ended: $(Get-Date)"
 	$runtime = $(Get-Date) - $Script:StartTime
 	$Str = [string]::format("{0} days, {1} hours, {2} minutes, {3}.{4} seconds", `
@@ -3316,7 +3316,7 @@ Function ProcessScriptEnd
 		$runtime.Minutes, `
 		$runtime.Seconds,
 		$runtime.Milliseconds)
-	Write-Verbose "$(Get-Date): Elapsed time: $($Str)"
+	Write-Verbose "$(Get-Date): Elapsed time: $Str"
 
 	If($Dev)
 	{
@@ -3334,55 +3334,55 @@ Function ProcessScriptEnd
 	{
 		$SIFile = "$($pwd.Path)\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime       : $($AddDateTime)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime       : $AddDateTime" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Company Name       : $($Script:CoName)" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Name       : $Script:CoName" 4>$Null		
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "ComputerName       : $($ComputerName)" 4>$Null		
+		Out-File -FilePath $SIFile -Append -InputObject "ComputerName       : $ComputerName" 4>$Null		
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Cover Page         : $($CoverPage)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Cover Page         : $CoverPage" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Details            : $($Details)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Dev                : $($Dev)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Details            : $Details" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Dev                : $Dev" 4>$Null
 		If($Dev)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile       : $($Script:DevErrorFile)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile       : $Script:DevErrorFile" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Filename1          : $($Script:FileName1)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Filename1          : $Script:FileName1" 4>$Null
 		If($PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Filename2          : $($Script:FileName2)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Filename2          : $Script:FileName2" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Folder             : $($Folder)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "From               : $($From)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML       : $($HTML)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF        : $($PDF)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT       : $($TEXT)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD       : $($MSWORD)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Script Info        : $($ScriptInfo)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port          : $($SmtpPort)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server        : $($SmtpServer)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "To                 : $($To)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Use SSL            : $($UseSSL)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Folder             : $Folder" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "From               : $From" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML       : $HTML" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF        : $PDF" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT       : $TEXT" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD       : $MSWORD" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script Info        : $ScriptInfo" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port          : $SmtpPort" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server        : $SmtpServer" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "To                 : $To" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Use SSL            : $UseSSL" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "User Name          : $($UserName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "User Name          : $UserName" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "OS Detected        : $($RunningOS)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture        : $($PSUICulture)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PSCulture          : $($PSCulture)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "OS Detected        : $RunningOS" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture        : $PSUICulture" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSCulture          : $PSCulture" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Word version       : $($Script:WordProduct)" 4>$Null
-			Out-File -FilePath $SIFile -Append -InputObject "Word language      : $($Script:WordLanguageValue)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word version       : $Script:WordProduct" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word language      : $Script:WordLanguageValue" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "PoSH version       : $($Host.Version)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Script start       : $($Script:StartTime)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time       : $($Str)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script start       : $Script:StartTime" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time       : $Str" 4>$Null
 	}
 	
 	$runtime = $Null
@@ -3535,7 +3535,7 @@ Function OutputDNSServer
 			$ips = ""
 			ForEach($IP in $ServerSettings.ListeningIPAddress)
 			{
-				$ips += "$($IP)`r"
+				$ips += "$IP`r"
 			}
 			$ScriptInformation += @{ Data = "Listen on the following IP addresses"; Value = $ips; }
 		}
@@ -4455,12 +4455,15 @@ Function OutputLookupZone
 			}
 			$rowdata += @(,('Scavenge servers',($htmlsilver -bor $htmlbold),$ScavengeServers[0],$htmlwhite))
 			
-			$cnt = 1
-			ForEach($Item in $ScavengeServers)
+			$cnt = -1
+			ForEach($ScavengeServer in $ScavengeServers)
 			{
 				$cnt++
-				$ScriptInformation += @{ Data = ""; Value = $Item; }
-				$rowdata += @(,(' ',($htmlsilver -bor $htmlbold),$Item,$htmlwhite))
+				
+				If($cnt -gt 0)
+				{
+					$rowdata += @(,(' ',($htmlsilver -bor $htmlbold),$ScavengeServer,$htmlwhite))
+				}
 			}
 		}
 
@@ -4776,7 +4779,7 @@ Function OutputLookupZone
 					$ip = @()
 					ForEach($ipAddress in $WINS.RecordData.WinsServers)
 					{
-						$ip += "$($ipAddress)`r"
+						$ip += "$ipAddress`r"
 					}
 					
 					If($WINS.RecordData.CacheTimeout.Days -gt 0)
@@ -4888,7 +4891,7 @@ Function OutputLookupZone
 				Else
 				{
 					$txt1 = "WINS"
-					$txt2 = "Use WINS forward lookup: $($WINSEnabled)"
+					$txt2 = "Use WINS forward lookup: $WINSEnabled"
 					$txt3 = "Unable to retrieve WINS details"
 					If($MSWord -or $PDF)
 					{
@@ -5082,7 +5085,7 @@ Function OutputLookupZone
 				Else
 				{
 					$txt1 = "WINS"
-					$txt2 = "Use WINS forward lookup: $($WINSEnabled)"
+					$txt2 = "Use WINS forward lookup: $WINSEnabled"
 					$txt3 = "Unable to retrieve WINS details"
 					If($MSWord -or $PDF)
 					{
@@ -5182,7 +5185,7 @@ Function OutputLookupZone
 				$ipSecondaryServers = ""
 				ForEach($ipAddress in $DNSZone.SecondaryServers)
 				{
-					$ipSecondaryServers += "$($ipAddress)`r"
+					$ipSecondaryServers += "$ipAddress`r"
 				}
 			}
 
@@ -5191,7 +5194,7 @@ Function OutputLookupZone
 				$ipNotifyServers = ""
 				ForEach($ipAddress in $DNSZone.NotifyServers)
 				{
-					$ipNotifyServers += "$($ipAddress)`r"
+					$ipNotifyServers += "$ipAddress`r"
 				}
 			}
 			
@@ -6082,7 +6085,7 @@ Function OutputTrustPoint
 {
 	Param([object] $Trust, [object] $Anchor)
 
-	Write-Verbose "$(Get-Date): `tProcessing $($Trust.TrustPointName)"
+	Write-Verbose "$(Get-Date): `tProcessing $Trust.TrustPointName"
 	
 	If($Anchor.TrustAnchorData.ZoneKey)
 	{
