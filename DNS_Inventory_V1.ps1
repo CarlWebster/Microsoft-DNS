@@ -331,7 +331,7 @@
 	NAME: DNS_Inventory.ps1
 	VERSION: 1.07
 	AUTHOR: Carl Webster - Sr. Solutions Architect - Choice Solutions, LLC
-	LASTEDIT: November 11, 2017
+	LASTEDIT: November 12, 2017
 #>
 
 #endregion
@@ -446,10 +446,13 @@ Param(
 #Version 1.06 13-Feb-2017
 #	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
 #
-#Version 1.07 11-Nov-2017
+#Version 1.07 13-Nov-2017
 #	Added Scavenge Server(s) to Zone Properties General section
 #	Added the domain name of the computer used for -ComputerName to the output filename
+#	Fixed output of Name Server IP address(es) in Zone properties
 #	For Word/PDF output added the domain name of the computer used for -ComputerName to the report title
+#	General code cleanup
+#	In Text output, fixed alignment of "Scavenging period" in DNS Server Properties
 #
 #HTML functions contributed by Ken Avram October 2014
 #HTML Functions FormatHTMLTable and AddHTMLTable modified by Jake Rutski May 2015
@@ -3051,8 +3054,6 @@ Function SaveandCloseDocumentandShutdownWord
 		Remove-Variable -Name word -Scope Global 4>$Null
 	}
 	$SaveFormat = $Null
-	[gc]::collect() 
-	[gc]::WaitForPendingFinalizers()
 	
 	#is the winword process still running? kill it
 
@@ -3286,8 +3287,6 @@ Function AbortScript
 			Remove-Variable -Name word -Scope Global
 		}
 	}
-	[gc]::collect() 
-	[gc]::WaitForPendingFinalizers()
 	Write-Verbose "$(Get-Date): Script has been aborted"
 	$ErrorActionPreference = $SaveEAPreference
 	Exit
@@ -4668,9 +4667,36 @@ Function OutputLookupZone
 			{
 				$ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
 				
-				$WordTableRowHash = @{ 
-				ServerFQDN = $NS.RecordData.NameServer;
-				IPAddress = $ipAddress;
+				If($ipAddress -is [array])
+				{
+					$cnt = -1
+					
+					ForEach($ip in $ipAddress)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$WordTableRowHash = @{ 
+							ServerFQDN = $NS.RecordData.NameServer;
+							IPAddress = $ip;
+							}
+						}
+						Else
+						{
+							$WordTableRowHash = @{ 
+							ServerFQDN = $NS.RecordData.NameServer;
+							IPAddress = $ip;
+							}
+						}
+					}
+				}
+				Else
+				{
+					$WordTableRowHash = @{ 
+					ServerFQDN = $NS.RecordData.NameServer;
+					IPAddress = $ipAddress;
+					}
 				}
 
 				$NSWordTable += $WordTableRowHash;
@@ -4700,7 +4726,28 @@ Function OutputLookupZone
 				$ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
 				
 				Line 2 "Server FQDN`t`t`t: " $NS.RecordData.NameServer
-				Line 2 "IP Address`t`t`t: " $ipAddress
+				If($ipAddress -is [array])
+				{
+					$cnt = -1
+					
+					ForEach($ip in $ipAddress)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							Line 2 "IP Address`t`t`t: " $ip
+						}
+						Else
+						{
+							Line 6 "  " $ip
+						}
+					}
+				}
+				Else
+				{
+					Line 2 "IP Address`t`t`t: " $ipAddress
+				}
 				Line 0 ""
 			}
 		}
@@ -4710,17 +4757,36 @@ Function OutputLookupZone
 			$rowdata = @()
 			ForEach($NS in $NameServers)
 			{
-				$ipAddresses = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+				$ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
 				
-				$xIP = ""
-				ForEach($ipAddress in $ipAddresses)
+				If($ipAddress -is [array])
 				{
-					$xIP += $ipAddress
+					$cnt = -1
+					
+					ForEach($ip in $ipAddress)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$rowdata += @(,(
+							$NS.RecordData.NameServer,$htmlwhite,
+							$ip,$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,(
+							$NS.RecordData.NameServer,$htmlwhite,
+							$ip,$htmlwhite))
+						}
+					}
 				}
-				
-				$rowdata += @(,(
-				$NS.RecordData.NameServer,$htmlwhite,
-				$xIP,$htmlwhite))
+				Else
+				{
+					$rowdata += @(,(
+					$NS.RecordData.NameServer,$htmlwhite,
+					$ipAddress,$htmlwhite))
+				}
 			}
 			$columnHeaders = @(
 			'Server Fully Qualified Domain Name (FQDN)',($htmlsilver -bor $htmlbold),

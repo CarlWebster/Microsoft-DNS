@@ -6,10 +6,13 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
-#Version 1.07 11-Nov-2017
+#Version 1.07 13-Nov-2017
 #	Added Scavenge Server(s) to Zone Properties General section
 #	Added the domain name of the computer used for -ComputerName to the output filename
+#	Fixed output of Name Server IP address(es) in Zone properties
 #	For Word/PDF output added the domain name of the computer used for -ComputerName to the report title
+#	General code cleanup
+#	In Text output, fixed alignment of "Scavenging period" in DNS Server Properties
 
 #Version 1.06 13-Feb-2017
 #	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
