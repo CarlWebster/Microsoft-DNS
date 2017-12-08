@@ -6,6 +6,9 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 1.08 8-Dec-2017
+#	Updated Function WriteHTMLLine with fixes from the script template
+
 #Version 1.07 13-Nov-2017
 #	Added Scavenge Server(s) to Zone Properties General section
 #	Added the domain name of the computer used for -ComputerName to the output filename
