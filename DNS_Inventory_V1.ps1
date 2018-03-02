@@ -74,13 +74,13 @@
 	This parameter has an alias of CF.
 .PARAMETER CompanyName
 	Company Name to use for the Cover Page.  
-	Default value is contained in HKCU:\Software\Microsoft\Office\Common\UserInfo\CompanyName or
-	HKCU:\Software\Microsoft\Office\Common\UserInfo\Company, whichever is populated on the 
-	computer running the script.
-	This parameter has an alias of CN.
-	If either registry key does not exist and this parameter is not specified, the report will
-	not contain a Company Name on the cover page.
+	The default value is contained in 
+	HKCU:\Software\Microsoft\Office\Common\UserInfo\CompanyName or
+	HKCU:\Software\Microsoft\Office\Common\UserInfo\Company, whichever is populated 
+	on the computer running the script.
+
 	This parameter is only valid with the MSWORD and PDF output parameters.
+	This parameter has an alias of CN.
 .PARAMETER CompanyPhone
 	Company Phone to use for the Cover Page, if the Cover Page has the Phone field.  
 	
@@ -161,14 +161,15 @@
 .PARAMETER AddDateTime
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2017 at 6PM is 2017-06-01_1800.
-	Output filename will be DomainName_DNS_2017-06-01_1800.docx (or .pdf).
+	June 1, 2018 at 6PM is 2018-06-01_1800.
+	Output filename will be DomainName_DNS_2018-06-01_1800.docx (or .pdf).
 	This parameter is disabled by default.
 .PARAMETER ComputerName
 	Specifies a computer to use to run the script against.
 	ComputerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
 	If entered as localhost, the actual computer name is determined and used.
-	If entered as an IP address, an attempt is made to determine and use the actual computer name.
+	If entered as an IP address, an attempt is made to determine and use the actual 
+	computer name.
 	Default is localhost.
 .PARAMETER Folder
 	Specifies the optional output folder to save the output report. 
@@ -203,11 +204,14 @@
 .PARAMETER Details
 	Include Resource Record data for both Forward and Reverse lookup zones.
 	Default is to not include Resource Record information.
+.PARAMETER Log
+	Generates a log file for troubleshooting.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1
 	
 	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -221,7 +225,8 @@
 	PS C:\PSScript > .\DNS_Inventory.ps1 -ComputerName DNS01
 	
 	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -234,7 +239,8 @@
 	PS C:\PSScript > .\DNS_Inventory.ps1 -PDF
 	
 	Will use all default values and save the document as a PDF file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -245,7 +251,8 @@
 	PS C:\PSScript > .\DNS_Inventory.ps1 -TEXT
 
 	Will use all default values and save the document as a formatted text file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -256,7 +263,8 @@
 	PS C:\PSScript > .\DNS_Inventory.ps1 -HTML
 
 	Will use all default values and save the document as an HTML file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -264,14 +272,16 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 .EXAMPLE
-	PS C:\PSScript .\DNS_Inventory.ps1 -CompanyName "Carl Webster Consulting" -CoverPage "Mod" -UserName "Carl Webster"
+	PS C:\PSScript .\DNS_Inventory.ps1 -CompanyName "Carl Webster Consulting" 
+	-CoverPage "Mod" -UserName "Carl Webster"
 
 	Will use:
 		Carl Webster Consulting for the Company Name.
 		Mod for the Cover Page format.
 		Carl Webster for the User Name.
 .EXAMPLE
-	PS C:\PSScript .\DNS_Inventory.ps1 -CN "Carl Webster Consulting" -CP "Mod" -UN "Carl Webster"
+	PS C:\PSScript .\DNS_Inventory.ps1 -CN "Carl Webster Consulting" -CP "Mod" -UN 
+	"Carl Webster"
 
 	Will use:
 		Carl Webster Consulting for the Company Name (alias CN).
@@ -281,7 +291,8 @@
 	PS C:\PSScript > .\DNS_Inventory.ps1 -AddDateTime
 	
 	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -291,13 +302,14 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2017 at 6PM is 2017-07-25_1800.
-	Output filename will be DomainName_DNS_2017-07-25_1800.docx
+	July 25, 2018 at 6PM is 2018-07-25_1800.
+	Output filename will be DomainName_DNS_2018-07-25_1800.docx
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -PDF -AddDateTime
 	
 	Will use all default values and save the document as a PDF file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -307,13 +319,14 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2017 at 6PM is 2017-07-25_1800.
-	Output filename will be DomainName_DNS_2017-07-25_1800.PDF
+	July 25, 2018 at 6PM is 2018-07-25_1800.
+	Output filename will be DomainName_DNS_2018-07-25_1800.PDF
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -Folder \\FileServer\ShareName
 	
 	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -323,10 +336,12 @@
 	
 	Output file is saved in the path \\FileServer\ShareName
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -SmtpServer mail.domain.tld -From XDAdmin@domain.tld -To ITGroup@domain.tld -ComputerName Server01
+	PS C:\PSScript > .\DNS_Inventory.ps1 -SmtpServer mail.domain.tld -From 
+	XDAdmin@domain.tld -To ITGroup@domain.tld -ComputerName Server01
 	
 	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -336,14 +351,18 @@
 	
 	Script will be run remotely against DNS server Server01.
 	
-	Script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, sending to ITGroup@domain.tld.
+	Script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
+	sending to ITGroup@domain.tld.
 	Script will use the default SMTP port 25 and will not use SSL.
-	If the current user's credentials are not valid to send email, the user will be prompted to enter valid credentials.
+	If the current user's credentials are not valid to send email, the user will be prompted 
+	to enter valid credentials.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -SmtpServer smtp.office365.com -SmtpPort 587 -UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com
+	PS C:\PSScript > .\DNS_Inventory.ps1 -SmtpServer smtp.office365.com -SmtpPort 587 
+	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com
 	
 	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -351,13 +370,16 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 	
-	Script will use the email server smtp.office365.com on port 587 using SSL, sending from webster@carlwebster.com, sending to ITGroup@carlwebster.com.
-	If the current user's credentials are not valid to send email, the user will be prompted to enter valid credentials.
+	Script will use the email server smtp.office365.com on port 587 using SSL, sending from 
+	webster@carlwebster.com, sending to ITGroup@carlwebster.com.
+	If the current user's credentials are not valid to send email, the user will be prompted
+	to enter valid credentials.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -Details
 	
 	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
@@ -373,9 +395,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.08
+	VERSION: 1.09
 	AUTHOR: Carl Webster - Sr. Solutions Architect - Choice Solutions, LLC
-	LASTEDIT: December 8, 2017
+	LASTEDIT: March 2, 2018
 #>
 
 #endregion
@@ -482,7 +504,10 @@ Param(
 	[Switch]$ScriptInfo=$False,
 	
 	[parameter(Mandatory=$False)] 
-	[Switch]$Details=$False
+	[Switch]$Details=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Log=$False
 	
 	)
 #endregion
@@ -536,6 +561,15 @@ Param(
 #Version 1.08 8-Dec-2017
 #	Updated Function WriteHTMLLine with fixes from the script template
 #
+#Version 1.09 2-Mar-2018
+#	Added Log switch to create a transcript log
+#	I found two "If($Var = something)" which are now "If($Var -eq something)"
+#	In the function OutputLookupZoneDetails, with the "=" changed to "-eq" fix, the hostname was now always blank. Fixed.
+#	Many Switch bocks I never added "; break" to. Those are now fixed.
+#	Update functions ShowScriptOutput and ProcessScriptEnd for new Log parameter
+#	Updated help text
+#	Updated the WriteWordLine function 
+#
 #HTML functions contributed by Ken Avram October 2014
 #HTML Functions FormatHTMLTable and AddHTMLTable modified by Jake Rutski May 2015
 #endregion
@@ -547,6 +581,26 @@ Set-StrictMode -Version 2
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
+
+#V1.09 added
+If($Log) 
+{
+	#start transcript logging
+	$Script:ThisScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+	$Script:LogPath = "$Script:ThisScriptPath\DNSDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	
+	try 
+	{
+		Start-Transcript -Path $Script:LogPath -Force -Verbose:$false | Out-Null
+		Write-Verbose "$(Get-Date): Transcript/log started at $Script:LogPath"
+		$Script:StartLog = $true
+	} 
+	catch 
+	{
+		Write-Verbose "$(Get-Date): Transcript/log failed at $Script:LogPath"
+		$Script:StartLog = $false
+	}
+}
 
 If($Dev)
 {
@@ -1758,12 +1812,12 @@ Function WriteWordLine
 	[string]$output = ""
 	Switch ($style)
 	{
-		0 {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing}
-		1 {$Script:Selection.Style = $Script:MyHash.Word_Heading1}
-		2 {$Script:Selection.Style = $Script:MyHash.Word_Heading2}
-		3 {$Script:Selection.Style = $Script:MyHash.Word_Heading3}
-		4 {$Script:Selection.Style = $Script:MyHash.Word_Heading4}
-		Default {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing}
+		0 {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing; Break}
+		1 {$Script:Selection.Style = $Script:MyHash.Word_Heading1; Break}
+		2 {$Script:Selection.Style = $Script:MyHash.Word_Heading2; Break}
+		3 {$Script:Selection.Style = $Script:MyHash.Word_Heading3; Break}
+		4 {$Script:Selection.Style = $Script:MyHash.Word_Heading4; Break}
+		Default {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing; Break}
 	}
 	
 	#build # of tabs
@@ -2926,6 +2980,7 @@ Function ShowScriptOptions
 	}
 	Write-Verbose "$(Get-Date): Folder          : $Folder"
 	Write-Verbose "$(Get-Date): From            : $From"
+	Write-Verbose "$(Get-Date): Log             : $($Log)"
 	Write-Verbose "$(Get-Date): Save As HTML    : $HTML"
 	Write-Verbose "$(Get-Date): Save As PDF     : $PDF"
 	Write-Verbose "$(Get-Date): Save As Text    : $Text"
@@ -3373,6 +3428,7 @@ Function ProcessScriptEnd
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "Folder             : $Folder" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "From               : $From" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Log                : $($Log)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML       : $HTML" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF        : $PDF" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT       : $TEXT" 4>$Null
@@ -3401,6 +3457,23 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time       : $Str" 4>$Null
 	}
 	
+	#V1.09 added
+	#stop transcript logging
+	If($Log -eq $True) 
+	{
+		If($Script:StartLog -eq $true) 
+		{
+			try 
+			{
+				Stop-Transcript | Out-Null
+				Write-Verbose "$(Get-Date): $Script:LogPath is ready for use"
+			} 
+			catch 
+			{
+				Write-Verbose "$(Get-Date): Transcript/log stop failed"
+			}
+		}
+	}
 	$runtime = $Null
 	$Str = $Null
 	$ErrorActionPreference = $SaveEAPreference
@@ -3801,18 +3874,18 @@ Function OutputDNSServer
 	
 	Switch ($ServerSettings.NameCheckFlag)
 	{
-		0 {$NameCheck = "Strict RFC (ANSI)"}
-		1 {$NameCheck = "Non RFC (ANSI)"}
-		2 {$NameCheck = "Multibyte (UTF8)"}
-		3 {$NameCheck = "All names"}
+		0 {$NameCheck = "Strict RFC (ANSI)"; break}
+		1 {$NameCheck = "Non RFC (ANSI)"; break}
+		2 {$NameCheck = "Multibyte (UTF8)"; break}
+		3 {$NameCheck = "All names"; break}
 		Default {$NameCheck = "Unknown: NameCheckFlag Value is $($ServerSettings.NameCheckFlag)"}
 	}
 	
 	Switch ($ServerSettings.BootMethod)
 	{
-		3 {$LoadZone = "From Active Directory and registry"}
-		2 {$LoadZone = "From registry"}
-		Default {$LoadZone = "Unknown: BootMethod Value is $($ServerSettings.BootMethod)"}
+		3 {$LoadZone = "From Active Directory and registry"; break}
+		2 {$LoadZone = "From registry"; break}
+		Default {$LoadZone = "Unknown: BootMethod Value is $($ServerSettings.BootMethod)"; break}
 	}
 	
 	If($ServerScavenging.ScavengingInterval.days -gt 0 -or  $ServerScavenging.ScavengingInterval.hours -gt 0)
@@ -4108,12 +4181,12 @@ Function OutputDNSServer
 	
 	Switch ($ServerDiagnostics.EventLogLevel)
 	{
-		0 {$LogLevel = "No events"}
-		1 {$LogLevel = "Errors only"}
-		2 {$LogLevel = "Errors and warnings"}
-		4 {$LogLevel = "All events"}	#my value is 7, everyone else appears to be 4
-		7 {$LogLevel = "All events"}	#leaving as separate stmts for now just in case
-		Default {$LogLevel = "Unknown: EventLogLevel Value is $($ServerDiagnostics.EventLogLevel)"}
+		0 {$LogLevel = "No events"; break}
+		1 {$LogLevel = "Errors only"; break}
+		2 {$LogLevel = "Errors and warnings"; break}
+		4 {$LogLevel = "All events"; break}	#my value is 7, everyone else appears to be 4
+		7 {$LogLevel = "All events"; break}	#leaving as separate stmts for now just in case
+		Default {$LogLevel = "Unknown: EventLogLevel Value is $($ServerDiagnostics.EventLogLevel)"; break}
 	}
 	
 	If($MSWord -or $PDF)
@@ -4274,21 +4347,21 @@ Function OutputLookupZone
 	
 	Switch ($DNSZone.ReplicationScope)
 	{
-		"Forest" {$Replication = "All DNS servers in this forest"}
-		"Domain" {$Replication = "All DNS servers in this domain"}
-		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"}
-		"None" {$Replication = "Not an Active-Directory-Integrated zone"}
-		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"}
+		"Forest" {$Replication = "All DNS servers in this forest"; break}
+		"Domain" {$Replication = "All DNS servers in this domain"; break}
+		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"; break}
+		"None" {$Replication = "Not an Active-Directory-Integrated zone"; break}
+		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"; break}
 	}
 	
 	If( ( validObject $DNSZone DynamicUpdate ) )
 	{
 		Switch ($DNSZone.DynamicUpdate)
 		{
-			"Secure" {$DynamicUpdate = "Secure only"}
-			"NonsecureAndSecure" {$DynamicUpdate = "Nonsecure and secure"}
-			"None" {$DynamicUpdate = "None"}
-			Default {$DynamicUpdate = "Unknown: $($DNSZone.DynamicUpdate)"}
+			"Secure" {$DynamicUpdate = "Secure only"; break}
+			"NonsecureAndSecure" {$DynamicUpdate = "Nonsecure and secure"; break}
+			"None" {$DynamicUpdate = "None"; break}
+			Default {$DynamicUpdate = "Unknown: $($DNSZone.DynamicUpdate)"; break}
 		}
 	}
 	
@@ -5587,45 +5660,45 @@ Function OutputLookupZoneDetails
 		$tmpType = ""
 		Switch ($Detail.RecordType)
 		{
-			"A"				{$tmpType = "HOST (A)"}
-			"AAAA"			{$tmpType = "IPv6 HOST (AAAA)"}
-			"AFSDB"			{$tmpType = "AFS Database (AFSDB)"}
-			"ATMA"			{$tmpType = "ATM Address (ATMA)"}
-			"CNAME"			{$tmpType = "Alias (CNAME)"}
-			"DHCID"			{$tmpType = "DHCID"}
-			"DNAME"			{$tmpType = "Domain Alias (DNAME)"}
-			"DNSKEY"		{$tmpType = "DNS KEY (DNSKEY)"}
-			"DS"			{$tmpType = "Delegation Signer (DS)"}
-			"HINFO"			{$tmpType = "Host Information (HINFO)"}
-			"ISDN"			{$tmpType = "ISDN"}
-			"KEY"			{$tmpType = "Public Key (KEY)"}
-			"MB"			{$tmpType = "Mailbox (MB)"}
-			"MG"			{$tmpType = "Mail Group (MG)"}
-			"MINFO"			{$tmpType = "Mailbox Information (MINFO)"}
-			"MR"			{$tmpType = "Renamed Mailbox (MR)"}
-			"MX"			{$tmpType = "Mail Exchanger (MX)"}
-			"NAPTR"			{$tmpType = "Naming Authority Pointer (NAPTR)"}
-			"NS"			{$tmpType = "Name Server (NS)"}
-			"NSEC"			{$tmpType = "Next Secure (NSEC)"}
-			"NSEC3"			{$tmpType = "Next Secure 3 (NSEC3)"}
-			"NSEC3PARAM"	{$tmpType = "Next Secure 3 Parameters (NSEC3PARAM)"}
-			"NXT"			{$tmpType = "Next Domain (NXT)"}
-			"PTR"			{$tmpType = "Pointer (PTR)"}
-			"RP"			{$tmpType = "Responsible Person (RP)"}
-			"RRSIG"			{$tmpType = "RR Signature (RRSIG)"}
-			"RT"			{$tmpType = "Route Through (RT)"}
-			"SIG"			{$tmpType = "Signature (SIG)"}
-			"SOA"			{$tmpType = "Start of Authority (SOA)"}
-			"SRV"			{$tmpType = "Service Location (SRV)"}
-			"TXT"			{$tmpType = "Text (TXT)"}
-			"WINS"			{$tmpType = "WINS Lookup"}
-			"WINSR"			{$tmpType = "WINS Reverse Lookup (WINS-R_"}
-			"WKS"			{$tmpType = "Well Known Services (WKS)"}
-			"X25"			{$tmpType = "X.25"}
-			Default 		{$tmpType = "Unable to determine Record Type: $($Detail.RecordType)"}
+			"A"				{$tmpType = "HOST (A)"; break}
+			"AAAA"			{$tmpType = "IPv6 HOST (AAAA)"; break}
+			"AFSDB"			{$tmpType = "AFS Database (AFSDB)"; break}
+			"ATMA"			{$tmpType = "ATM Address (ATMA)"; break}
+			"CNAME"			{$tmpType = "Alias (CNAME)"; break}
+			"DHCID"			{$tmpType = "DHCID"; break}
+			"DNAME"			{$tmpType = "Domain Alias (DNAME)"; break}
+			"DNSKEY"		{$tmpType = "DNS KEY (DNSKEY)"; break}
+			"DS"			{$tmpType = "Delegation Signer (DS)"; break}
+			"HINFO"			{$tmpType = "Host Information (HINFO)"; break}
+			"ISDN"			{$tmpType = "ISDN"; break}
+			"KEY"			{$tmpType = "Public Key (KEY)"; break}
+			"MB"			{$tmpType = "Mailbox (MB)"; break}
+			"MG"			{$tmpType = "Mail Group (MG)"; break}
+			"MINFO"			{$tmpType = "Mailbox Information (MINFO)"; break}
+			"MR"			{$tmpType = "Renamed Mailbox (MR)"; break}
+			"MX"			{$tmpType = "Mail Exchanger (MX)"; break}
+			"NAPTR"			{$tmpType = "Naming Authority Pointer (NAPTR)"; break}
+			"NS"			{$tmpType = "Name Server (NS)"; break}
+			"NSEC"			{$tmpType = "Next Secure (NSEC)"; break}
+			"NSEC3"			{$tmpType = "Next Secure 3 (NSEC3)"; break}
+			"NSEC3PARAM"	{$tmpType = "Next Secure 3 Parameters (NSEC3PARAM)"; break}
+			"NXT"			{$tmpType = "Next Domain (NXT)"; break}
+			"PTR"			{$tmpType = "Pointer (PTR)"; break}
+			"RP"			{$tmpType = "Responsible Person (RP)"; break}
+			"RRSIG"			{$tmpType = "RR Signature (RRSIG)"; break}
+			"RT"			{$tmpType = "Route Through (RT)"; break}
+			"SIG"			{$tmpType = "Signature (SIG)"; break}
+			"SOA"			{$tmpType = "Start of Authority (SOA)"; break}
+			"SRV"			{$tmpType = "Service Location (SRV)"; break}
+			"TXT"			{$tmpType = "Text (TXT)"; break}
+			"WINS"			{$tmpType = "WINS Lookup"; break}
+			"WINSR"			{$tmpType = "WINS Reverse Lookup (WINS-R_"; break}
+			"WKS"			{$tmpType = "Well Known Services (WKS)"; break}
+			"X25"			{$tmpType = "X.25"; break}
+			Default 		{$tmpType = "Unable to determine Record Type: $($Detail.RecordType)"; break}
 		}
 			
-		If($zType = "Reverse")
+		If($zType -eq "Reverse")	#V1.09 fixed from = to -eq
 		{
 			If($Detail.HostName -eq "@")
 			{
@@ -5645,7 +5718,7 @@ Function OutputLookupZoneDetails
 		}
 		Else
 		{
-			$xHostName = ""
+			$xHostName = $Detail.HostName #V1.09 change from "" 
 		}
 
 		#The follow resource record types are obsolete and do not return any RecordData value
@@ -5724,13 +5797,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.CryptoAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; break}
 			}
 			
 			$DetailData = "[$($Detail.RecordData.KeyFlags)][DNSSEC][$($Crypto)][$($Detail.RecordData.KeyTag)]"
@@ -5740,22 +5813,22 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.CryptoAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; break}
 			}
 			
 			$DigestType = ""
 			Switch ($Detail.RecordData.DigestType)
 			{
-				"Sha1"		{$DigestType = "SHA-1"}
-				"Sha256"	{$DigestType = "SHA-256"}
-				"Sha384"	{$DigestType = "SHA-384"}
-				Default		{$DigestType = "Unknown DigestType: $($Detail.RecordData.DigestType)"}
+				"Sha1"		{$DigestType = "SHA-1"; break}
+				"Sha256"	{$DigestType = "SHA-256"; break}
+				"Sha384"	{$DigestType = "SHA-384"; break}
+				Default		{$DigestType = "Unknown DigestType: $($Detail.RecordData.DigestType)"; break}
 			}
 			$DetailData = "[$($Detail.RecordData.KeyTag)][$($DigestType)][$($Crypto)][$($Detail.RecordData.Digest)]"
 		}
@@ -5814,13 +5887,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.HashAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"; break}
 			}
 
 			$OptOut = "NO Opt-Out"
@@ -5846,13 +5919,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.HashAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"; break}
 			}
 			
 			$Timestamp = ""
@@ -5885,13 +5958,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.CryptoAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; break}
 			}
 			
 			$InceptionDate = $Detail.RecordData.SignatureInception.ToUniversalTime().ToShortDateString()
@@ -6190,11 +6263,11 @@ Function OutputTrustPoint
 		$SEP = "Selected"
 		Switch ($Anchor.TrustAnchorData.CryptoAlgorithm)
 		{	
-			"RsaSha1"		{$SEPAlgorithm = "RSA/SHA-1"}
-			"RsaSha1NSec3"	{$SEPAlgorithm = "RSA/SHA-1 (NSEC3)"}
-			"RsaSha256"		{$SEPAlgorithm = "RSA/SHA-256"}
-			"RsaSha512"		{$SEPAlgorithm = "RSA/SHA-512"}
-			Default 		{$SEPAlgorithm = "Unknown: Algorithm = $($Anchor.TrustAnchorData.CryptoAlgorithm)"}
+			"RsaSha1"		{$SEPAlgorithm = "RSA/SHA-1"; break}
+			"RsaSha1NSec3"	{$SEPAlgorithm = "RSA/SHA-1 (NSEC3)"; break}
+			"RsaSha256"		{$SEPAlgorithm = "RSA/SHA-256"; break}
+			"RsaSha512"		{$SEPAlgorithm = "RSA/SHA-512"; break}
+			Default 		{$SEPAlgorithm = "Unknown: Algorithm = $($Anchor.TrustAnchorData.CryptoAlgorithm)"; break}
 		}
 	}
 	Else
@@ -6399,11 +6472,11 @@ Function OutputConditionalForwarder
 	Write-Verbose "$(Get-Date): `t`tGeneral"
 	Switch ($DNSZone.ReplicationScope)
 	{
-		"Forest" {$Replication = "All DNS servers in this forest"}
-		"Domain" {$Replication = "All DNS servers in this domain"}
-		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"}
-		"None" {$Replication = "Not an Active-Directory-Integrated zone"}
-		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"}
+		"Forest" {$Replication = "All DNS servers in this forest"; break}
+		"Domain" {$Replication = "All DNS servers in this domain"; break}
+		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"; break}
+		"None" {$Replication = "Not an Active-Directory-Integrated zone"; break}
+		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"; break}
 	}
 	
 	$IPAddresses = $DNSZone.MasterServers
