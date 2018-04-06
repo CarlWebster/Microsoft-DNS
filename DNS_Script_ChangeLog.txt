@@ -6,6 +6,9 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 1.10 6-Apr-2018
+#	Code clean up from Visual Studio Code
+
 #Version 1.09 2-Mar-2018
 #	Added Log switch to create a transcript log
 #	I found two "If($Var = something)" which are now "If($Var -eq something)"

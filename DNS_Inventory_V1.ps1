@@ -395,9 +395,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.09
+	VERSION: 1.10
 	AUTHOR: Carl Webster - Sr. Solutions Architect - Choice Solutions, LLC
-	LASTEDIT: March 2, 2018
+	LASTEDIT: April 6, 2018
 #>
 
 #endregion
@@ -569,6 +569,9 @@ Param(
 #	Update functions ShowScriptOutput and ProcessScriptEnd for new Log parameter
 #	Updated help text
 #	Updated the WriteWordLine function 
+#
+#Version 1.10 6-Apr-2018
+#	Code clean up from Visual Studio Code
 #
 #HTML functions contributed by Ken Avram October 2014
 #HTML Functions FormatHTMLTable and AddHTMLTable modified by Jake Rutski May 2015
@@ -774,43 +777,43 @@ If($MSWord -or $PDF)
 
 If($HTML)
 {
-    Set htmlredmask         -Option AllScope -Value "#FF0000" 4>$Null
-    Set htmlcyanmask        -Option AllScope -Value "#00FFFF" 4>$Null
-    Set htmlbluemask        -Option AllScope -Value "#0000FF" 4>$Null
-    Set htmldarkbluemask    -Option AllScope -Value "#0000A0" 4>$Null
-    Set htmllightbluemask   -Option AllScope -Value "#ADD8E6" 4>$Null
-    Set htmlpurplemask      -Option AllScope -Value "#800080" 4>$Null
-    Set htmlyellowmask      -Option AllScope -Value "#FFFF00" 4>$Null
-    Set htmllimemask        -Option AllScope -Value "#00FF00" 4>$Null
-    Set htmlmagentamask     -Option AllScope -Value "#FF00FF" 4>$Null
-    Set htmlwhitemask       -Option AllScope -Value "#FFFFFF" 4>$Null
-    Set htmlsilvermask      -Option AllScope -Value "#C0C0C0" 4>$Null
-    Set htmlgraymask        -Option AllScope -Value "#808080" 4>$Null
-    Set htmlblackmask       -Option AllScope -Value "#000000" 4>$Null
-    Set htmlorangemask      -Option AllScope -Value "#FFA500" 4>$Null
-    Set htmlmaroonmask      -Option AllScope -Value "#800000" 4>$Null
-    Set htmlgreenmask       -Option AllScope -Value "#008000" 4>$Null
-    Set htmlolivemask       -Option AllScope -Value "#808000" 4>$Null
+    Set-Variable htmlredmask         -Option AllScope -Value "#FF0000" 4>$Null
+    Set-Variable htmlcyanmask        -Option AllScope -Value "#00FFFF" 4>$Null
+    Set-Variable htmlbluemask        -Option AllScope -Value "#0000FF" 4>$Null
+    Set-Variable htmldarkbluemask    -Option AllScope -Value "#0000A0" 4>$Null
+    Set-Variable htmllightbluemask   -Option AllScope -Value "#ADD8E6" 4>$Null
+    Set-Variable htmlpurplemask      -Option AllScope -Value "#800080" 4>$Null
+    Set-Variable htmlyellowmask      -Option AllScope -Value "#FFFF00" 4>$Null
+    Set-Variable htmllimemask        -Option AllScope -Value "#00FF00" 4>$Null
+    Set-Variable htmlmagentamask     -Option AllScope -Value "#FF00FF" 4>$Null
+    Set-Variable htmlwhitemask       -Option AllScope -Value "#FFFFFF" 4>$Null
+    Set-Variable htmlsilvermask      -Option AllScope -Value "#C0C0C0" 4>$Null
+    Set-Variable htmlgraymask        -Option AllScope -Value "#808080" 4>$Null
+    Set-Variable htmlblackmask       -Option AllScope -Value "#000000" 4>$Null
+    Set-Variable htmlorangemask      -Option AllScope -Value "#FFA500" 4>$Null
+    Set-Variable htmlmaroonmask      -Option AllScope -Value "#800000" 4>$Null
+    Set-Variable htmlgreenmask       -Option AllScope -Value "#008000" 4>$Null
+    Set-Variable htmlolivemask       -Option AllScope -Value "#808000" 4>$Null
 
-    Set htmlbold        -Option AllScope -Value 1 4>$Null
-    Set htmlitalics     -Option AllScope -Value 2 4>$Null
-    Set htmlred         -Option AllScope -Value 4 4>$Null
-    Set htmlcyan        -Option AllScope -Value 8 4>$Null
-    Set htmlblue        -Option AllScope -Value 16 4>$Null
-    Set htmldarkblue    -Option AllScope -Value 32 4>$Null
-    Set htmllightblue   -Option AllScope -Value 64 4>$Null
-    Set htmlpurple      -Option AllScope -Value 128 4>$Null
-    Set htmlyellow      -Option AllScope -Value 256 4>$Null
-    Set htmllime        -Option AllScope -Value 512 4>$Null
-    Set htmlmagenta     -Option AllScope -Value 1024 4>$Null
-    Set htmlwhite       -Option AllScope -Value 2048 4>$Null
-    Set htmlsilver      -Option AllScope -Value 4096 4>$Null
-    Set htmlgray        -Option AllScope -Value 8192 4>$Null
-    Set htmlolive       -Option AllScope -Value 16384 4>$Null
-    Set htmlorange      -Option AllScope -Value 32768 4>$Null
-    Set htmlmaroon      -Option AllScope -Value 65536 4>$Null
-    Set htmlgreen       -Option AllScope -Value 131072 4>$Null
-    Set htmlblack       -Option AllScope -Value 262144 4>$Null
+    Set-Variable htmlbold        -Option AllScope -Value 1 4>$Null
+    Set-Variable htmlitalics     -Option AllScope -Value 2 4>$Null
+    Set-Variable htmlred         -Option AllScope -Value 4 4>$Null
+    Set-Variable htmlcyan        -Option AllScope -Value 8 4>$Null
+    Set-Variable htmlblue        -Option AllScope -Value 16 4>$Null
+    Set-Variable htmldarkblue    -Option AllScope -Value 32 4>$Null
+    Set-Variable htmllightblue   -Option AllScope -Value 64 4>$Null
+    Set-Variable htmlpurple      -Option AllScope -Value 128 4>$Null
+    Set-Variable htmlyellow      -Option AllScope -Value 256 4>$Null
+    Set-Variable htmllime        -Option AllScope -Value 512 4>$Null
+    Set-Variable htmlmagenta     -Option AllScope -Value 1024 4>$Null
+    Set-Variable htmlwhite       -Option AllScope -Value 2048 4>$Null
+    Set-Variable htmlsilver      -Option AllScope -Value 4096 4>$Null
+    Set-Variable htmlgray        -Option AllScope -Value 8192 4>$Null
+    Set-Variable htmlolive       -Option AllScope -Value 16384 4>$Null
+    Set-Variable htmlorange      -Option AllScope -Value 32768 4>$Null
+    Set-Variable htmlmaroon      -Option AllScope -Value 65536 4>$Null
+    Set-Variable htmlgreen       -Option AllScope -Value 131072 4>$Null
+    Set-Variable htmlblack       -Option AllScope -Value 262144 4>$Null
 }
 
 If($TEXT)
@@ -1212,7 +1215,7 @@ Function CheckWordPrereq
 	$SessionID = (Get-Process -PID $PID).SessionId
 	
 	#Find out if winword is running in our session
-	[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}) -ne $Null
+	[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) -ne $Null
 	If($wordrunning)
 	{
 		$ErrorActionPreference = $SaveEAPreference
@@ -1509,13 +1512,13 @@ Function SetupWord
 
 	$Script:Word.Templates.LoadBuildingBlocks()
 	#word 2010/2013/2016
-	$BuildingBlocksCollection = $Script:Word.Templates | Where {$_.name -eq "Built-In Building Blocks.dotx"}
+	$BuildingBlocksCollection = $Script:Word.Templates | Where-Object {$_.name -eq "Built-In Building Blocks.dotx"}
 
 	Write-Verbose "$(Get-Date): Attempt to load cover page $CoverPage"
 	$part = $Null
 
 	$BuildingBlocksCollection | 
-	ForEach{
+	ForEach-Object{
 		If ($_.BuildingBlockEntries.Item($CoverPage).Name -eq $CoverPage) 
 		{
 			$BuildingBlocks = $_
@@ -1656,10 +1659,10 @@ Function UpdateDocumentProperties
             Set-DocumentProperty -Document $Script:Doc -DocProperty Title -Value $Script:title
 
 			#Get the Coverpage XML part
-			$cp = $Script:Doc.CustomXMLParts | Where {$_.NamespaceURI -match "coverPageProps$"}
+			$cp = $Script:Doc.CustomXMLParts | Where-Object {$_.NamespaceURI -match "coverPageProps$"}
 
 			#get the abstract XML part
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "Abstract"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object {$_.basename -eq "Abstract"}
 			#set the text
 			If([String]::IsNullOrEmpty($Script:CoName))
 			{
@@ -1672,30 +1675,30 @@ Function UpdateDocumentProperties
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyAddress"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object {$_.basename -eq "CompanyAddress"}
 			#set the text
 			[string]$abstract = $CompanyAddress
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyEmail"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object {$_.basename -eq "CompanyEmail"}
 			#set the text
 			[string]$abstract = $CompanyEmail
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyFax"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object {$_.basename -eq "CompanyFax"}
 			#set the text
 			[string]$abstract = $CompanyFax
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyPhone"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object {$_.basename -eq "CompanyPhone"}
 			#set the text
 			[string]$abstract = $CompanyPhone
 			$ab.Text = $abstract
 
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "PublishDate"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object {$_.basename -eq "PublishDate"}
 			#set the text
 			[string]$abstract = (Get-Date -Format d).ToString()
 			$ab.Text = $abstract
@@ -2083,8 +2086,6 @@ Function AddHTMLTable
 		$htmlbody = $htmlbody + "<tr>"
 		For($columnIndex = 0; $columnIndex -lt $colCount; $columnindex+=2)
 		{
-			$fontitalics = $False
-			$fontbold = $false
 			$tmp = CheckHTMLColor $rd[$columnIndex+1]
 
 			If($fixedInfo.Length -eq 0)
@@ -2326,7 +2327,6 @@ Function FormatHTMLTable
 				}
 				Else
 				{
-					$found = $false
 					For($i=0;$i -lt $columnArray[$columnIndex].length;$i+=2)
 					{
 						If($columnArray[$columnIndex][$i] -eq " ")
@@ -2925,9 +2925,9 @@ Function validStateProp( [object] $object, [string] $topLevel, [string] $secondL
 	#function created 8-jan-2014 by Michael B. Smith
 	If( $object )
 	{
-		If((gm -Name $topLevel -InputObject $object))
+		If((Get-Member -Name $topLevel -InputObject $object))
 		{
-			If((gm -Name $secondLevel -InputObject $object.$topLevel))
+			If((Get-Member -Name $secondLevel -InputObject $object.$topLevel))
 			{
 				Return $True
 			}
@@ -2941,7 +2941,7 @@ Function validObject( [object] $object, [string] $topLevel )
 	#function created 8-jan-2014 by Michael B. Smith
 	If( $object )
 	{
-		If((gm -Name $topLevel -InputObject $object))
+		If((Get-Member -Name $topLevel -InputObject $object))
 		{
 			Return $True
 		}
@@ -3100,7 +3100,7 @@ Function SaveandCloseDocumentandShutdownWord
 					$SessionID = (Get-Process -PID $PID).SessionId
 					
 					#Find out if winword is running in our session
-					$wordprocess = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}).Id
+					$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}).Id
 					If($wordprocess -gt 0)
 					{
 						Write-Verbose "$(Get-Date): Attempting to stop WinWord process # $wordprocess"
@@ -3127,7 +3127,7 @@ Function SaveandCloseDocumentandShutdownWord
 
 	#Find out if winword is running in our session
 	$wordprocess = $Null
-	$wordprocess = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}).Id
+	$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}).Id
 	If($null -ne $wordprocess -and $wordprocess -gt 0)
 	{
 		Write-Verbose "$(Get-Date): WinWord process is still running. Attempting to stop WinWord process # $wordprocess"
@@ -3585,7 +3585,7 @@ Function OutputDNSServer
 {
 	Param([object] $ServerSettings, [object] $DNSForwarders, [object] $ServerRecursion, [object] $ServerCache, [object] $ServerScavenging, [object] $RootHints, [object] $ServerDiagnostics)
 
-	$RootHints = $RootHints | Sort $RootHints.NameServer.RecordData.NameServer
+	$RootHints = $RootHints | Sort-Object $RootHints.NameServer.RecordData.NameServer
 	
 	Write-Verbose "$(Get-Date): `t`tOutput DNS Server Settings"
 	$txt = "DNS Server Properties"
@@ -4053,7 +4053,7 @@ Function OutputDNSServer
 				}
 			}
 
-			$ip = $ip | Sort -unique
+			$ip = $ip | Sort-Object -unique
 			
 			$WordTableRowHash = @{ 
 			ServerFQDN = $RootHint.NameServer.RecordData.NameServer;
@@ -4107,7 +4107,7 @@ Function OutputDNSServer
 				}
 			}
 
-			$ip = $ip | Sort -unique
+			$ip = $ip | Sort-Object -unique
 			
 			Line 0 "Server Fully Qualified Domain Name (FQDN)`t: " $RootHint.NameServer.RecordData.NameServer
 			Line 0 "IP Address`t`t`t`t`t: " $ip
@@ -4119,7 +4119,6 @@ Function OutputDNSServer
 	{
 		WriteHTMLLine 2 0 "Root Hints"
 		$rowdata = @()
-		$tmp = ""
 		ForEach($RootHint in $RootHints)
 		{
 			$ip = $Null
@@ -4278,7 +4277,7 @@ Function ProcessForwardLookupZones
 	}
 
 	$First = $True
-	$DNSZones = $Script:DNSServerData.ServerZone | Where {$_.IsReverseLookupZone -eq $False -and ($_.ZoneType -eq "Primary" -and $_.ZoneName -ne "TrustAnchors" -or $_.ZoneType -eq "Stub" -or $_.ZoneType -eq "Secondary")}
+	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {$_.IsReverseLookupZone -eq $False -and ($_.ZoneType -eq "Primary" -and $_.ZoneName -ne "TrustAnchors" -or $_.ZoneType -eq "Stub" -or $_.ZoneType -eq "Secondary")}
 	
 	ForEach($DNSZone in $DNSZones)
 	{
@@ -5518,7 +5517,7 @@ Function ProcessLookupZoneDetails
 	Write-Verbose "$(Get-Date): `t`tProcessing details for zone $($DNSZone.ZoneName)"
 	
 #	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $ComputerName -EA 0 | `
-#	Where {!($_.hostname -like "_*" -or $_.hostname -eq "DomainDNSZones" -or $_.hostname -eq "ForestDNSZones")}	
+#	Where-Object {!($_.hostname -like "_*" -or $_.hostname -eq "DomainDNSZones" -or $_.hostname -eq "ForestDNSZones")}	
 	
 	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $ComputerName -EA 0
 
@@ -6120,7 +6119,7 @@ Function ProcessReverseLookupZones
 	}
 
 	$First = $True
-	$DNSZones = $Script:DNSServerData.ServerZone | Where {$_.IsReverseLookupZone -eq $True}
+	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {$_.IsReverseLookupZone -eq $True}
 	
 	ForEach($DNSZone in $DNSZones)
 	{
@@ -6397,7 +6396,7 @@ Function ProcessConditionalForwarders
 	}
 
 	$First = $True
-	$DNSZones = $Script:DNSServerData.ServerZone | Where {$_.ZoneType -eq "Forwarder"}
+	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {$_.ZoneType -eq "Forwarder"}
 	
 	If($? -and $Null -ne $DNSZones)
 	{
