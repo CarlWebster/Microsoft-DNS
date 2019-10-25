@@ -6,6 +6,10 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 1.11 25-Oct-2019
+#	Fixed the sorting of Root Hint servers thanks to MBS
+#	Fixed the sorting on Name Servers
+
 #Version 1.10 6-Apr-2018
 #	Code clean up from Visual Studio Code
 

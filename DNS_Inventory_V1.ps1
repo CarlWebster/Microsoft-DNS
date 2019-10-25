@@ -395,9 +395,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.10
-	AUTHOR: Carl Webster - Sr. Solutions Architect - Choice Solutions, LLC
-	LASTEDIT: April 6, 2018
+	VERSION: 1.11
+	AUTHOR: Carl Webster
+	LASTEDIT: October 25, 2019
 #>
 
 #endregion
@@ -514,34 +514,30 @@ Param(
 
 #region script change log	
 #Created by Carl Webster
-#Sr. Solutions Architect, Choice Solutions, LLC
 #webster@carlwebster.com
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 1.01 16-Aug-2016
-#	Added support for the four Record Types created by implementing DNSSEC
-#		NSec
-#		NSec3
-#		NSec3Param
-#		RRSig
+#Version 1.11 25-Oct-2019
+#	Fixed the sorting of Root Hint servers thanks to MBS
+#	Fixed the sorting on Name Servers
 #
-#Version 1.02 19-Aug-2016
-#	Fixed several misspelled words
+#Version 1.10 6-Apr-2018
+#	Code clean up from Visual Studio Code
 #
-#Version 1.03 19-Oct-2016
-#	Fixed formatting issues with HTML headings output
+#Version 1.09 2-Mar-2018
+#	Added Log switch to create a transcript log
+#	I found two "If($Var = something)" which are now "If($Var -eq something)"
+#	In the function OutputLookupZoneDetails, with the "=" changed to "-eq" fix, the hostname was now always blank. Fixed.
+#	Many Switch bocks I never added "; break" to. Those are now fixed.
+#	Update functions ShowScriptOutput and ProcessScriptEnd for new Log parameter
+#	Updated help text
+#	Updated the WriteWordLine function 
 #
-#Version 1.04 22-Oct-2016
-#	More refinement of HTML output
-#
-#Version 1.05 7-Nov-2016
-#	Added Chinese language support
-#
-#Version 1.06 13-Feb-2017
-#	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
+#Version 1.08 8-Dec-2017
+#	Updated Function WriteHTMLLine with fixes from the script template
 #
 #Version 1.07 13-Nov-2017
 #	Added Scavenge Server(s) to Zone Properties General section
@@ -558,20 +554,27 @@ Param(
 #	Updated Function UpdateDocumentProperties for the new Cover Page properties and Parameters
 #	Updated help text
 #
-#Version 1.08 8-Dec-2017
-#	Updated Function WriteHTMLLine with fixes from the script template
+#Version 1.06 13-Feb-2017
+#	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
 #
-#Version 1.09 2-Mar-2018
-#	Added Log switch to create a transcript log
-#	I found two "If($Var = something)" which are now "If($Var -eq something)"
-#	In the function OutputLookupZoneDetails, with the "=" changed to "-eq" fix, the hostname was now always blank. Fixed.
-#	Many Switch bocks I never added "; break" to. Those are now fixed.
-#	Update functions ShowScriptOutput and ProcessScriptEnd for new Log parameter
-#	Updated help text
-#	Updated the WriteWordLine function 
+#Version 1.05 7-Nov-2016
+#	Added Chinese language support
 #
-#Version 1.10 6-Apr-2018
-#	Code clean up from Visual Studio Code
+#Version 1.04 22-Oct-2016
+#	More refinement of HTML output
+#
+#Version 1.03 19-Oct-2016
+#	Fixed formatting issues with HTML headings output
+#
+#Version 1.02 19-Aug-2016
+#	Fixed several misspelled words
+#
+#Version 1.01 16-Aug-2016
+#	Added support for the four Record Types created by implementing DNSSEC
+#		NSec
+#		NSec3
+#		NSec3Param
+#		RRSig
 #
 #HTML functions contributed by Ken Avram October 2014
 #HTML Functions FormatHTMLTable and AddHTMLTable modified by Jake Rutski May 2015
@@ -1592,7 +1595,7 @@ Function SetupWord
 		$Script:Selection.InsertNewPage()
 
 		#table of contents
-		Write-Verbose "$(Get-Date): Table of Contents - $Script:MyHash.Word_TableOfContents"
+		Write-Verbose "$(Get-Date): Table of Contents - $($Script:MyHash.Word_TableOfContents)"
 		$toc = $BuildingBlocks.BuildingBlockEntries.Item($Script:MyHash.Word_TableOfContents)
 		If($Null -eq $toc)
 		{
@@ -3585,7 +3588,16 @@ Function OutputDNSServer
 {
 	Param([object] $ServerSettings, [object] $DNSForwarders, [object] $ServerRecursion, [object] $ServerCache, [object] $ServerScavenging, [object] $RootHints, [object] $ServerDiagnostics)
 
-	$RootHints = $RootHints | Sort-Object $RootHints.NameServer.RecordData.NameServer
+	#$RootHints = $RootHints | Sort-Object $RootHints.NameServer.RecordData.NameServer
+	
+	#V1.11 Thanks to MBS, Root Hint servers are now sorted
+	$RHs = $( foreach( $r in $RootHints ) {
+	[PsCustomObject]@{ 
+	NameServer = $r.ipaddress.hostname; 
+	IPAddresss = if( $r.IPAddress.RecordType -eq 'AAAA' ) { $r.IPAddress.RecordData.IPv6Address } else { $r.IPAddress.recorddata.IPv4Address } 
+	}
+		} 
+	) | Sort-Object -Property NameServer
 	
 	Write-Verbose "$(Get-Date): `t`tOutput DNS Server Settings"
 	$txt = "DNS Server Properties"
@@ -4024,44 +4036,53 @@ Function OutputDNSServer
 	#Root Hints tab
 	Write-Verbose "$(Get-Date): `t`t`tRoot Hints"
 	
+	#V1.11 Thanks to MBS, Root Hint servers are now sorted and processed more efficiently
+	
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Root Hints"
 		[System.Collections.Hashtable[]] $RootWordTable = @();
-		ForEach($RootHint in $RootHints)
+		ForEach($RH in $RHs)
 		{
-			$ip = @()
-			$nameServer = $roothint.NameServer.RecordData.NameServer
-			$ipAddresses = $roothint.IPAddress ## poorly named property, since it’s an array
+			$cnt = 0
+			$ip = $Null
+			$PrvIP = $Null
+			If($rh.NameServer -is [array])
+			{
+				$nameServer = $rh.NameServer[0]
+			}
+			Else
+			{
+				$nameServer = $rh.NameServer
+			}
+			$ipAddresses = $rh.IPAddresss
 			ForEach( $ipAddress in $ipAddresses )
 			{
-				$data = $ipAddress.RecordData
-				$address = Get-Member -Name IPv4Address -InputObject $data
-				If( $Null -eq $address )
+				$cnt++
+				$ip = $IPAddress.IPAddressToString
+				
+				If($PrvIP -ne $ip)
 				{
-					$address = Get-Member -Name IPv6Address -InputObject $data
-					If( $Null -eq $address )
+					If($cnt -eq 1)
 					{
-						#Write-Error “Bad IPAddress”
-						Continue
+						$WordTableRowHash = @{ 
+						ServerFQDN = $NameServer;
+						IPAddress = $ip;
+						}
 					}
-					$ip += "$($data.IPv6Address.IPAddressToString)`r"
+					Else
+					{
+						$WordTableRowHash = @{ 
+						ServerFQDN = "";
+						IPAddress = $ip;
+						}
+					}
 				}
-				Else
-				{
-					$ip += "$($data.IPv4Address.IPAddressToString)`r"
-				}
+				$RootWordTable += $WordTableRowHash;
+				$PrvIP = $ip
 			}
-
-			$ip = $ip | Sort-Object -unique
-			
-			$WordTableRowHash = @{ 
-			ServerFQDN = $RootHint.NameServer.RecordData.NameServer;
-			IPAddress = $ip;
-			}
-
-			$RootWordTable += $WordTableRowHash;
 		}
+
 		$Table = AddWordTable -Hashtable $RootWordTable `
 		-Columns ServerFQDN, IPAddress `
 		-Headers "Server Fully Qualified Domain Name (FQDN)", "IP Address" `
@@ -4082,36 +4103,44 @@ Function OutputDNSServer
 	ElseIf($Text)
 	{
 		Line 0 "Root Hints"
-		ForEach($RootHint in $RootHints)
+		Line 0 "Server Fully Qualified Domain Name  IP Address"
+		Line 0 "-------------------------------------------------------"
+		#       a.root-servers.net.                 255.255.255.255
+		#                                           2001:503:ba3e::2:30
+													
+		ForEach($RH in $RHs)
 		{
-			$ip = @()
-			$nameServer = $roothint.NameServer.RecordData.NameServer
-			$ipAddresses = $roothint.IPAddress ## poorly named property, since it’s an array
+			$cnt = 0
+			$ip = $Null
+			$PrvIP = $Null
+			If($rh.NameServer -is [array])
+			{
+				$nameServer = $rh.NameServer[0]
+			}
+			Else
+			{
+				$nameServer = $rh.NameServer
+			}
+			$ipAddresses = $rh.IPAddresss
 			ForEach( $ipAddress in $ipAddresses )
 			{
-				$data = $ipAddress.RecordData
-				$address = Get-Member -Name IPv4Address -InputObject $data
-				If( $Null -eq $address )
+				$cnt++
+				$ip = $IPAddress.IPAddressToString
+				
+				If($PrvIP -ne $ip)
 				{
-					$address = Get-Member -Name IPv6Address -InputObject $data
-					If( $Null -eq $address )
+					If($cnt -eq 1)
 					{
-						#Write-Error “Bad IPAddress”
-						Continue
+						Line 0 "" $NameServer -NoNewLine
+						Line 0 "`t`t    " $ip
 					}
-					$ip += $data.IPv6Address.IPAddressToString
+					Else
+					{
+						Line 4 "    " $ip
+					}
 				}
-				Else
-				{
-					$ip += $data.IPv4Address.IPAddressToString
-				}
+				$PrvIP = $ip
 			}
-
-			$ip = $ip | Sort-Object -unique
-			
-			Line 0 "Server Fully Qualified Domain Name (FQDN)`t: " $RootHint.NameServer.RecordData.NameServer
-			Line 0 "IP Address`t`t`t`t`t: " $ip
-			Line 0 ""
 		}
 		Line 0 ""
 	}
@@ -4119,39 +4148,31 @@ Function OutputDNSServer
 	{
 		WriteHTMLLine 2 0 "Root Hints"
 		$rowdata = @()
-		ForEach($RootHint in $RootHints)
+		ForEach($RH in $RHs)
 		{
+			$cnt = 0
 			$ip = $Null
 			$PrvIP = $Null
-			$cnt = 0
-			$nameServer = $roothint.NameServer.RecordData.NameServer
-			$ipAddresses = $roothint.IPAddress ## poorly named property, since it’s an array
+			If($rh.NameServer -is [array])
+			{
+				$nameServer = $rh.NameServer[0]
+			}
+			Else
+			{
+				$nameServer = $rh.NameServer
+			}
+			$ipAddresses = $rh.IPAddresss
 			ForEach( $ipAddress in $ipAddresses )
 			{
 				$cnt++
-				$data = $ipAddress.RecordData
-				$address = Get-Member -Name IPv4Address -InputObject $data
-				If( $Null -eq $address )
-				{
-					$address = Get-Member -Name IPv6Address -InputObject $data
-					If( $Null -eq $address )
-					{
-						#Write-Error “Bad IPAddress”
-						Continue
-					}
-					$ip = $data.IPv6Address.IPAddressToString
-				}
-				Else
-				{
-					$ip = $data.IPv4Address.IPAddressToString
-				}
+				$ip = $IPAddress.IPAddressToString
 				
 				If($PrvIP -ne $ip)
 				{
 					If($cnt -eq 1)
 					{
 						$rowdata += @(,(
-						$RootHint.NameServer.RecordData.NameServer,$htmlwhite,
+						$NameServer,$htmlwhite,
 						$ip,$htmlwhite))
 					}
 					Else
@@ -4163,7 +4184,6 @@ Function OutputDNSServer
 				}
 				$PrvIP = $ip
 			}
-
 		}
 		$columnHeaders = @(
 		'Server Fully Qualified Domain Name (FQDN)',($htmlsilver -bor $htmlbold),
@@ -4745,13 +4765,19 @@ Function OutputLookupZone
 
 	If($? -and $Null -ne $NameServers)
 	{
+	
+		#Sort name servers added in V1.11
+		$NameServers = $NameServers.RecordData.NameServer
+		$NameServers = $NameServers | Sort-Object
+		
 		If($MSWord -or $PDF)
 		{
 			WriteWordLine 3 0 "Name Servers"
 			[System.Collections.Hashtable[]] $NSWordTable = @();
 			ForEach($NS in $NameServers)
 			{
-				$ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
 				
 				If($ipAddress -is [array])
 				{
@@ -4764,14 +4790,14 @@ Function OutputLookupZone
 						If($cnt -eq 0)
 						{
 							$WordTableRowHash = @{ 
-							ServerFQDN = $NS.RecordData.NameServer;
+							ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
 							IPAddress = $ip;
 							}
 						}
 						Else
 						{
 							$WordTableRowHash = @{ 
-							ServerFQDN = $NS.RecordData.NameServer;
+							ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
 							IPAddress = $ip;
 							}
 						}
@@ -4780,7 +4806,7 @@ Function OutputLookupZone
 				Else
 				{
 					$WordTableRowHash = @{ 
-					ServerFQDN = $NS.RecordData.NameServer;
+					ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
 					IPAddress = $ipAddress;
 					}
 				}
@@ -4809,9 +4835,10 @@ Function OutputLookupZone
 			Line 1 "Name Servers:"
 			ForEach($NS in $NameServers)
 			{
-				$ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
 				
-				Line 2 "Server FQDN`t`t`t: " $NS.RecordData.NameServer
+				Line 2 "Server FQDN`t`t`t: " $NS	#removed in V1.11 .RecordData.NameServer;
 				If($ipAddress -is [array])
 				{
 					$cnt = -1
@@ -4843,7 +4870,8 @@ Function OutputLookupZone
 			$rowdata = @()
 			ForEach($NS in $NameServers)
 			{
-				$ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
 				
 				If($ipAddress -is [array])
 				{
@@ -4856,13 +4884,13 @@ Function OutputLookupZone
 						If($cnt -eq 0)
 						{
 							$rowdata += @(,(
-							$NS.RecordData.NameServer,$htmlwhite,
+							$NS,$htmlwhite,	#removed in V1.11 .RecordData.NameServer;
 							$ip,$htmlwhite))
 						}
 						Else
 						{
 							$rowdata += @(,(
-							$NS.RecordData.NameServer,$htmlwhite,
+							$NS,$htmlwhite,	#removed in V1.11 .RecordData.NameServer;
 							$ip,$htmlwhite))
 						}
 					}
@@ -4870,7 +4898,7 @@ Function OutputLookupZone
 				Else
 				{
 					$rowdata += @(,(
-					$NS.RecordData.NameServer,$htmlwhite,
+					$NS,$htmlwhite,	#removed in V1.11 .RecordData.NameServer;
 					$ipAddress,$htmlwhite))
 				}
 			}
