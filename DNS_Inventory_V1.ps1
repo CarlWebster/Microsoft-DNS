@@ -395,9 +395,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.11
-	AUTHOR: Carl Webster
-	LASTEDIT: October 25, 2019
+	VERSION: 1.12
+	AUTHOR: Carl Webster and Michael B. Smith
+	LASTEDIT: December 5, 2019
 #>
 
 #endregion
@@ -520,6 +520,13 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
+#Version 1.12 
+#	Fixed text string "Use root hint if no forwarders are available" to "Use root hints if no forwarders are available"
+#	Fixed spacing error in Text output for "Use root hints if no forwarders are available"
+#	For Name Servers, if the IP Address is Null or Empty, use "Unable to retrieve an IP Address"
+#		For Word/PDF and HTML output put the invalid Name Server and "Unable to retrieve an IP Address" in Red
+#		For Text output use "***Unable to retrieve an IP Address***"
+#
 #Version 1.11 25-Oct-2019
 #	Fixed the sorting of Root Hint servers thanks to MBS
 #	Fixed the sorting on Name Servers
@@ -2923,6 +2930,15 @@ Function SetWordTableAlternateRowColor
 #endregion
 
 #region general script functions
+Function Banner
+{
+	Write-Host "                                                                                    " -BackgroundColor Black -ForegroundColor White
+	Write-Host "               This FREE script was brought to you by Conversant Group              " -BackgroundColor Black -ForegroundColor White
+	Write-Host "We design, build, and manage infrastructure for a secure, dependable user experience" -BackgroundColor Black -ForegroundColor White
+	Write-Host "                       Visit our website conversantgroup.com                        " -BackgroundColor Black -ForegroundColor White
+	Write-Host "                                                                                    " -BackgroundColor Black -ForegroundColor White
+}
+
 Function validStateProp( [object] $object, [string] $topLevel, [string] $secondLevel )
 {
 	#function created 8-jan-2014 by Michael B. Smith
@@ -3480,6 +3496,8 @@ Function ProcessScriptEnd
 	$runtime = $Null
 	$Str = $Null
 	$ErrorActionPreference = $SaveEAPreference
+	
+	Banner
 }
 #endregion
 
@@ -3753,7 +3771,7 @@ Function OutputDNSServer
 
 		[System.Collections.Hashtable[]] $ScriptInformation = @()
 		$ScriptInformation += @{ Data = "Number of seconds before forward queries time out"; Value = $DNSForwarders.Timeout; }
-		$ScriptInformation += @{ Data = "Use root hint if no forwarders are available"; Value = $UseRootHints; }
+		$ScriptInformation += @{ Data = "Use root hints if no forwarders are available"; Value = $UseRootHints; }
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -3783,7 +3801,7 @@ Function OutputDNSServer
 		}
 		Line 0 ""
 		Line 0 "Number of seconds before forward queries time out: " $DNSForwarders.Timeout
-		Line 0 "Use root hint if no forwarders are available: " $UseRootHints
+		Line 0 "Use root hints if no forwarders are available`t : " $UseRootHints
 		Line 0 ""
 	}
 	ElseIf($HTML)
@@ -3808,7 +3826,7 @@ Function OutputDNSServer
 		
 		$rowdata = @()
 		$columnHeaders = @("Number of seconds before forward queries time out",($htmlsilver -bor $htmlbold),$DNSForwarders.Timeout.ToString(),$htmlwhite)
-		$rowdata += @(,('Use root hint if no forwarders are available',($htmlsilver -bor $htmlbold),$UseRootHints,$htmlwhite))
+		$rowdata += @(,('Use root hints if no forwarders are available',($htmlsilver -bor $htmlbold),$UseRootHints,$htmlwhite))
 
 		$msg = ""
 		$columnWidths = @("200","150")
@@ -4773,42 +4791,80 @@ Function OutputLookupZone
 		If($MSWord -or $PDF)
 		{
 			WriteWordLine 3 0 "Name Servers"
-			[System.Collections.Hashtable[]] $NSWordTable = @();
+			###[System.Collections.Hashtable[]] $NSWordTable = @();
+			$NSWordTable = New-Object System.Collections.ArrayList
+			## Create an array of hashtables to store references of cells that we wish to highlight after the table has been added
+			$HighlightedCells = New-Object System.Collections.ArrayList
+			## Seed the $Services row index from the second row
+			[int] $CurrentServiceIndex = 2;
 			ForEach($NS in $NameServers)
 			{
 				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
 				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
 				
-				If($ipAddress -is [array])
+				If($?)
 				{
-					$cnt = -1
-					
-					ForEach($ip in $ipAddress)
+					If($ipAddress -is [array])
 					{
-						$cnt++
+						$cnt = -1
 						
-						If($cnt -eq 0)
+						ForEach($ip in $ipAddress)
 						{
-							$WordTableRowHash = @{ 
-							ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
-							IPAddress = $ip;
+							$cnt++
+							
+							If([String]::IsNullOrEmpty($ip))	#added in V1.12
+							{
+								$ip = "Unable to retrieve an IP Address"
+								$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
+								$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
 							}
+							$CurrentServiceIndex++;
+							
+							If($cnt -eq 0)
+							{
+								$WordTableRowHash = @{ 
+								ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
+								IPAddress = $ip;
+								}
+							}
+							Else
+							{
+								$WordTableRowHash = @{ 
+								ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
+								IPAddress = $ip;
+								}
+							}
+							## Add the hash to the array
+							$NSWordTable.Add($WordTableRowHash) > $Null
 						}
-						Else
+					}
+					Else
+					{
+						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
 						{
-							$WordTableRowHash = @{ 
-							ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
-							IPAddress = $ip;
-							}
+							$ipAddress = "Unable to retrieve an IP Address"
+							$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
+							$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
+						}
+						$CurrentServiceIndex++;
+							
+						$WordTableRowHash = @{ 
+						ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
+						IPAddress = $ipAddress;
 						}
 					}
 				}
-				Else
+				ElseIf(-not $?)
 				{
+					$ipAddress = "Unable to retrieve an IP Address"
+					$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
+					$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
+					$CurrentServiceIndex++;
+						
 					$WordTableRowHash = @{ 
 					ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
 					IPAddress = $ipAddress;
-					}
+						}
 				}
 
 				$NSWordTable += $WordTableRowHash;
@@ -4821,6 +4877,9 @@ Function OutputLookupZone
 
 			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
+			## IB - Set the required highlighted cells
+			SetWordCellFormat -Coordinates $HighlightedCells -Table $Table -Bold -BackgroundColor $wdColorRed -Solid;
+			
 			$Table.Columns.Item(1).Width = 200;
 			$Table.Columns.Item(2).Width = 200;
 			
@@ -4839,26 +4898,46 @@ Function OutputLookupZone
 				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
 				
 				Line 2 "Server FQDN`t`t`t: " $NS	#removed in V1.11 .RecordData.NameServer;
-				If($ipAddress -is [array])
+				
+				If($?)
 				{
-					$cnt = -1
-					
-					ForEach($ip in $ipAddress)
+					If($ipAddress -is [array])
 					{
-						$cnt++
+						$cnt = -1
 						
-						If($cnt -eq 0)
+						ForEach($ip in $ipAddress)
 						{
-							Line 2 "IP Address`t`t`t: " $ip
-						}
-						Else
-						{
-							Line 6 "  " $ip
+							$cnt++
+							
+							If([String]::IsNullOrEmpty($ip))	#added in V1.12
+							{
+								$ip = "***Unable to retrieve an IP Address***"
+							}
+
+							If($cnt -eq 0)
+							{
+								Line 2 "IP Address`t`t`t: " $ip
+							}
+							Else
+							{
+								Line 6 "  " $ip
+							}
 						}
 					}
+					Else
+					{
+						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
+						{
+							$ipAddress = "***Unable to retrieve an IP Address***"
+						}
+
+						Line 2 "IP Address`t`t`t: " $ipAddress
+					}
 				}
-				Else
+				ElseIf(-not $?)
 				{
+					$ipAddress = "***Unable to retrieve an IP Address***"
+
 					Line 2 "IP Address`t`t`t: " $ipAddress
 				}
 				Line 0 ""
@@ -4873,33 +4952,65 @@ Function OutputLookupZone
 				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
 				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
 				
-				If($ipAddress -is [array])
+				If($?)
 				{
-					$cnt = -1
-					
-					ForEach($ip in $ipAddress)
+					If($ipAddress -is [array])
 					{
-						$cnt++
+						$cnt = -1
 						
-						If($cnt -eq 0)
+						ForEach($ip in $ipAddress)
 						{
-							$rowdata += @(,(
-							$NS,$htmlwhite,	#removed in V1.11 .RecordData.NameServer;
-							$ip,$htmlwhite))
+							$cnt++
+							
+							If([String]::IsNullOrEmpty($ip))	#added in V1.12
+							{
+								$ip = "Unable to retrieve an IP Address"
+								$HighlightedCells = $htmlred
+							}
+							Else
+							{
+								$HighlightedCells = $htmlwhite
+							}
+
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,(
+								$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+								$ip,$HighlightedCells))
+							}
+							Else
+							{
+								$rowdata += @(,(
+								$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+								$ip,$HighlightedCells))
+							}
+						}
+					}
+					Else
+					{
+						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
+						{
+							$ipAddress = "Unable to retrieve an IP Address"
+							$HighlightedCells = $htmlred
 						}
 						Else
 						{
-							$rowdata += @(,(
-							$NS,$htmlwhite,	#removed in V1.11 .RecordData.NameServer;
-							$ip,$htmlwhite))
+							$HighlightedCells = $htmlwhite
 						}
+
+						$rowdata += @(,(
+						$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+						$ipAddress,$HighlightedCells))
 					}
 				}
-				Else
+				ElseIf(-not $?)
 				{
+					$ipAddress = "Unable to retrieve an IP Address"
+					$HighlightedCells = $htmlred
+
 					$rowdata += @(,(
-					$NS,$htmlwhite,	#removed in V1.11 .RecordData.NameServer;
-					$ipAddress,$htmlwhite))
+					$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+					$ipAddress,$HighlightedCells))
 				}
 			}
 			$columnHeaders = @(
