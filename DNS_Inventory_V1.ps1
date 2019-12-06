@@ -10,7 +10,9 @@
 .DESCRIPTION
 	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text or HTML.
 	Creates a document named DNS.docx (or .PDF or .TXT or .HTML).
+	
 	Word and PDF documents include a Cover Page, Table of Contents and Footer.
+	
 	Includes support for the following language versions of Microsoft Word:
 		Catalan
 		Chinese
@@ -39,6 +41,27 @@
 	Remote Server Administration Tools for Windows 10
 		http://www.microsoft.com/en-us/download/details.aspx?id=45520
 		
+.PARAMETER HTML
+	Creates an HTML file with an .html extension.
+	This parameter is disabled by default.
+.PARAMETER MSWord
+	SaveAs DOCX file
+	This parameter is set True if no other output format is selected.
+.PARAMETER PDF
+	SaveAs PDF file instead of DOCX file.
+	This parameter is disabled by default.
+	The PDF file is roughly 5X to 10X larger than the DOCX file.
+	This parameter requires Microsoft Word to be installed.
+	This parameter uses the Word SaveAs PDF capability.
+.PARAMETER Text
+	Creates a formatted text file with a .txt extension.
+	This parameter is disabled by default.
+.PARAMETER AddDateTime
+	Adds a date time stamp to the end of the file name.
+	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	June 1, 2020 at 6PM is 2020-06-01_1800.
+	Output filename will be DomainName_DNS_2020-06-01_1800.docx (or .pdf).
+	This parameter is disabled by default.
 .PARAMETER CompanyAddress
 	Company Address to use for the Cover Page, if the Cover Page has the Address field.
 	
@@ -90,6 +113,13 @@
 	
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CPh.
+.PARAMETER ComputerName
+	Specifies a computer to use to run the script against.
+	ComputerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
+	If entered as localhost, the actual computer name is determined and used.
+	If entered as an IP address, an attempt is made to determine and use the actual 
+	computer name.
+	Default is localhost.
 .PARAMETER CoverPage
 	What Microsoft Word Cover Page to use.
 	Only Word 2010, 2013 and 2016 are supported.
@@ -138,41 +168,35 @@
 	Default value is Sideline.
 	This parameter has an alias of CP.
 	This parameter is only valid with the MSWORD and PDF output parameters.
+.PARAMETER Details
+	Include Resource Record data for both Forward and Reverse lookup zones.
+	
+	Using this parameter can create an extremely large report.
+	
+	Default is to not include Resource Record information.
+.PARAMETER Dev
+	Clears errors at the beginning of the script.
+	Outputs all errors to a text file at the end of the script.
+	
+	This is used when the script developer requests more troubleshooting data.
+	Text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+.PARAMETER Folder
+	Specifies the optional output folder to save the output report. 
+.PARAMETER Log
+	Generates a log file for troubleshooting.
+.PARAMETER ScriptInfo
+	Outputs information about the script to a text file.
+	Text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of SI.
 .PARAMETER UserName
 	User name to use for the Cover Page and Footer.
 	Default value is contained in $env:username
 	This parameter has an alias of UN.
 	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER HTML
-	Creates an HTML file with an .html extension.
-	This parameter is disabled by default.
-.PARAMETER MSWord
-	SaveAs DOCX file
-	This parameter is set True if no other output format is selected.
-.PARAMETER PDF
-	SaveAs PDF file instead of DOCX file.
-	This parameter is disabled by default.
-	The PDF file is roughly 5X to 10X larger than the DOCX file.
-	This parameter requires Microsoft Word to be installed.
-	This parameter uses the Word SaveAs PDF capability.
-.PARAMETER Text
-	Creates a formatted text file with a .txt extension.
-	This parameter is disabled by default.
-.PARAMETER AddDateTime
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2018 at 6PM is 2018-06-01_1800.
-	Output filename will be DomainName_DNS_2018-06-01_1800.docx (or .pdf).
-	This parameter is disabled by default.
-.PARAMETER ComputerName
-	Specifies a computer to use to run the script against.
-	ComputerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
-	If entered as localhost, the actual computer name is determined and used.
-	If entered as an IP address, an attempt is made to determine and use the actual 
-	computer name.
-	Default is localhost.
-.PARAMETER Folder
-	Specifies the optional output folder to save the output report. 
 .PARAMETER SmtpServer
 	Specifies the optional email server to send the output report. 
 .PARAMETER SmtpPort
@@ -187,25 +211,6 @@
 .PARAMETER To
 	Specifies the username for the To email address.
 	If SmtpServer is used, this is a required parameter.
-.PARAMETER Dev
-	Clears errors at the beginning of the script.
-	Outputs all errors to a text file at the end of the script.
-	
-	This is used when the script developer requests more troubleshooting data.
-	Text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-.PARAMETER ScriptInfo
-	Outputs information about the script to a text file.
-	Text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of SI.
-.PARAMETER Details
-	Include Resource Record data for both Forward and Reverse lookup zones.
-	Default is to not include Resource Record information.
-.PARAMETER Log
-	Generates a log file for troubleshooting.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1
 	
@@ -302,8 +307,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2018 at 6PM is 2018-07-25_1800.
-	Output filename will be DomainName_DNS_2018-07-25_1800.docx
+	July 25, 2020 at 6PM is 2020-07-25_1800.
+	Output filename will be DomainName_DNS_2020-07-25_1800.docx
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -PDF -AddDateTime
 	
@@ -319,8 +324,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2018 at 6PM is 2018-07-25_1800.
-	Output filename will be DomainName_DNS_2018-07-25_1800.PDF
+	July 25, 2020 at 6PM is 2020-07-25_1800.
+	Output filename will be DomainName_DNS_2020-07-25_1800.PDF
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -Folder \\FileServer\ShareName
 	
@@ -397,7 +402,7 @@
 	NAME: DNS_Inventory.ps1
 	VERSION: 1.12
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: December 5, 2019
+	LASTEDIT: December 6, 2019
 #>
 
 #endregion
@@ -407,6 +412,25 @@
 [CmdletBinding(SupportsShouldProcess = $False, ConfirmImpact = "None", DefaultParameterSetName = "Word") ]
 
 Param(
+	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$HTML=$False,
+
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$MSWord=$False,
+
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$PDF=$False,
+
+	[parameter(ParameterSetName="Text",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$Text=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Switch]$AddDateTime=$False,
+	
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
 	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
@@ -442,6 +466,9 @@ Param(
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyPhone="",
     
+	[parameter(Mandatory=$False)] 
+	[string]$ComputerName="LocalHost",
+
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
 	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
@@ -449,6 +476,22 @@ Param(
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
 
+	[parameter(Mandatory=$False)] 
+	[Switch]$Details=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Dev=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[string]$Folder="",
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Log=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("SI")]
+	[Switch]$ScriptInfo=$False,
+	
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
 	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
@@ -456,31 +499,6 @@ Param(
 	[ValidateNotNullOrEmpty()]
 	[string]$UserName=$env:username,
 
-	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$HTML=$False,
-
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$MSWord=$False,
-
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$PDF=$False,
-
-	[parameter(ParameterSetName="Text",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$Text=$False,
-
-	[parameter(Mandatory=$False)] 
-	[Switch]$AddDateTime=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[string]$ComputerName="LocalHost",
-
-	[parameter(Mandatory=$False)] 
-	[string]$Folder="",
-	
 	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
 	[string]$SmtpServer="",
 
@@ -494,38 +512,27 @@ Param(
 	[string]$From="",
 
 	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
-	[string]$To="",
+	[string]$To=""
 
-	[parameter(Mandatory=$False)] 
-	[Switch]$Dev=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("SI")]
-	[Switch]$ScriptInfo=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Details=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Log=$False
-	
 	)
 #endregion
 
 #region script change log	
-#Created by Carl Webster
+#Created by Carl Webster and Michael B. Smith
 #webster@carlwebster.com
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 1.12 
+#Version 1.12 6-Dec-2019
 #	Fixed text string "Use root hint if no forwarders are available" to "Use root hints if no forwarders are available"
 #	Fixed spacing error in Text output for "Use root hints if no forwarders are available"
 #	For Name Servers, if the IP Address is Null or Empty, use "Unable to retrieve an IP Address"
 #		For Word/PDF and HTML output put the invalid Name Server and "Unable to retrieve an IP Address" in Red
 #		For Text output use "***Unable to retrieve an IP Address***"
+#	Reorder parameters
+#	Update help text
 #
 #Version 1.11 25-Oct-2019
 #	Fixed the sorting of Root Hint servers thanks to MBS

@@ -11,6 +11,8 @@
 #	For Name Servers, if the IP Address is Null or Empty, use "Unable to retrieve an IP Address"
 #		For Word/PDF and HTML output put the invalid Name Server and "Unable to retrieve an IP Address" in Red
 #		For Text output use "***Unable to retrieve an IP Address***"
+#	Reorder parameters
+#	Update help text
 
 #Version 1.11 25-Oct-2019
 #	Fixed the sorting of Root Hint servers thanks to MBS
