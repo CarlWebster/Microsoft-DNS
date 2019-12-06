@@ -1,10 +1,18 @@
 #region script change log	
-#Created by Carl Webster
-#Sr. Solutions Architect, Choice Solutions, LLC
+#Created by Carl Webster and Michael B. Smith
 #webster@carlwebster.com
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 #Created on February 10, 2016
+
+#Version 1.12 6-Dec-2019
+#	Fixed text string "Use root hint if no forwarders are available" to "Use root hints if no forwarders are available"
+#	Fixed spacing error in Text output for "Use root hints if no forwarders are available"
+#	For Name Servers, if the IP Address is Null or Empty, use "Unable to retrieve an IP Address"
+#		For Word/PDF and HTML output put the invalid Name Server and "Unable to retrieve an IP Address" in Red
+#		For Text output use "***Unable to retrieve an IP Address***"
+#	Reorder parameters
+#	Update help text
 
 #Version 1.11 25-Oct-2019
 #	Fixed the sorting of Root Hint servers thanks to MBS
