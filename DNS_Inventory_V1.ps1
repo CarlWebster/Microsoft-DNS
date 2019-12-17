@@ -400,9 +400,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.12
+	VERSION: 1.13
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: December 6, 2019
+	LASTEDIT: December 17, 2019
 #>
 
 #endregion
@@ -525,6 +525,14 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
+#Version 1.13 17-Dec-2019
+#	Fix Swedish Table of Contents (Thanks to Johan Kallio)
+#		From 
+#			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+#		To
+#			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
+#	Updated help text
+#
 #Version 1.12 6-Dec-2019
 #	Fixed text string "Use root hint if no forwarders are available" to "Use root hints if no forwarders are available"
 #	Fixed spacing error in Text output for "Use root hints if no forwarders are available"
@@ -881,7 +889,8 @@ Function SetWordHashTable
 			'nb-'	{ 'Automatisk tabell 2'; Break }
 			'nl-'	{ 'Automatische inhoudsopgave 2'; Break }
 			'pt-'	{ 'Sumário Automático 2'; Break }
-			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+			# fix in 1.13 thanks to Johan Kallio 'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
 			'zh-'	{ '自动目录 2'; Break }
 		}
 	)
