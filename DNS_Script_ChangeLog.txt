@@ -5,6 +5,31 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 1.20 13-Feb-2020
+#	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
+#		Added text file (BadDNSServers_yyyy-MM-dd_HHmm.txt) of the AD DNS servers that 
+#		are either offline or no longer have DNS installed
+#	Added a new Function TestComputerName2 to support the -AllDNSServers parameter
+#	Added the DNS server name to the section title for the DNS server
+#	Fix Swedish Table of Contents (Thanks to Johan Kallio)
+#		From 
+#			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+#		To
+#			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
+#	General code cleanup
+#	The following functions were updated to support the -AllDNSServers parameter:
+#		ProcessDNSServer
+#		OutputDNSServer
+#		ProcessForwardLookupZones
+#		OutputLookupZone
+#		ProcessLookupZoneDetails
+#		ProcessTrustPoints
+#		ShowScriptOptions
+#		ProcessScriptStart
+#		ProcessScriptEnd
+#	Updated Function CheckWordPrereq to match the other scripts
+#	Updated the help text
+
 #Version 1.12 6-Dec-2019
 #	Fixed text string "Use root hint if no forwarders are available" to "Use root hints if no forwarders are available"
 #	Fixed spacing error in Text output for "Use root hints if no forwarders are available"

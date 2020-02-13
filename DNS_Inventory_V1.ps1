@@ -62,6 +62,13 @@
 	June 1, 2020 at 6PM is 2020-06-01_1800.
 	Output filename will be DomainName_DNS_2020-06-01_1800.docx (or .pdf).
 	This parameter is disabled by default.
+.PARAMETER AllDNSServers
+	The script will process all AD DNS servers that are online.
+	"All AD DNS Servers" is used for the report title.
+	This parameter is disabled by default.
+	
+	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
+	This parameter has an alias of ALL.
 .PARAMETER CompanyAddress
 	Company Address to use for the Cover Page, if the Cover Page has the Address field.
 	
@@ -119,7 +126,10 @@
 	If entered as localhost, the actual computer name is determined and used.
 	If entered as an IP address, an attempt is made to determine and use the actual 
 	computer name.
+	
 	Default is localhost.
+	
+	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
 .PARAMETER CoverPage
 	What Microsoft Word Cover Page to use.
 	Only Word 2010, 2013 and 2016 are supported.
@@ -393,6 +403,36 @@
 	Administrator for the User Name.
 	
 	Includes details for all Resource Records for both Forward and Reverse lookup zones.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory.ps1 -AllDNSServers
+	
+	Will use all Default values.
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
+	$env:username = Administrator
+
+	Carl Webster for the Company Name.
+	Sideline for the Cover Page format.
+	Administrator for the User Name.
+	
+	The script will find all AD DNS servers and will process all servers that are 
+	online.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory.ps1 -ComputerName DNSServer01 -AllDNSServers
+	
+	Will use all Default values.
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
+	Webster" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
+	$env:username = Administrator
+
+	Carl Webster for the Company Name.
+	Sideline for the Cover Page format.
+	Administrator for the User Name.
+	
+	Even though DNSServer01 is specified, the script will find all AD DNS servers 
+	and will process all servers that are online.
 .INPUTS
 	None.  You cannot pipe objects to this script.
 .OUTPUTS
@@ -400,9 +440,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.12
+	VERSION: 1.20
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: December 6, 2019
+	LASTEDIT: February 13, 2020
 #>
 
 #endregion
@@ -430,6 +470,10 @@ Param(
 
 	[parameter(Mandatory=$False)] 
 	[Switch]$AddDateTime=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("ALL")]
+	[Switch]$AllDNSServers=$False,
 	
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
@@ -525,6 +569,31 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
+#Version 1.20 13-Feb-2020
+#	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
+#		Added text file (BadDNSServers_yyyy-MM-dd_HHmm.txt) of the AD DNS servers that 
+#		are either offline or no longer have DNS installed
+#	Added a new Function TestComputerName2 to support the -AllDNSServers parameter
+#	Added the DNS server name to the section title for the DNS server
+#	Fix Swedish Table of Contents (Thanks to Johan Kallio)
+#		From 
+#			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+#		To
+#			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
+#	General code cleanup
+#	The following functions were updated to support the -AllDNSServers parameter:
+#		ProcessDNSServer
+#		OutputDNSServer
+#		ProcessForwardLookupZones
+#		OutputLookupZone
+#		ProcessLookupZoneDetails
+#		ProcessTrustPoints
+#		ShowScriptOptions
+#		ProcessScriptStart
+#		ProcessScriptEnd
+#	Updated Function CheckWordPrereq to match the other scripts
+#	Updated the help text
+#
 #Version 1.12 6-Dec-2019
 #	Fixed text string "Use root hint if no forwarders are available" to "Use root hints if no forwarders are available"
 #	Fixed spacing error in Text output for "Use root hints if no forwarders are available"
@@ -881,7 +950,8 @@ Function SetWordHashTable
 			'nb-'	{ 'Automatisk tabell 2'; Break }
 			'nl-'	{ 'Automatische inhoudsopgave 2'; Break }
 			'pt-'	{ 'Sumário Automático 2'; Break }
-			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+			# fix in 1.20 thanks to Johan Kallio 'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
 			'zh-'	{ '自动目录 2'; Break }
 		}
 	)
@@ -1232,7 +1302,8 @@ Function CheckWordPrereq
 	$SessionID = (Get-Process -PID $PID).SessionId
 	
 	#Find out if winword is running in our session
-	[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) -ne $Null
+	#[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0)|Where-Object {$_.SessionId -eq $SessionID}) -ne $Null
+	[bool]$wordrunning = $null -ne ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID})	
 	If($wordrunning)
 	{
 		$ErrorActionPreference = $SaveEAPreference
@@ -2980,6 +3051,7 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): Add DateTime    : $AddDateTime"
+	Write-Verbose "$(Get-Date): All DNS Servers : $AllDNSServers"
 	If($MSWORD -or $PDF)
 	{
 		Write-Verbose "$(Get-Date): Company Name    : $Script:CoName"
@@ -3292,7 +3364,6 @@ Function TestComputerName
 		#the computer is a dns server
 		Write-Verbose "$(Get-Date): Computer $CName is a DNS Server"
 		Write-Verbose "$(Get-Date): "
-		$Script:DNSServerData = $Results
 		Return $CName
 	}
 	ElseIf($Null -eq $Results)
@@ -3304,6 +3375,107 @@ Function TestComputerName
 		Exit
 	}
 
+	Return $CName
+}
+
+Function TestComputerName2
+{
+	Param([string]$Cname)
+	
+	If(![String]::IsNullOrEmpty($CName)) 
+	{
+		#get computer name
+		#first test to make sure the computer is reachable
+		Write-Verbose "$(Get-Date): Testing to see if $($CName) is online and reachable"
+		If(Test-Connection -ComputerName $CName -quiet)
+		{
+			Write-Verbose "$(Get-Date): Server $($CName) is online."
+		}
+		Else
+		{
+			Write-Verbose "$(Get-Date): Computer $($CName) is offline"
+			Write-Output "$(Get-Date): Computer $($CName) is offline" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Return "BAD"
+		}
+	}
+
+	#if computer name is localhost, get actual computer name
+	If($CName -eq "localhost")
+	{
+		$CName = $env:ComputerName
+		Write-Verbose "$(Get-Date): Computer name has been changed from localhost to $($CName)"
+		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
+		$results = Get-DNSServer -ComputerName $CName -EA 0
+		If($? -and $Null -ne $results)
+		{
+			#the computer is a dns server
+			Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+			Return $CName
+		}
+		ElseIf(!$? -or $Null -eq $results)
+		{
+			#the computer is not a dns server
+			Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
+			Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Return "BAD"
+		}
+	}
+
+	#if computer name is an IP address, get host name from DNS
+	#http://blogs.technet.com/b/gary/archive/2009/08/29/resolve-ip-addresses-to-hostname-using-powershell.aspx
+	#help from Michael B. Smith
+	$ip = $CName -as [System.Net.IpAddress]
+	If($ip)
+	{
+		$Result = [System.Net.Dns]::gethostentry($ip)
+		
+		If($? -and $Null -ne $Result)
+		{
+			$CName = $Result.HostName
+			Write-Verbose "$(Get-Date): Computer name has been changed from $($ip) to $($CName)"
+			Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
+			$results = Get-DNSServer -ComputerName $CName -EA 0
+			If($? -and $Null -ne $results)
+			{
+				#the computer is a dns server
+				Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+				Return $CName
+			}
+			ElseIf(!$? -or $Null -eq $results)
+			{
+				#the computer is not a dns server
+				Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
+				Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+				Return "BAD"
+			}
+		}
+		Else
+		{
+			Write-Verbose "$(Get-Date): Unable to resolve $($CName) to a hostname"
+			Write-Output "$(Get-Date): Unable to resolve $($CName) to a hostname" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Return "BAD"
+		}
+	}
+	Else
+	{
+		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
+		$results = Get-DNSServer -ComputerName $CName -EA 0
+		If($? -and $Null -ne $results)
+		{
+			#the computer is a dns server
+			Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+			Return $CName
+		}
+		ElseIf(!$? -or $Null -eq $results)
+		{
+			#the computer is not a dns server
+			Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
+			Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Return "BAD"
+		}
+	}
+
+	Write-Verbose "$(Get-Date): "
 	Return $CName
 }
 
@@ -3389,9 +3561,63 @@ Function ProcessScriptStart
 {
 	$script:startTime = Get-Date
 
-	$ComputerName = TestComputerName $ComputerName
-	$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
-	[string]$Script:Title = "DNS Inventory Report for $Script:RptDomain"
+	#pre 1.20
+	#$ComputerName = TestComputerName $ComputerName
+	#$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
+	#[string]$Script:Title = "DNS Inventory Report for $Script:RptDomain"
+	
+	$Script:DNSServerNames = @()
+	If($AllDNSServers -eq $False)
+	{
+		$ComputerName = TestComputerName $ComputerName
+		$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
+		$Script:DNSServerNames += $ComputerName
+	}
+	Else
+	{
+		Write-Verbose "$(Get-Date): Retrieving all DNS servers in domain"
+		$ComputerName = "All DNS Servers"
+		
+		$ALLServers = dsquery * forestroot -filter "(servicePrincipalName=DNS*)"
+		
+		If($Null -eq $AllServers)
+		{
+			#oops no DNS servers (which shouldn't happen in AD)
+			Write-Error "Unable to retrieve any DNS servers.  Script cannot continue"
+			Exit
+		}
+		Else
+		{
+			[int]$cnt = 0
+			If($AllServers -is [array])
+			{
+				$cnt = $AllServers.Count
+				Write-Verbose "$(Get-Date): $($cnt) DNS servers were found"
+			}
+			Else
+			{
+				$cnt = 1
+				Write-Verbose "$(Get-Date): $($cnt) DNS server was found"
+			}
+			
+			$Script:BadDNSErrorFile = "$($pwd.Path)\BadDNSServers_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+
+			ForEach($Server in $AllServers)
+			{
+				$TmpArray = $Server.Split("=").Split(",")
+				$DNSServer = $TmpArray[1]
+				
+				$Result = TestComputerName2 $DNSServer
+				
+				If($Result -ne "BAD")
+				{
+					$Script:DNSServerNames += $Result
+				}
+			}
+			Write-Verbose "$(Get-Date): $($Script:DNSServerNames.Count) DHCP servers will be processed"
+			Write-Verbose "$(Get-Date): "
+		}
+	}
 }
 
 Function ProcessScriptEnd
@@ -3428,6 +3654,7 @@ Function ProcessScriptEnd
 		$SIFile = "$($pwd.Path)\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime       : $AddDateTime" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "All DNS Servers    : $AllDNSServers" 4>$Null
 		If($MSWORD -or $PDF)
 		{
 			Out-File -FilePath $SIFile -Append -InputObject "Company Name       : $Script:CoName" 4>$Null		
@@ -3595,24 +3822,45 @@ $Script:Title is attached.
 #region ProcessDNSServer
 Function ProcessDNSServer
 {
-	Write-Verbose "$(Get-Date): Processing DNS Server"
-	Write-Verbose "$(Get-Date): `tRetrieving DNS Server Information using Server $ComputerName"
+	Param([string] $DNSServerName)
+	#V1.20, add support for the AllDNSServers parameter	
 	
-	$DNSServerSettings = $Script:DNSServerData.ServerSetting
-	$DNSForwarders = $Script:DNSServerData.ServerForwarder
-	$DNSServerRecursion = $Script:DNSServerData.ServerRecursion
-	$DNSServerCache = $Script:DNSServerData.ServerCache
-	$DNSServerScavenging = $Script:DNSServerData.ServerScavenging
-	$DNSRootHints = $Script:DNSServerData.ServerRootHint
+	Write-Verbose "$(Get-Date): Processing DNS Server"
+	Write-Verbose "$(Get-Date): `tRetrieving DNS Server Information using Server $DNSServerName"
+	
+	$Script:DNSServerData = Get-DNSServer -ComputerName $DNSServerName -EA 0
+	
+	$DNSServerSettings    = $Script:DNSServerData.ServerSetting
+	$DNSForwarders        = $Script:DNSServerData.ServerForwarder
+	$DNSServerRecursion   = $Script:DNSServerData.ServerRecursion
+	$DNSServerCache       = $Script:DNSServerData.ServerCache
+	$DNSServerScavenging  = $Script:DNSServerData.ServerScavenging
+	$DNSRootHints         = $Script:DNSServerData.ServerRootHint
 	$DNSServerDiagnostics = $Script:DNSServerData.ServerDiagnostics
 	
-	OutputDNSServer $DNSServerSettings $DNSForwarders $DNSServerRecursion $DNSServerCache $DNSServerScavenging $DNSRootHints $DNSServerDiagnostics
+	OutputDNSServer $DNSServerSettings `
+		$DNSForwarders `
+		$DNSServerRecursion `
+		$DNSServerCache `
+		$DNSServerScavenging `
+		$DNSRootHints `
+		$DNSServerDiagnostics `
+		$DNSServerName
 }
 
 Function OutputDNSServer
 {
-	Param([object] $ServerSettings, [object] $DNSForwarders, [object] $ServerRecursion, [object] $ServerCache, [object] $ServerScavenging, [object] $RootHints, [object] $ServerDiagnostics)
-
+	Param(
+		[object] $ServerSettings, 
+		[object] $DNSForwarders, 
+		[object] $ServerRecursion, 
+		[object] $ServerCache, 
+		[object] $ServerScavenging, 
+		[object] $RootHints, 
+		[object] $ServerDiagnostics, 
+		[string] $DNSServerName)
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	#$RootHints = $RootHints | Sort-Object $RootHints.NameServer.RecordData.NameServer
 	
 	#V1.11 Thanks to MBS, Root Hint servers are now sorted
@@ -3624,8 +3872,8 @@ Function OutputDNSServer
 		} 
 	) | Sort-Object -Property NameServer
 	
-	Write-Verbose "$(Get-Date): `t`tOutput DNS Server Settings"
-	$txt = "DNS Server Properties"
+	Write-Verbose "$(Get-Date): `t`tOutput DNS Server Settings for $DNSServerName"
+	$txt = "DNS Server Properties for $DNSServerName"
 	If($MSWord -or $PDF)
 	{
 		$Selection.InsertNewPage()
@@ -3646,7 +3894,7 @@ Function OutputDNSServer
 
 	#coutesy of MBS
 	#if the value does not exist, then All IP Addresses is selected
-	$AllIPs = Get-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\DNS\Parameters" "ListenAddresses" $ComputerName
+	$AllIPs = Get-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\DNS\Parameters" "ListenAddresses" $DNSServerName
 	
 	If($MSWord -or $PDF)
 	{
@@ -4303,6 +4551,10 @@ Function ResolveIPtoFQDN
 #region ProcessForwardLookupZones
 Function ProcessForwardLookupZones
 {
+	Param([string] $DNSServerName)
+	
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): Processing Forward Lookup Zones"
 
 	$txt = "Forward Lookup Zones"
@@ -4322,7 +4574,12 @@ Function ProcessForwardLookupZones
 	}
 
 	$First = $True
-	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {$_.IsReverseLookupZone -eq $False -and ($_.ZoneType -eq "Primary" -and $_.ZoneName -ne "TrustAnchors" -or $_.ZoneType -eq "Stub" -or $_.ZoneType -eq "Secondary")}
+	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {
+	$_.IsReverseLookupZone -eq $False -and (
+	$_.ZoneType -eq "Primary" -and 
+	$_.ZoneName -ne "TrustAnchors" -or 
+	$_.ZoneType -eq "Stub" -or 
+	$_.ZoneType -eq "Secondary")}
 	
 	ForEach($DNSZone in $DNSZones)
 	{
@@ -4333,10 +4590,10 @@ Function ProcessForwardLookupZones
 				$Selection.InsertNewPage()
 			}
 		}
-		OutputLookupZone "Forward" $DNSZone
+		OutputLookupZone "Forward" $DNSZone $DNSServerName
 		If($Details)
 		{
-			ProcessLookupZoneDetails "Forward" $DNSZone
+			ProcessLookupZoneDetails "Forward" $DNSZone $DNSServerName
 		}
 		$First = $False
 	}
@@ -4346,8 +4603,10 @@ Function ProcessForwardLookupZones
 #region process lookzone data
 Function OutputLookupZone
 {
-	Param([string] $zType, [object] $DNSZone)
+	Param([string] $zType, [object] $DNSZone, [string] $DNSServerName)
 
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): `tProcessing $($DNSZone.ZoneName)"
 	
 	#General tab
@@ -4355,13 +4614,13 @@ Function OutputLookupZone
 	
 	#set all the variable to N/A first since some of the variables/properties do not exist for all zones and zone types
 	
-	$Status = "N/A"
-	$ZoneType = "N/A"
-	$Replication = "N/A"
-	$DynamicUpdate = "N/A"
+	$Status            = "N/A"
+	$ZoneType          = "N/A"
+	$Replication       = "N/A"
+	$DynamicUpdate     = "N/A"
 	$NorefreshInterval = "N/A"
-	$RefreshInterval = "N/A"
-	$EnableScavenging = "N/A"
+	$RefreshInterval   = "N/A"
+	$EnableScavenging  = "N/A"
 	
 	If($DNSZone.IsPaused -eq $False)
 	{
@@ -4411,7 +4670,7 @@ Function OutputLookupZone
 	
 	If($DNSZone.ZoneType -eq "Primary")
 	{
-		$ZoneAging = Get-DnsServerZoneAging -Name $DNSZone.ZoneName -ComputerName $ComputerName -EA 0
+		$ZoneAging = Get-DnsServerZoneAging -Name $DNSZone.ZoneName -ComputerName $DNSServerName -EA 0
 		
 		If($Null -ne $ZoneAging)
 		{
@@ -4609,7 +4868,7 @@ Function OutputLookupZone
 	#Start of Authority (SOA) tab
 	Write-Verbose "$(Get-Date): `t`tStart of Authority (SOA)"
 
-	$Results = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype soa -ComputerName $ComputerName -EA 0
+	$Results = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype soa -ComputerName $DNSServerName -EA 0
 
 	If($? -and $Null -ne $Results)
 	{
@@ -4786,7 +5045,7 @@ Function OutputLookupZone
 	
 	#Name Servers tab
 	Write-Verbose "$(Get-Date): `t`tName Servers"
-	$NameServers = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype ns -node -ComputerName $ComputerName -EA 0
+	$NameServers = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype ns -node -ComputerName $DNSServerName -EA 0
 
 	If($? -and $Null -ne $NameServers)
 	{
@@ -5064,7 +5323,7 @@ Function OutputLookupZone
 			{
 				$WINSEnabled = "Selected"
 				
-				$WINS = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype wins -ComputerName $ComputerName -EA 0
+				$WINS = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype wins -ComputerName $DNSServerName -EA 0
 				
 				If($? -and $Null -ne $WINS)
 				{
@@ -5273,7 +5532,7 @@ Function OutputLookupZone
 			{
 				$WINSEnabled = "Selected"
 				
-				$WINS = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype winsr -ComputerName $ComputerName -EA 0
+				$WINS = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype winsr -ComputerName $DNSServerName -EA 0
 				
 				If($? -and $Null -ne $WINS)
 				{
@@ -5658,14 +5917,16 @@ Function OutputLookupZone
 #region lookup zone details
 Function ProcessLookupZoneDetails
 {
-	Param([string] $zType, [object] $DNSZone)
+	Param([string] $zType, [object] $DNSZone, [string] $DNSServerName)
 
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): `t`tProcessing details for zone $($DNSZone.ZoneName)"
 	
 #	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $ComputerName -EA 0 | `
 #	Where-Object {!($_.hostname -like "_*" -or $_.hostname -eq "DomainDNSZones" -or $_.hostname -eq "ForestDNSZones")}	
 	
-	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $ComputerName -EA 0
+	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $DNSServerName -EA 0
 
 	If($? -and $Null -ne $ZoneDetails)
 	{
@@ -5709,7 +5970,6 @@ Function ProcessLookupZoneDetails
 			WriteHTMLLine 0 0 " "
 		}
 	}
-	
 }
 
 Function OutputLookupZoneDetails
@@ -6238,14 +6498,16 @@ Function OutputLookupZoneDetails
 		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "550"
 		WriteHTMLLine 0 0 " "
 	}
-	
-	
 }
 #endregion
 
 #region ProcessReverseLookupZones
 Function ProcessReverseLookupZones
 {
+	Param([string] $DNSServerName)
+	
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): Processing Reverse Lookup Zones"
 	
 	$txt = "Reverse Lookup Zones"
@@ -6276,7 +6538,7 @@ Function ProcessReverseLookupZones
 				$Selection.InsertNewPage()
 			}
 		}
-		OutputLookupZone "Reverse" $DNSZone
+		OutputLookupZone "Reverse" $DNSZone $DNSServerName
 		If($Details)
 		{
 			ProcessLookupZoneDetails "Reverse" $DNSZone
@@ -6289,6 +6551,10 @@ Function ProcessReverseLookupZones
 #region ProcessTrustPoints
 Function ProcessTrustPoints
 {
+	Param([string] $DNSServerName)
+	
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): Processing Trust Points"
 	
 	$txt = "Trust Points"
@@ -6307,14 +6573,14 @@ Function ProcessTrustPoints
 		WriteHTMLLine 1 0 $txt
 	}
 
-	$TrustPoints = Get-DNSServerTrustPoint -ComputerName $ComputerName -EA 0
+	$TrustPoints = Get-DNSServerTrustPoint -ComputerName $DNSServerName -EA 0
 	
 	If($? -and $Null -ne $TrustPoints)
 	{
 		ForEach($Trust in $TrustPoints)
 		{
 		
-			$Anchors = Get-DnsServerTrustAnchor -name $Trust.TrustPointName -ComputerName $ComputerName -EA 0
+			$Anchors = Get-DnsServerTrustAnchor -name $Trust.TrustPointName -ComputerName $DNSServerName -EA 0
 			
 			If($? -and $Null -ne $Anchors)
 			{
@@ -6334,7 +6600,7 @@ Function ProcessTrustPoints
 			$First = $False
 		}
 	}
-	ElseIf($? -and $Null -ne $TrustPoints)
+	ElseIf($? -and $Null -eq $TrustPoints)
 	{
 		$txt1 = "Trust Zones"
 		$txt2 = "There is no Trust Zones data"
@@ -6559,7 +6825,7 @@ Function ProcessConditionalForwarders
 			$First = $False
 		}
 	}
-	ElseIf($? -and $Null -ne $DNSZones)
+	ElseIf($? -and $Null -eq $DNSZones)
 	{
 		$txt1 = "Conditional Forwarders"
 		$txt2 = "There is no Conditional Forwarders data"
@@ -6741,17 +7007,30 @@ Function OutputConditionalForwarder
 
 ProcessScriptStart
 
-SetFileName1andFileName2 "$($Script:RptDomain)_DNS"
+#V1.20, add support for the AllDNSServers parameter
+If($AllDNSServers -eq $False)
+{
+	[string]$Script:Title = "$($Script:RptDomain)_DNS"
+	SetFileName1andFileName2 "$($Script:RptDomain)_DNS"
+}
+Else
+{
+	[string]$Script:Title = "DNS Inventory Report for All DNS Servers"
+	SetFileName1andFileName2 "DNS Inventory for All DNS Servers"
+}
 
-ProcessDNSServer
+ForEach($DNSServer in $Script:DNSServerNames)
+{
+	ProcessDNSServer $DNSServer
 
-ProcessForwardLookupZones
+	ProcessForwardLookupZones $DNSServer
 
-ProcessReverseLookupZones
+	ProcessReverseLookupZones $DNSServer
 
-ProcessTrustPoints
+	ProcessTrustPoints $DNSServer
 
-ProcessConditionalForwarders
+	ProcessConditionalForwarders $DNSServer
+}
 #endregion
 
 #region finish script
