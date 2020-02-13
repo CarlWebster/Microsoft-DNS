@@ -442,7 +442,7 @@
 	NAME: DNS_Inventory.ps1
 	VERSION: 1.20
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: February 11, 2020
+	LASTEDIT: February 13, 2020
 #>
 
 #endregion
@@ -569,7 +569,7 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 1.20 
+#Version 1.20 13-Feb-2020
 #	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
 #		Added text file (BadDNSServers_yyyy-MM-dd_HHmm.txt) of the AD DNS servers that 
 #		are either offline or no longer have DNS installed
@@ -1303,7 +1303,7 @@ Function CheckWordPrereq
 	
 	#Find out if winword is running in our session
 	#[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0)|Where-Object {$_.SessionId -eq $SessionID}) -ne $Null
-	[bool]$wordrunning = $null –ne ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID})	
+	[bool]$wordrunning = $null -ne ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID})	
 	If($wordrunning)
 	{
 		$ErrorActionPreference = $SaveEAPreference
@@ -3823,6 +3823,7 @@ $Script:Title is attached.
 Function ProcessDNSServer
 {
 	Param([string] $DNSServerName)
+	#V1.20, add support for the AllDNSServers parameter	
 	
 	Write-Verbose "$(Get-Date): Processing DNS Server"
 	Write-Verbose "$(Get-Date): `tRetrieving DNS Server Information using Server $DNSServerName"
@@ -3858,7 +3859,8 @@ Function OutputDNSServer
 		[object] $RootHints, 
 		[object] $ServerDiagnostics, 
 		[string] $DNSServerName)
-
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	#$RootHints = $RootHints | Sort-Object $RootHints.NameServer.RecordData.NameServer
 	
 	#V1.11 Thanks to MBS, Root Hint servers are now sorted
@@ -4551,6 +4553,8 @@ Function ProcessForwardLookupZones
 {
 	Param([string] $DNSServerName)
 	
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): Processing Forward Lookup Zones"
 
 	$txt = "Forward Lookup Zones"
@@ -4601,6 +4605,8 @@ Function OutputLookupZone
 {
 	Param([string] $zType, [object] $DNSZone, [string] $DNSServerName)
 
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): `tProcessing $($DNSZone.ZoneName)"
 	
 	#General tab
@@ -5913,6 +5919,8 @@ Function ProcessLookupZoneDetails
 {
 	Param([string] $zType, [object] $DNSZone, [string] $DNSServerName)
 
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): `t`tProcessing details for zone $($DNSZone.ZoneName)"
 	
 #	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $ComputerName -EA 0 | `
@@ -6498,6 +6506,8 @@ Function ProcessReverseLookupZones
 {
 	Param([string] $DNSServerName)
 	
+	#V1.20, add support for the AllDNSServers parameter	
+	
 	Write-Verbose "$(Get-Date): Processing Reverse Lookup Zones"
 	
 	$txt = "Reverse Lookup Zones"
@@ -6542,6 +6552,8 @@ Function ProcessReverseLookupZones
 Function ProcessTrustPoints
 {
 	Param([string] $DNSServerName)
+	
+	#V1.20, add support for the AllDNSServers parameter	
 	
 	Write-Verbose "$(Get-Date): Processing Trust Points"
 	
@@ -6995,6 +7007,7 @@ Function OutputConditionalForwarder
 
 ProcessScriptStart
 
+#V1.20, add support for the AllDNSServers parameter
 If($AllDNSServers -eq $False)
 {
 	[string]$Script:Title = "$($Script:RptDomain)_DNS"

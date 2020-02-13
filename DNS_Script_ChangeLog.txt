@@ -5,7 +5,7 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
-#Version 1.20 
+#Version 1.20 13-Feb-2020
 #	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
 #		Added text file (BadDNSServers_yyyy-MM-dd_HHmm.txt) of the AD DNS servers that 
 #		are either offline or no longer have DNS installed
