@@ -5,6 +5,9 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 1.21
+#	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
+
 #Version 1.20 13-Feb-2020
 #	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
 #		Added text file (BadDNSServers_yyyy-MM-dd_HHmm.txt) of the AD DNS servers that 

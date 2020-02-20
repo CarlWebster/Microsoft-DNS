@@ -440,9 +440,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.20
+	VERSION: 1.21
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: February 13, 2020
+	LASTEDIT: February 20, 2020
 #>
 
 #endregion
@@ -569,6 +569,9 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
+#Version 1.21
+#	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
+
 #Version 1.20 13-Feb-2020
 #	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
 #		Added text file (BadDNSServers_yyyy-MM-dd_HHmm.txt) of the AD DNS servers that 
@@ -664,7 +667,7 @@ Param(
 #endregion
 
 #region initial variable testing and setup
-Set-StrictMode -Version 2
+Set-StrictMode -Version Latest
 
 #force  on
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
@@ -3583,7 +3586,7 @@ Function ProcessScriptStart
 		If($Null -eq $AllServers)
 		{
 			#oops no DNS servers (which shouldn't happen in AD)
-			Write-Error "Unable to retrieve any DNS servers.  Script cannot continue"
+			Write-Error "Unable to retrieve any AD DNS servers. Script cannot continue."
 			Exit
 		}
 		Else
@@ -3864,14 +3867,43 @@ Function OutputDNSServer
 	#$RootHints = $RootHints | Sort-Object $RootHints.NameServer.RecordData.NameServer
 	
 	#V1.11 Thanks to MBS, Root Hint servers are now sorted
+	#$global:saveRootHints = $RootHints
+	#V1.21 MBS fixed cases where no root hint servers were in the report or all the root hint servers were duplicated
 	$RHs = $( foreach( $r in $RootHints ) {
-	[PsCustomObject]@{ 
-	NameServer = $r.ipaddress.hostname; 
-	IPAddresss = if( $r.IPAddress.RecordType -eq 'AAAA' ) { $r.IPAddress.RecordData.IPv6Address } else { $r.IPAddress.recorddata.IPv4Address } 
-	}
-		} 
+			if( $r -is [Array] )
+			{
+				foreach( $i in $r )
+				{
+					[PsCustomObject] @{
+						NameServer = $i.ipaddress.hostname; 
+						IPAddresss = if( $i.IPAddress.RecordType -eq 'AAAA' ) { $i.IPAddress.RecordData.IPv6Address } else { $i.IPAddress.recorddata.IPv4Address } 
+					}	
+				}
+			}
+			else
+			{
+				if( $r.IPAddress -is [Array] )
+				{
+					foreach( $i in $r.IPAddress )
+					{
+						[PsCustomObject] @{
+							NameServer = $i.hostname; 
+							IPAddresss = if( $i.RecordType -eq 'AAAA' ) { $i.RecordData.IPv6Address } else { $i.RecordData.IPv4Address } 
+						}	
+					}	
+				}
+				else
+				{
+					[PsCustomObject] @{
+						NameServer = $r.ipaddress.hostname; 
+						IPAddresss = if( $r.IPAddress.RecordType -eq 'AAAA' ) { $r.IPAddress.RecordData.IPv6Address } else { $r.IPAddress.recorddata.IPv4Address } 
+					}
+				}
+			}
+		}
 	) | Sort-Object -Property NameServer
-	
+	#$global:saveRHS1 = $RHs
+
 	Write-Verbose "$(Get-Date): `t`tOutput DNS Server Settings for $DNSServerName"
 	$txt = "DNS Server Properties for $DNSServerName"
 	If($MSWord -or $PDF)
@@ -4308,7 +4340,8 @@ Function OutputDNSServer
 	
 	#Root Hints tab
 	Write-Verbose "$(Get-Date): `t`t`tRoot Hints"
-	
+	#$global:saveRHs = $RHs
+
 	#V1.11 Thanks to MBS, Root Hint servers are now sorted and processed more efficiently
 	
 	If($MSWord -or $PDF)
