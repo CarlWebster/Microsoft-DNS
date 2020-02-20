@@ -6,7 +6,7 @@
 #Created on February 10, 2016
 
 #Version 1.21
-#	Fixed cases where no root hint servers were in the report or all the root hint servers were duplicated (MBS)
+#	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
 
 #Version 1.20 13-Feb-2020
 #	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online

@@ -442,7 +442,7 @@
 	NAME: DNS_Inventory.ps1
 	VERSION: 1.21
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: February 14, 2020
+	LASTEDIT: February 20, 2020
 #>
 
 #endregion
@@ -570,7 +570,7 @@ Param(
 #Version 1.00 released to the community on July 25, 2016
 
 #Version 1.21
-#	Fixed cases where no root hint servers were in the report or all the root hint servers were duplicated (MBS)
+#	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
 
 #Version 1.20 13-Feb-2020
 #	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
@@ -3586,7 +3586,7 @@ Function ProcessScriptStart
 		If($Null -eq $AllServers)
 		{
 			#oops no DNS servers (which shouldn't happen in AD)
-			Write-Error "Unable to retrieve any DNS servers.  Script cannot continue"
+			Write-Error "Unable to retrieve any AD DNS servers. Script cannot continue."
 			Exit
 		}
 		Else
