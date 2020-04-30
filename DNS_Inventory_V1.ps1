@@ -6,9 +6,9 @@
 
 <#
 .SYNOPSIS
-	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text or HTML.
+	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text, or HTML.
 .DESCRIPTION
-	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text or HTML.
+	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text, or HTML.
 	Creates a document named DNS.docx (or .PDF or .TXT or .HTML).
 	
 	Word and PDF documents include a Cover Page, Table of Contents and Footer.
@@ -351,45 +351,6 @@
 	
 	Output file is saved in the path \\FileServer\ShareName
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -SmtpServer mail.domain.tld -From 
-	XDAdmin@domain.tld -To ITGroup@domain.tld -ComputerName Server01
-	
-	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
-	$env:username = Administrator
-
-	Carl Webster for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-	
-	Script will be run remotely against DNS server Server01.
-	
-	Script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
-	sending to ITGroup@domain.tld.
-	Script will use the default SMTP port 25 and will not use SSL.
-	If the current user's credentials are not valid to send email, the user will be prompted 
-	to enter valid credentials.
-.EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -SmtpServer smtp.office365.com -SmtpPort 587 
-	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com
-	
-	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
-	$env:username = Administrator
-
-	Carl Webster for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-	
-	Script will use the email server smtp.office365.com on port 587 using SSL, sending from 
-	webster@carlwebster.com, sending to ITGroup@carlwebster.com.
-	If the current user's credentials are not valid to send email, the user will be prompted
-	to enter valid credentials.
-.EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory.ps1 -Details
 	
 	Will use all default values.
@@ -433,6 +394,95 @@
 	
 	Even though DNSServer01 is specified, the script will find all AD DNS servers 
 	and will process all servers that are online.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory.ps1 
+	-SmtpServer mail.domain.tld
+	-From XDAdmin@domain.tld 
+	-To ITGroup@domain.tld	
+
+	The script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
+	sending to ITGroup@domain.tld.
+
+	The script will use the default SMTP port 25 and will not use SSL.
+
+	If the current user's credentials are not valid to send email, 
+	the user will be prompted to enter valid credentials.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory.ps1 
+	-SmtpServer mailrelay.domain.tld
+	-From Anonymous@domain.tld 
+	-To ITGroup@domain.tld	
+
+	***SENDING UNAUTHENTICATED EMAIL***
+
+	The script will use the email server mailrelay.domain.tld, sending from 
+	anonymous@domain.tld, sending to ITGroup@domain.tld.
+
+	To send unauthenticated email using an email relay server requires the From email account 
+	to use the name Anonymous.
+
+	The script will use the default SMTP port 25 and will not use SSL.
+	
+	***GMAIL/G SUITE SMTP RELAY***
+	https://support.google.com/a/answer/2956491?hl=en
+	https://support.google.com/a/answer/176600?hl=en
+
+	To send email using a Gmail or g-suite account, you may have to turn ON
+	the "Less secure app access" option on your account.
+	***GMAIL/G SUITE SMTP RELAY***
+
+	The script will generate an anonymous secure password for the anonymous@domain.tld 
+	account.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory.ps1 
+	-SmtpServer labaddomain-com.mail.protection.outlook.com
+	-UseSSL
+	-From SomeEmailAddress@labaddomain.com 
+	-To ITGroupDL@labaddomain.com	
+
+	***OFFICE 365 Example***
+
+	https://docs.microsoft.com/en-us/exchange/mail-flow-best-practices/how-to-set-up-a-multifunction-device-or-application-to-send-email-using-office-3
+	
+	This uses Option 2 from the above link.
+	
+	***OFFICE 365 Example***
+
+	The script will use the email server labaddomain-com.mail.protection.outlook.com, 
+	sending from SomeEmailAddress@labaddomain.com, sending to ITGroupDL@labaddomain.com.
+
+	The script will use the default SMTP port 25 and will use SSL.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory.ps1 
+	-SmtpServer smtp.office365.com 
+	-SmtpPort 587
+	-UseSSL 
+	-From Webster@CarlWebster.com 
+	-To ITGroup@CarlWebster.com	
+
+	The script will use the email server smtp.office365.com on port 587 using SSL, 
+	sending from webster@carlwebster.com, sending to ITGroup@carlwebster.com.
+
+	If the current user's credentials are not valid to send email, 
+	the user will be prompted to enter valid credentials.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory.ps1 
+	-SmtpServer smtp.gmail.com 
+	-SmtpPort 587
+	-UseSSL 
+	-From Webster@CarlWebster.com 
+	-To ITGroup@CarlWebster.com	
+
+	*** NOTE ***
+	To send email using a Gmail or g-suite account, you may have to turn ON
+	the "Less secure app access" option on your account.
+	*** NOTE ***
+	
+	The script will use the email server smtp.gmail.com on port 587 using SSL, 
+	sending from webster@gmail.com, sending to ITGroup@carlwebster.com.
+
+	If the current user's credentials are not valid to send email, 
+	the user will be prompted to enter valid credentials.
 .INPUTS
 	None.  You cannot pipe objects to this script.
 .OUTPUTS
@@ -440,9 +490,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: DNS_Inventory.ps1
-	VERSION: 1.21
+	VERSION: 1.22
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: February 20, 2020
+	LASTEDIT: April 30, 2020
 #>
 
 #endregion
@@ -453,19 +503,15 @@
 
 Param(
 	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Switch]$HTML=$False,
 
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Switch]$MSWord=$False,
 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Switch]$PDF=$False,
 
 	[parameter(ParameterSetName="Text",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Switch]$Text=$False,
 
 	[parameter(Mandatory=$False)] 
@@ -477,35 +523,30 @@ Param(
 	
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CA")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyAddress="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CE")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyEmail="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CF")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyFax="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyName="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CPh")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyPhone="",
@@ -515,7 +556,6 @@ Param(
 
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CP")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
@@ -538,24 +578,23 @@ Param(
 	
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("UN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$UserName=$env:username,
 
-	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
+	[parameter(Mandatory=$False)] 
 	[string]$SmtpServer="",
 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[parameter(Mandatory=$False)] 
 	[int]$SmtpPort=25,
 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[parameter(Mandatory=$False)] 
 	[switch]$UseSSL=$False,
 
-	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
+	[parameter(Mandatory=$False)] 
 	[string]$From="",
 
-	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
+	[parameter(Mandatory=$False)] 
 	[string]$To=""
 
 	)
@@ -569,9 +608,21 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 1.21
+#Version 1.22 30-Apr-2020
+#	Add checking for a Word version of 0, which indicates the Office installation needs repairing
+#	Change location of the -Dev, -Log, and -ScriptInfo output files from the script folder to the -Folder location (Thanks to Guy Leech for the "suggestion")
+#	Change Text output to use [System.Text.StringBuilder]
+#		Updated Functions Line and SaveAndCloseTextDocument
 #	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
-
+#	For all the uses of the Get-DNSServer cmdlet, to stop the excess "garbage" spewed forth by that cmdlet, use 2>$Null 3>$Null 4>$Null 
+#	Reformatted the terminating Write-Error messages to make them more visible and readable in the console
+#	Remove the SMTP parameterset and manually verify the parameters
+#	Update Function SendEmail to handle anonymous unauthenticated email
+#	Update Help Text
+#
+#Version 1.21 Not released
+#	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
+#
 #Version 1.20 13-Feb-2020
 #	Added -AllDNSServers (ALL) parameter to process all AD DNS servers that are online
 #		Added text file (BadDNSServers_yyyy-MM-dd_HHmm.txt) of the AD DNS servers that 
@@ -674,32 +725,6 @@ $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
 
-#V1.09 added
-If($Log) 
-{
-	#start transcript logging
-	$Script:ThisScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-	$Script:LogPath = "$Script:ThisScriptPath\DNSDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
-	
-	try 
-	{
-		Start-Transcript -Path $Script:LogPath -Force -Verbose:$false | Out-Null
-		Write-Verbose "$(Get-Date): Transcript/log started at $Script:LogPath"
-		$Script:StartLog = $true
-	} 
-	catch 
-	{
-		Write-Verbose "$(Get-Date): Transcript/log failed at $Script:LogPath"
-		$Script:StartLog = $false
-	}
-}
-
-If($Dev)
-{
-	$Error.Clear()
-	$Script:DevErrorFile = "$($pwd.Path)\DNSInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
-}
-
 If($Null -eq $MSWord)
 {
 	If($Text -or $HTML -or $PDF)
@@ -762,7 +787,15 @@ Else
 		Write-Verbose "$(Get-Date): Text is $Text"
 		Write-Verbose "$(Get-Date): HTML is $HTML"
 	}
-	Write-Error "Unable to determine output parameter.  Script cannot continue"
+	Write-Error "
+	`n`n
+	`t`t
+	Unable to determine output parameter.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n
+	"
 	Exit
 }
 
@@ -781,16 +814,145 @@ If($Folder -ne "")
 		Else
 		{
 			#it exists but it is a file not a folder
-			Write-Error "Folder $Folder is a file, not a folder.  Script cannot continue"
+			Write-Error "
+			`n`n
+			`t`t
+			Folder $Folder is a file, not a folder.
+			`n`n
+			`t`t
+			Script cannot continue.
+			`n`n
+			"
 			Exit
 		}
 	}
 	Else
 	{
 		#does not exist
-		Write-Error "Folder $Folder does not exist.  Script cannot continue"
+		Write-Error "
+		`n`n
+		`t`t
+		Folder $Folder does not exist.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		Exit
 	}
+}
+
+If($Folder -eq "")
+{
+	$Script:pwdpath = $pwd.Path
+}
+Else
+{
+	$Script:pwdpath = $Folder
+}
+
+If($Script:pwdpath.EndsWith("\"))
+{
+	#remove the trailing \
+	$Script:pwdpath = $Script:pwdpath.SubString(0, ($Script:pwdpath.Length - 1))
+}
+
+#V1.09 added
+If($Log) 
+{
+	#start transcript logging
+	$Script:LogPath = "$Script:pwdpath\DNSDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	
+	try 
+	{
+		Start-Transcript -Path $Script:LogPath -Force -Verbose:$false | Out-Null
+		Write-Verbose "$(Get-Date): Transcript/log started at $Script:LogPath"
+		$Script:StartLog = $true
+	} 
+	catch 
+	{
+		Write-Verbose "$(Get-Date): Transcript/log failed at $Script:LogPath"
+		$Script:StartLog = $false
+	}
+}
+
+If($Dev)
+{
+	$Error.Clear()
+	$Script:DevErrorFile = "$Script:pwdPath\DNSInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+}
+
+If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($To))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified an SmtpServer but did not include a From or To email address.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and ![String]::IsNullOrEmpty($To))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified an SmtpServer and a To email address but did not include a From email address.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($To) -and ![String]::IsNullOrEmpty($From))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified an SmtpServer and a From email address but did not include a To email address.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($From) -and ![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified From and To email addresses but did not include the SmtpServer.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($SmtpServer))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified a From email address but did not include the SmtpServer.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified a To email address but did not include the SmtpServer.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
 }
 
 #endregion
@@ -907,7 +1069,7 @@ If($HTML)
 
 If($TEXT)
 {
-	$global:output = ""
+	[System.Text.StringBuilder] $global:Output = New-Object System.Text.StringBuilder( 16384 )
 }
 #endregion
 
@@ -1396,7 +1558,18 @@ Function SetupWord
 	{
 		Write-Warning "The Word object could not be created.  You may need to repair your Word installation."
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tThe Word object could not be created.  You may need to repair your Word installation.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		The Word object could not be created.
+		`n`n
+		`t`t
+		You may need to repair your Word installation.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		Exit
 	}
 
@@ -1413,7 +1586,15 @@ Function SetupWord
 	If(!($Script:WordLanguageValue -gt -1))
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tUnable to determine the Word language value.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		Unable to determine the Word language value.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 	Write-Verbose "$(Get-Date): Word language value is $Script:WordLanguageValue"
@@ -1438,13 +1619,45 @@ Function SetupWord
 	ElseIf($Script:WordVersion -eq $wdWord2007)
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tMicrosoft Word 2007 is no longer supported.`n`n`t`tScript will end.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		Microsoft Word 2007 is no longer supported.
+		`n`n
+		`t`t
+		Script will end.
+		`n`n
+		"
 		AbortScript
+	}
+	ElseIf($Script:WordVersion -eq 0)
+	{
+		Write-Error "
+		`n`n
+		`t`t
+		The Word Version is 0. You should run a full online repair of your Office installation.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
+		Exit
 	}
 	Else
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tYou are running an untested or unsupported version of Microsoft Word.`n`n`t`tScript will end.`n`n`t`tPlease send info on your version of Word to webster@carlwebster.com`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		You are running an untested or unsupported version of Microsoft Word.
+		`n`n
+		`t`t
+		Script will end.
+		`n`n
+		`t`t
+		Please send info on your version of Word to webster@carlwebster.com
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1586,7 +1799,15 @@ Function SetupWord
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Verbose "$(Get-Date): Word language value $Script:WordLanguageValue"
 		Write-Verbose "$(Get-Date): Culture code $Script:WordCultureCode"
-		Write-Error "`n`n`t`tFor $Script:WordProduct, $CoverPage is not a valid Cover Page option.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		For $Script:WordProduct, $CoverPage is not a valid Cover Page option.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1649,7 +1870,15 @@ Function SetupWord
 	{
 		Write-Verbose "$(Get-Date): "
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tAn empty Word document could not be created.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		An empty Word document could not be created.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1658,7 +1887,15 @@ Function SetupWord
 	{
 		Write-Verbose "$(Get-Date): "
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tAn unknown error happened selecting the entire Word document for default formatting options.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		An unknown error happened selecting the entire Word document for default formatting options.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1868,21 +2105,38 @@ Function Get-RegistryValue
 #region word, text and html line output functions
 Function line
 #function created by Michael B. Smith, Exchange MVP
-#@essentialexchange on Twitter
-#http://TheEssentialExchange.com
+#@essentialexch on Twitter
+#https://essential.exchange/blog
 #for creating the formatted text report
 #created March 2011
 #updated March 2014
+# updated March 2019 to use StringBuilder (about 100 times more efficient than simple strings)
 {
-	Param( [int]$tabs = 0, [string]$name = '', [string]$value = '', [string]$newline = "`r`n", [switch]$nonewline )
-	While( $tabs -gt 0 ) { $Global:Output += "`t"; $tabs--; }
+	Param
+	(
+		[Int]    $tabs = 0, 
+		[String] $name = '', 
+		[String] $value = '', 
+		[String] $newline = [System.Environment]::NewLine, 
+		[Switch] $nonewline
+	)
+
+	while( $tabs -gt 0 )
+	{
+		#V1.17 - switch to using a StringBuilder for $global:Output
+		$null = $global:Output.Append( "`t" )
+		$tabs--
+	}
+
 	If( $nonewline )
 	{
-		$Global:Output += $name + $value
+		#V1.17 - switch to using a StringBuilder for $global:Output
+		$null = $global:Output.Append( $name + $value )
 	}
 	Else
 	{
-		$Global:Output += $name + $value + $newline
+		#V1.17 - switch to using a StringBuilder for $global:Output
+		$null = $global:Output.AppendLine( $name + $value )
 	}
 }
 	
@@ -2546,11 +2800,11 @@ Function SetupHTML
 	Write-Verbose "$(Get-Date): Setting up HTML"
 	If(!$AddDateTime)
 	{
-		[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName).html"
+		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).html"
 	}
 	ElseIf($AddDateTime)
 	{
-		[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).html"
+		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).html"
 	}
 
 	$htmlhead = "<html><head><meta http-equiv='Content-Language' content='da'><title>" + $Script:Title + "</title></head><body>"
@@ -3243,8 +3497,9 @@ Function SaveandCloseTextDocument
 		$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 	}
 
-	Write-Output $Global:Output | Out-File $Script:Filename1 4>$Null
+	Write-Output $global:Output.ToString() | Out-File $Script:Filename1 4>$Null
 }
+
 
 Function SaveandCloseHTMLDocument
 {
@@ -3255,28 +3510,13 @@ Function SetFileName1andFileName2
 {
 	Param([string]$OutputFileName)
 	
-	If($Folder -eq "")
-	{
-		$pwdpath = $pwd.Path
-	}
-	Else
-	{
-		$pwdpath = $Folder
-	}
-
-	If($pwdpath.EndsWith("\"))
-	{
-		#remove the trailing \
-		$pwdpath = $pwdpath.SubString(0, ($pwdpath.Length - 1))
-	}
-
 	#set $filename1 and $filename2 with no file extension
 	If($AddDateTime)
 	{
-		[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName)"
+		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName)"
 		If($PDF)
 		{
-			[string]$Script:FileName2 = "$($pwdpath)\$($OutputFileName)"
+			[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName)"
 		}
 	}
 
@@ -3286,10 +3526,10 @@ Function SetFileName1andFileName2
 
 		If(!$AddDateTime)
 		{
-			[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName).docx"
+			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).docx"
 			If($PDF)
 			{
-				[string]$Script:FileName2 = "$($pwdpath)\$($OutputFileName).pdf"
+				[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName).pdf"
 			}
 		}
 
@@ -3299,7 +3539,7 @@ Function SetFileName1andFileName2
 	{
 		If(!$AddDateTime)
 		{
-			[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName).txt"
+			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).txt"
 		}
 		ShowScriptOptions
 	}
@@ -3326,7 +3566,15 @@ Function TestComputerName
 		{
 			Write-Verbose "$(Get-Date): Computer $CName is offline"
 			$ErrorActionPreference = $SaveEAPreference
-			Write-Error "`n`n`t`tComputer $CName is offline.`nScript cannot continue.`n`n"
+			Write-Error "
+			`n`n
+			`t`t
+			Computer $CName is offline.
+			`n`n
+			`t`t
+			Script cannot continue.
+			`n`n
+			"
 			Exit
 		}
 	}
@@ -3361,7 +3609,7 @@ Function TestComputerName
 		#computer is online but for some reason $ComputerName cannot be converted to a System.Net.IpAddress
 	}
 
-	$Results = Get-DNSServer -ComputerName $CName -EA 0 3>$Null
+	$Results = Get-DNSServer -ComputerName $CName -EA 0 2> $Null 3>$Null 4>$Null
 	If($Null -ne $Results)
 	{
 		#the computer is a dns server
@@ -3374,7 +3622,18 @@ Function TestComputerName
 		#the computer is not a dns server
 		Write-Verbose "$(Get-Date): Computer $CName is not a DNS Server"
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tComputer $CName is not a DNS Server.`n`n`t`tRerun the script using -ComputerName with a valid DNS server name.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		Computer $CName is not a DNS Server.
+		`n`n
+		`t`t
+		Rerun the script using -ComputerName with a valid DNS server name.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		Exit
 	}
 
@@ -3408,7 +3667,7 @@ Function TestComputerName2
 		$CName = $env:ComputerName
 		Write-Verbose "$(Get-Date): Computer name has been changed from localhost to $($CName)"
 		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
-		$results = Get-DNSServer -ComputerName $CName -EA 0
+		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
 		If($? -and $Null -ne $results)
 		{
 			#the computer is a dns server
@@ -3437,7 +3696,7 @@ Function TestComputerName2
 			$CName = $Result.HostName
 			Write-Verbose "$(Get-Date): Computer name has been changed from $($ip) to $($CName)"
 			Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
-			$results = Get-DNSServer -ComputerName $CName -EA 0
+			$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
 			If($? -and $Null -ne $results)
 			{
 				#the computer is a dns server
@@ -3462,7 +3721,7 @@ Function TestComputerName2
 	Else
 	{
 		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
-		$results = Get-DNSServer -ComputerName $CName -EA 0
+		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
 		If($? -and $Null -ne $results)
 		{
 			#the computer is a dns server
@@ -3586,7 +3845,15 @@ Function ProcessScriptStart
 		If($Null -eq $AllServers)
 		{
 			#oops no DNS servers (which shouldn't happen in AD)
-			Write-Error "Unable to retrieve any AD DNS servers. Script cannot continue."
+			Write-Error "
+			`n`n
+			`t`t
+			Unable to retrieve any AD DNS servers.
+			`n`n
+			`t`t
+			Script cannot continue.
+			`n`n
+			"
 			Exit
 		}
 		Else
@@ -3603,7 +3870,7 @@ Function ProcessScriptStart
 				Write-Verbose "$(Get-Date): $($cnt) DNS server was found"
 			}
 			
-			$Script:BadDNSErrorFile = "$($pwd.Path)\BadDNSServers_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+			$Script:BadDNSErrorFile = "$Script:pwdPath\BadDNSServers_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 
 			ForEach($Server in $AllServers)
 			{
@@ -3654,7 +3921,7 @@ Function ProcessScriptEnd
 
 	If($ScriptInfo)
 	{
-		$SIFile = "$($pwd.Path)\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+		$SIFile = "$Script:pwdPath\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime       : $AddDateTime" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "All DNS Servers    : $AllDNSServers" 4>$Null
@@ -3684,7 +3951,7 @@ Function ProcessScriptEnd
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "Folder             : $Folder" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "From               : $From" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Log                : $($Log)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Log                : $Log" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML       : $HTML" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF        : $PDF" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT       : $TEXT" 4>$Null
@@ -3741,15 +4008,16 @@ Function ProcessScriptEnd
 #region email function
 Function SendEmail
 {
-	Param([string]$Attachments)
+	Param([array]$Attachments)
 	Write-Verbose "$(Get-Date): Prepare to email"
-	
+
 	$emailAttachment = $Attachments
 	$emailSubject = $Script:Title
 	$emailBody = @"
 Hello, <br />
 <br />
 $Script:Title is attached.
+
 "@ 
 
 	If($Dev)
@@ -3758,66 +4026,105 @@ $Script:Title is attached.
 	}
 
 	$error.Clear()
-
-	If($UseSSL)
+	
+	If($From -Like "anonymous@*")
 	{
-		Write-Verbose "$(Get-Date): Trying to send email using current user's credentials with SSL"
-		Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
-		-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
-		-UseSSL *>$Null
-	}
-	Else
-	{
-		Write-Verbose  "$(Get-Date): Trying to send email using current user's credentials without SSL"
-		Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
-		-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To *>$Null
-	}
-
-	$e = $error[0]
-
-	If($e.Exception.ToString().Contains("5.7.57"))
-	{
-		#The server response was: 5.7.57 SMTP; Client was not authenticated to send anonymous mail during MAIL FROM
-		Write-Verbose "$(Get-Date): Current user's credentials failed. Ask for usable credentials."
-
-		If($Dev)
-		{
-			Out-File -FilePath $Script:DevErrorFile -InputObject $error -Append 4>$Null
-		}
-
-		$error.Clear()
-
-		$emailCredentials = Get-Credential -Message "Enter the email account and password to send email"
+		#https://serverfault.com/questions/543052/sending-unauthenticated-mail-through-ms-exchange-with-powershell-windows-server
+		$anonUsername = "anonymous"
+		$anonPassword = ConvertTo-SecureString -String "anonymous" -AsPlainText -Force
+		$anonCredentials = New-Object System.Management.Automation.PSCredential($anonUsername,$anonPassword)
 
 		If($UseSSL)
 		{
 			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
 			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
-			-UseSSL -credential $emailCredentials *>$Null 
+			-UseSSL -credential $anonCredentials *>$Null 
 		}
 		Else
 		{
 			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
 			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
-			-credential $emailCredentials *>$Null 
+			-credential $anonCredentials *>$Null 
 		}
-
-		$e = $error[0]
-
-		If($? -and $Null -eq $e)
+		
+		If($?)
 		{
-			Write-Verbose "$(Get-Date): Email successfully sent using new credentials"
+			Write-Verbose "$(Get-Date): Email successfully sent using anonymous credentials"
 		}
-		Else
+		ElseIf(!$?)
 		{
+			$e = $error[0]
+
 			Write-Verbose "$(Get-Date): Email was not sent:"
 			Write-Warning "$(Get-Date): Exception: $e.Exception" 
 		}
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date): Email was not sent:"
-		Write-Warning "$(Get-Date): Exception: $e.Exception" 
+		If($UseSSL)
+		{
+			Write-Verbose "$(Get-Date): Trying to send email using current user's credentials with SSL"
+			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
+			-UseSSL *>$Null
+		}
+		Else
+		{
+			Write-Verbose  "$(Get-Date): Trying to send email using current user's credentials without SSL"
+			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To *>$Null
+		}
+
+		If(!$?)
+		{
+			$e = $error[0]
+			
+			#error 5.7.57 is O365 and error 5.7.0 is gmail
+			If($null -ne $e.Exception -and $e.Exception.ToString().Contains("5.7"))
+			{
+				#The server response was: 5.7.xx SMTP; Client was not authenticated to send anonymous mail during MAIL FROM
+				Write-Verbose "$(Get-Date): Current user's credentials failed. Ask for usable credentials."
+
+				If($Dev)
+				{
+					Out-File -FilePath $Script:DevErrorFile -InputObject $error -Append 4>$Null
+				}
+
+				$error.Clear()
+
+				$emailCredentials = Get-Credential -UserName $From -Message "Enter the password to send email"
+
+				If($UseSSL)
+				{
+					Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+					-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
+					-UseSSL -credential $emailCredentials *>$Null 
+				}
+				Else
+				{
+					Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+					-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
+					-credential $emailCredentials *>$Null 
+				}
+
+				If($?)
+				{
+					Write-Verbose "$(Get-Date): Email successfully sent using new credentials"
+				}
+				ElseIf(!$?)
+				{
+					$e = $error[0]
+
+					Write-Verbose "$(Get-Date): Email was not sent:"
+					Write-Warning "$(Get-Date): Exception: $e.Exception" 
+				}
+			}
+			Else
+			{
+				Write-Verbose "$(Get-Date): Email was not sent:"
+				Write-Warning "$(Get-Date): Exception: $e.Exception" 
+			}
+		}
 	}
 }
 #endregion
@@ -3831,7 +4138,7 @@ Function ProcessDNSServer
 	Write-Verbose "$(Get-Date): Processing DNS Server"
 	Write-Verbose "$(Get-Date): `tRetrieving DNS Server Information using Server $DNSServerName"
 	
-	$Script:DNSServerData = Get-DNSServer -ComputerName $DNSServerName -EA 0
+	$Script:DNSServerData = Get-DNSServer -ComputerName $DNSServerName -EA 0 2>$Null 3>$Null 4>$Null
 	
 	$DNSServerSettings    = $Script:DNSServerData.ServerSetting
 	$DNSForwarders        = $Script:DNSServerData.ServerForwarder
