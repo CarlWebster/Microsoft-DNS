@@ -5,7 +5,19 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
-#Version 1.21
+#Version 1.22 30-Apr-2020
+#	Add checking for a Word version of 0, which indicates the Office installation needs repairing
+#	Change location of the -Dev, -Log, and -ScriptInfo output files from the script folder to the -Folder location (Thanks to Guy Leech for the "suggestion")
+#	Change Text output to use [System.Text.StringBuilder]
+#		Updated Functions Line and SaveAndCloseTextDocument
+#	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
+#	For all the uses of the Get-DNSServer cmdlet, to stop the excess "garbage" spewed forth by that cmdlet, use 2>$Null 3>$Null 4>$Null 
+#	Reformatted the terminating Write-Error messages to make them more visible and readable in the console
+#	Remove the SMTP parameterset and manually verify the parameters
+#	Update Function SendEmail to handle anonymous unauthenticated email
+#	Update Help Text
+
+#Version 1.21 not released
 #	Fixed by MBS: When the root hint IP address is an array, report on all entries of the array, instead of just the first entry
 
 #Version 1.20 13-Feb-2020
