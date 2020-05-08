@@ -492,7 +492,7 @@
 	NAME: DNS_Inventory.ps1
 	VERSION: 1.22
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: April 30, 2020
+	LASTEDIT: May 8, 2020
 #>
 
 #endregion
@@ -608,8 +608,9 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 1.22 30-Apr-2020
+#Version 1.22 8-May-2020
 #	Add checking for a Word version of 0, which indicates the Office installation needs repairing
+#	Change color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
 #	Change location of the -Dev, -Log, and -ScriptInfo output files from the script folder to the -Folder location (Thanks to Guy Leech for the "suggestion")
 #	Change Text output to use [System.Text.StringBuilder]
 #		Updated Functions Line and SaveAndCloseTextDocument
@@ -618,6 +619,7 @@ Param(
 #	Reformatted the terminating Write-Error messages to make them more visible and readable in the console
 #	Remove the SMTP parameterset and manually verify the parameters
 #	Update Function SendEmail to handle anonymous unauthenticated email
+#	Update Function SetWordCellFormat to change parameter $BackgroundColor to [int]
 #	Update Help Text
 #
 #Version 1.21 Not released
@@ -970,8 +972,8 @@ If($MSWord -or $PDF)
 	#http://groovy.codehaus.org/modules/scriptom/1.6.0/scriptom-office-2K3-tlb/apidocs/
 	#http://msdn.microsoft.com/en-us/library/office/aa211923(v=office.11).aspx
 	[int]$wdAlignPageNumberRight = 2
-	[long]$wdColorGray15 = 14277081
-	[long]$wdColorGray05 = 15987699 
+	[int]$wdColorGray15 = 14277081
+	[int]$wdColorGray05 = 15987699 
 	[int]$wdMove = 0
 	[int]$wdSeekMainDocument = 0
 	[int]$wdSeekPrimaryFooter = 4
@@ -3140,7 +3142,7 @@ Function SetWordCellFormat
 		# Font size
 		[Parameter()] [ValidateNotNullOrEmpty()] [int] $Size = 0,
 		# Cell background color
-		[Parameter()] [AllowNull()] $BackgroundColor = $Null,
+		[Parameter()] [AllowNull()] [int]$BackgroundColor = $Null,
 		# Force solid background color
 		[Switch] $Solid,
 		[Switch] $Bold,
