@@ -5,6 +5,34 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 2.00 26-Oct-2020
+#	Changed color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
+#	Clean up the formatting of Text output
+#	General code cleanup
+#	HTML is now the default output format.
+#	Comment out Function CheckHTMLColor as it is no longer needed
+#	Stop using a Switch statement for HTML colors and use a pre-calculated HTML array (for speed).
+#	Updated Function ShowScriptOptions and ProcessScriptEnd for allowing multiple output types
+#	Updated the following Functions to the latest versions
+#		SetWordHashTable
+#		CheckWordPrereq
+#		SetupWord
+#		WriteHTMLLine
+#		AddHTMLTable
+#		FormatHTMLTable
+#		SetupHTML
+#		AddWordTable
+#		SetWordCellFormat
+#		SaveandCloseDocumentandShutdownWord
+#		SetupText
+#		SaveandCloseTextDocument
+#		SaveandCloseHTMLDocument
+#		SetFilenames
+#		ProcessDocumentOutput
+#	Updated help text
+#	Updated ReadMe file (https://carlwebster.sharefile.com/d-s247b4252c4e4865a)
+#	You can now select multiple output formats. This required extensive code changes.
+
 #Version 1.22 8-May-2020
 #	Add checking for a Word version of 0, which indicates the Office installation needs repairing
 #	Change color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
