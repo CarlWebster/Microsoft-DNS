@@ -474,7 +474,7 @@
 	NAME: DNS_Inventory_V2.ps1
 	VERSION: 2.00
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: October 26, 2020 1105 Central Time
+	LASTEDIT: October 26, 2020
 #>
 
 #endregion
@@ -5679,7 +5679,8 @@ Function OutputLookupZone
 
 							If($cnt -eq 0)
 							{
-								Line 3 "IP Address`t`t`t: " $ip
+								Line 3 "Server FQDN`t`t`t: " $NS
+								Line 4 "IP Address`t`t: " $ip
 							}
 							Else
 							{
@@ -5712,6 +5713,11 @@ Function OutputLookupZone
 							}
 						}
 					}
+					
+					If($Text)
+					{
+						Line 0 ""
+					}
 				}
 				Else
 				{
@@ -5737,7 +5743,9 @@ Function OutputLookupZone
 							$ipAddress = "***Unable to retrieve an IP Address***"
 						}
 
-						Line 3 "IP Address`t`t`t: " $ipAddress
+						Line 3 "Server FQDN`t`t`t: " $NS
+						Line 4 "IP Address`t`t: " $ipAddress
+						Line 0 ""
 					}
 					If($HTML)
 					{
@@ -5775,7 +5783,9 @@ Function OutputLookupZone
 				{
 					$ipAddress = "***Unable to retrieve an IP Address***"
 
-					Line 3 "IP Address`t`t`t: " $ipAddress
+					Line 3 "Server FQDN`t`t`t: " $NS
+					Line 4 "IP Address`t`t: " $ipAddress
+					Line 0 ""
 				}
 				If($HTML)
 				{
