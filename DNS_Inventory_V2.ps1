@@ -474,7 +474,7 @@
 	NAME: DNS_Inventory_V2.ps1
 	VERSION: 2.00
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: October 26, 2020
+	LASTEDIT: October 27, 2020
 #>
 
 #endregion
@@ -584,11 +584,16 @@ Param(
 #Version 1.00 released to the community on July 25, 2016
 
 #Version 2.00 26-Oct-2020
+#	Add processing Forward Lookup Zones that are Signed
+#		Key Master
+#		Next Secure (NSEC)
+#		Trust Anchor
+#		Advanced
 #	Changed color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
 #	Clean up the formatting of Text output
+#	Comment out Function CheckHTMLColor as it is no longer needed
 #	General code cleanup
 #	HTML is now the default output format.
-#	Comment out Function CheckHTMLColor as it is no longer needed
 #	Stop using a Switch statement for HTML colors and use a pre-calculated HTML array (for speed).
 #	Updated Function ShowScriptOptions and ProcessScriptEnd for allowing multiple output types
 #	Updated the following Functions to the latest versions
@@ -4522,7 +4527,6 @@ Function OutputDNSServer
 		}
 		Else
 		{
-			$ips = ""
 			$First = $True
 			ForEach($ipa in $ServerSettings.ListeningIPAddress)
 			{
@@ -5692,24 +5696,24 @@ Function OutputLookupZone
 							If([String]::IsNullOrEmpty($ip))	#added in V1.12
 							{
 								$ip = "Unable to retrieve an IP Address"
-								$HighlightedCells = $htmlred
+								$HTMLHighlightedCells = $htmlred
 							}
 							Else
 							{
-								$HighlightedCells = $htmlwhite
+								$HTMLHighlightedCells = $htmlwhite
 							}
 
 							If($cnt -eq 0)
 							{
 								$rowdata += @(,(
-								$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-								$ip,$HighlightedCells))
+								$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+								$ip,$HTMLHighlightedCells))
 							}
 							Else
 							{
 								$rowdata += @(,(
-								$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-								$ip,$HighlightedCells))
+								$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+								$ip,$HTMLHighlightedCells))
 							}
 						}
 					}
@@ -5752,16 +5756,16 @@ Function OutputLookupZone
 						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
 						{
 							$ipAddress = "Unable to retrieve an IP Address"
-							$HighlightedCells = $htmlred
+							$HTMLHighlightedCells = $htmlred
 						}
 						Else
 						{
-							$HighlightedCells = $htmlwhite
+							$HTMLHighlightedCells = $htmlwhite
 						}
 
 						$rowdata += @(,(
-						$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-						$ipAddress,$HighlightedCells))
+						$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+						$ipAddress,$HTMLHighlightedCells))
 					}
 				}
 			}
@@ -5790,11 +5794,11 @@ Function OutputLookupZone
 				If($HTML)
 				{
 					$ipAddress = "Unable to retrieve an IP Address"
-					$HighlightedCells = $htmlred
+					$HTMLHighlightedCells = $htmlred
 
 					$rowdata += @(,(
-					$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-					$ipAddress,$HighlightedCells))
+					$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+					$ipAddress,$HTMLHighlightedCells))
 				}
 			}
 
@@ -6520,6 +6524,443 @@ Function OutputLookupZone
 				$msg = ""
 				$columnWidths = @("200","200")
 				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+		}
+	}
+
+	If($DNSZone.IsSigned -eq $True) #This is a DNSSEC Zone
+	{
+		Write-Verbose "$(Get-Date): `t`tDNSSEC Settings"
+	
+		$DNSSECSettings = Get-DnsServerDnsSecZoneSetting -ZoneName $DNSZone.ZoneName -ComputerName $DNSServerName -EA 0
+		
+		If($? -and $Null -ne $DNSSECSettings)
+		{
+			If($MSWord -or $PDF)
+			{
+				$Selection.InsertNewPage()
+				WriteWordLine 3 0 "DNSSEC properties for $($DNSZone.ZoneName) zone"
+			}
+			If($Text)
+			{
+				Line 2 "DNSSEC properties for $($DNSZone.ZoneName) zone"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 3 0 "DNSSEC properties for $($DNSZone.ZoneName) zone"
+			}
+
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Key Master"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				$ScriptInformation += @{ Data = "This DNS server is the Key Master"; Value = $DNSSECSettings.KeyMasterServer; }
+				$ScriptInformation += @{ Data = "Status"; Value = $DNSSECSettings.KeyMasterStatus; }
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Key Master"
+				Line 4 "This DNS server is the Key Master`t: " $DNSSECSettings.KeyMasterServer
+				Line 4 "Status`t`t`t`t`t: " $DNSSECSettings.KeyMasterStatus
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Key Master"
+				$rowdata = @()
+				$columnHeaders = @("This DNS server is the Key Master",($htmlsilver -bor $htmlbold),$DNSSECSettings.KeyMasterServer,$htmlwhite)
+				$rowdata += @(,('Status',($htmlsilver -bor $htmlbold),$DNSSECSettings.KeyMasterStatus,$htmlwhite))
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+
+			<# I can't find KSK or ZSK data
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "KSK"
+			}
+			If($Text)
+			{
+				Line 3 "KSK"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "KSK"
+			}
+
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "ZSK"
+			}
+			If($Text)
+			{
+				Line 3 "ZSK"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "ZSK"
+			}
+			#>
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Next Secure (NSEC)"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				If($DNSSECSettings.DenialOfExistence -eq "NSec3")
+				{
+					$ScriptInformation += @{ Data = "Use NSEC3"; Value = "True"; }
+					$ScriptInformation += @{ Data = "Iterations"; Value = $DNSSECSettings.NSec3Iterations.ToString(); }
+					If($DNSSECSettings.IsNSec3SaltConfigured -eq $True)
+					{
+						$ScriptInformation += @{ Data = "Use salt"; Value = "True"; }
+						If($DNSSECSettings.NSec3UserSalt -eq "-")
+						{
+							$ScriptInformation += @{ Data = "Generate a random salt of length"; Value = $DNSSECSettings.NSec3RandomSaltLength.ToString(); }
+						}
+						Else
+						{
+							$ScriptInformation += @{ Data = "User given salt"; Value = $DNSSECSettings.NSec3UserSalt; }
+						}
+					}
+					Else
+					{
+						$ScriptInformation += @{ Data = "Do not use salt"; Value = "True"; }
+					}
+				}
+				Else
+				{
+					$ScriptInformation += @{ Data = "Use NSEC"; Value = "True"; }
+				}
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Next Secure (NSEC)"
+				If($DNSSECSettings.DenialOfExistence -eq "NSec3")
+				{
+					Line 4 "Use NSEC3`t`t`t`t: " "True"
+					Line 4 "Iterations`t`t`t`t: " $DNSSECSettings.NSec3Iterations.ToString()
+					If($DNSSECSettings.IsNSec3SaltConfigured -eq $True)
+					{
+						Line 4 "Use salt`t`t`t`t: " "True"
+						If($DNSSECSettings.NSec3UserSalt -eq "-")
+						{
+							Line 4 "Generate a random salt of length`t: " $DNSSECSettings.NSec3RandomSaltLength.ToString()
+						}
+						Else
+						{
+							Line 4 "User given salt`t`t`t`t: " $DNSSECSettings.NSec3UserSalt
+						}
+					}
+					Else
+					{
+						Line 4 "Do not use salt`t`t`t`t: " "True"
+					}
+				}
+				Else
+				{
+					Line 4 "Use NSEC`t`t`t`t: " "True"
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Next Secure (NSEC)"
+				$rowdata = @()
+				If($DNSSECSettings.DenialOfExistence -eq "NSec3")
+				{
+					$columnHeaders = @("Use NSEC3",($htmlsilver -bor $htmlbold),"True",$htmlwhite)
+					$rowdata += @(,('Iterations',($htmlsilver -bor $htmlbold),$DNSSECSettings.NSec3Iterations.ToString(),$htmlwhite))
+					If($DNSSECSettings.IsNSec3SaltConfigured -eq $True)
+					{
+						$rowdata += @(,('Use salt',($htmlsilver -bor $htmlbold),"True",$htmlwhite))
+						If($DNSSECSettings.NSec3UserSalt -eq "-")
+						{
+							$rowdata += @(,('Generate a random salt of length',($htmlsilver -bor $htmlbold),$DNSSECSettings.NSec3RandomSaltLength.ToString(),$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,('User given salt',($htmlsilver -bor $htmlbold),$DNSSECSettings.NSec3UserSalt,$htmlwhite))
+						}
+					}
+					Else
+					{
+						$rowdata += @(,('Do not use salt',($htmlsilver -bor $htmlbold),"True",$htmlwhite))
+					}
+				}
+				Else
+				{
+					$columnHeaders = @("Use NSEC",($htmlsilver -bor $htmlbold),"True",$htmlwhite)
+				}
+
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Trust Anchor"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				If($DNSSECSettings.DistributeTrustAnchor -contains "None")
+				{
+					$ScriptInformation += @{ Data = "Enable the distribution of trust anchors for this zone"; Value = "False"; }
+				}
+				Else
+				{
+					$ScriptInformation += @{ Data = "Enable the distribution of trust anchors for this zone"; Value = "True"; }
+				}
+				If($DNSSECSettings.EnableRfc5011KeyRollover -eq $True)
+				{
+					$ScriptInformation += @{ Data = "Enable automatic update of trust anchors on key rollover (RFC 5011)"; Value = "True"; }
+				}
+				Else
+				{
+					$ScriptInformation += @{ Data = "Enable automatic update of trust anchors on key rollover (RFC 5011)"; Value = "False"; }
+				}
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Trust Anchor"
+				If($DNSSECSettings.DistributeTrustAnchor -contains "None")
+				{
+					Line 4 "Enable the distribution of trust "
+					Line 4 "anchors for this zone`t`t`t: " "False"
+				}
+				Else
+				{
+					Line 4 "Enable the distribution of trust "
+					Line 4 "anchors for this zone`t`t`t: " "True"
+				}
+				If($DNSSECSettings.EnableRfc5011KeyRollover -eq $True)
+				{
+					Line 4 "Enable automatic update of trust "
+					Line 4 "anchors on key rollover (RFC 5011)`t: " "True"
+				}
+				Else
+				{
+					Line 4 "Enable automatic update of trust "
+					Line 4 "anchors on key rollover (RFC 5011)`t: " "False"
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Trust Anchor"
+				$rowdata = @()
+				If($DNSSECSettings.DistributeTrustAnchor -contains "None")
+				{
+					$columnHeaders = @("Enable the distribution of trust anchors for this zone",($htmlsilver -bor $htmlbold),"False",$htmlwhite)
+				}
+				Else
+				{
+					$columnHeaders = @("Enable the distribution of trust anchors for this zone",($htmlsilver -bor $htmlbold),"True",$htmlwhite)
+				}
+				If($DNSSECSettings.EnableRfc5011KeyRollover -eq $True)
+				{
+					$rowdata += @(,('Enable automatic update of trust anchors on key rollover (RFC 5011)',($htmlsilver -bor $htmlbold),"True",$htmlwhite))
+				}
+				Else
+				{
+					$rowdata += @(,('Enable automatic update of trust anchors on key rollover (RFC 5011)',($htmlsilver -bor $htmlbold),"False",$htmlwhite))
+				}
+
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+
+			<#DSRecordGenerationAlgorithm   : 
+			{Sha1, Sha256, Sha384} = All
+			{Sha1, Sha256} = SHA-1 and SHA-256
+			{Sha1, Sha384} = SHA-1 and SHA-384
+			{None} = None
+			{Sha1} = SHA-1
+			{Sha256} = SHA-256
+			{Sha256, Sha384} = SHA-256 and SHA-384
+			{Sha384} = SHA-384#>
+
+			If($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = "All"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256")
+			{
+				 $DNSSECSettingslabel = " SHA-1 and SHA-256"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = " SHA-1 and SHA-384"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "None")
+			{
+				 $DNSSECSettingslabel = "None"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = "SHA-256 and SHA-384"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1")
+			{
+				 $DNSSECSettingslabel = "SHA-1"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256")
+			{
+				 $DNSSECSettingslabel = "SHA-256"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = "SHA-384"
+			} 
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Advanced"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				$ScriptInformation += @{ Data = "Signing and polling parameters"; Value = ""; }
+				$ScriptInformation += @{ Data = "   DS record generation algorithm"; Value = $DNSSECSettingslabel; }
+				$ScriptInformation += @{ Data = "   DS record TTL (seconds)"; Value = $DNSSECSettings.DSRecordSetTTL.TotalSeconds.ToString(); }
+				$ScriptInformation += @{ Data = "   DNSKEY record TTL (seconds)"; Value = $DNSSECSettings.DnsKeyRecordSetTTL.TotalSeconds.ToString(); }
+				$ScriptInformation += @{ Data = "   Signature inception (hours)"; Value = $DNSSECSettings.SignatureInceptionOffset.Hours.ToString(); }
+				$ScriptInformation += @{ Data = "   Secure delegation polling pd (hours)"; Value = $DNSSECSettings.SecureDelegationPollingPeriod.Hours.ToString(); }
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Advanced"
+				Line 4 "Signing and polling parameters" 
+				Line 4 "   DS record generation algorithm`t: " $DNSSECSettingslabel
+				Line 4 "   DS record TTL (seconds)`t`t: " $DNSSECSettings.DSRecordSetTTL.TotalSeconds.ToString()
+				Line 4 "   DNSKEY record TTL (seconds)`t`t: " $DNSSECSettings.DnsKeyRecordSetTTL.TotalSeconds.ToString()
+				Line 4 "   Signature inception (hours)`t`t: " $DNSSECSettings.SignatureInceptionOffset.Hours.ToString()
+				Line 4 "   Secure delegation polling pd (hours)`t: " $DNSSECSettings.SecureDelegationPollingPeriod.Hours.ToString()
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Advanced"
+				$rowdata = @()
+				$columnHeaders = @("Signing and polling parameters",($htmlsilver -bor $htmlbold),"",$htmlwhite)
+				$rowdata += @(,('   DS record generation algorithm',($htmlsilver -bor $htmlbold),$DNSSECSettingslabel,$htmlwhite))
+				$rowdata += @(,('   DS record TTL (seconds)',($htmlsilver -bor $htmlbold),$DNSSECSettings.DSRecordSetTTL.TotalSeconds.ToString(),$htmlwhite))
+				$rowdata += @(,('   DNSKEY record TTL (seconds)',($htmlsilver -bor $htmlbold),$DNSSECSettings.DnsKeyRecordSetTTL.TotalSeconds.ToString(),$htmlwhite))
+				$rowdata += @(,('   Signature inception (hours)',($htmlsilver -bor $htmlbold),$DNSSECSettings.SignatureInceptionOffset.Hours.ToString(),$htmlwhite))
+				$rowdata += @(,('   Secure delegation polling pd (hours)',($htmlsilver -bor $htmlbold),$DNSSECSettings.SecureDelegationPollingPeriod.Hours.ToString(),$htmlwhite))
+
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+		}
+		ElseIf($? -and $Null -eq $DNSSECSettings)
+		{
+			$txt = "There are no DNSSEC settings for zone $($DNSZone.ZoneName)"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt
+				WriteHTMLLine 0 0 " "
+			}
+		}
+		Else
+		{
+			$txt = "DNSSEC settings for zone $($DNSZone.ZoneName) could not be retrieved"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt
 				WriteHTMLLine 0 0 " "
 			}
 		}
@@ -7260,7 +7701,7 @@ Function OutputTrustPoint
 {
 	Param([object] $Trust, [object] $Anchor)
 
-	Write-Verbose "$(Get-Date): `tProcessing $Trust.TrustPointName"
+	Write-Verbose "$(Get-Date): `tProcessing $($Trust.TrustPointName)"
 	
 	If($Anchor.TrustAnchorData.ZoneKey)
 	{
@@ -7282,11 +7723,13 @@ Function OutputTrustPoint
 		$SEP = "Selected"
 		Switch ($Anchor.TrustAnchorData.CryptoAlgorithm)
 		{	
-			"RsaSha1"		{$SEPAlgorithm = "RSA/SHA-1"; Break}
-			"RsaSha1NSec3"	{$SEPAlgorithm = "RSA/SHA-1 (NSEC3)"; Break}
-			"RsaSha256"		{$SEPAlgorithm = "RSA/SHA-256"; Break}
-			"RsaSha512"		{$SEPAlgorithm = "RSA/SHA-512"; Break}
-			Default 		{$SEPAlgorithm = "Unknown: Algorithm = $($Anchor.TrustAnchorData.CryptoAlgorithm)"; Break}
+			"RsaSha1"			{$SEPAlgorithm = "RSA/SHA-1"; Break}
+			"RsaSha1NSec3"		{$SEPAlgorithm = "RSA/SHA-1 (NSEC3)"; Break}
+			"RsaSha256"			{$SEPAlgorithm = "RSA/SHA-256"; Break}
+			"RsaSha512"			{$SEPAlgorithm = "RSA/SHA-512"; Break}
+			"ECDsaP256Sha256"	{$SEPAlgorithm = "ECDSA256/SHA-256"; Break} #added in V2.00
+			"ECDsaP384Sha384"	{$SEPAlgorithm = "ECDSAP384/SHA-384"; Break} #added in V2.00
+			Default 			{$SEPAlgorithm = "Unknown: Algorithm = $($Anchor.TrustAnchorData.CryptoAlgorithm)"; Break}
 		}
 	}
 	Else
@@ -7307,8 +7750,11 @@ Function OutputTrustPoint
 		}
 		[System.Collections.Hashtable[]] $ScriptInformation = @()
 		$ScriptInformation += @{ Data = "Name"; Value = "(Same as parent folder)"; }
-		$ScriptInformation += @{ Data = "Status"; Value = $Trust.TrustPointState; }
-		#$ScriptInformation += @{ Data = "Type"; Value = "Can't find"; }
+		$ScriptInformation += @{ Data = "Status"; Value = $Trust.TrustPointState; } # added in V2.00
+		If( $Trust.PSObject.Properties[ 'TrustPointType' ] )
+		{
+			$ScriptInformation += @{ Data = "Type"; Value = $Trust.TrustPointType; }
+		}
 		$ScriptInformation += @{ Data = "Valid From"; Value = $Trust.LastActiveRefreshTime; }
 		$ScriptInformation += @{ Data = "Valid To"; Value = $Trust.NextActiveRefreshTime; }
 		$ScriptInformation += @{ Data = "Fully qualified domain name (FQDN)"; Value = $Trust.TrustPointName; }
@@ -7348,7 +7794,10 @@ Function OutputTrustPoint
 		}
 		Line 2 "Name`t`t`t`t`t`t: (Same as parent folder)"
 		Line 2 "Status`t`t`t`t`t`t: " $Trust.TrustPointState
-		#Line 2 "Type`t`t`t`t`t`t: " "Can't find"
+		If( $Trust.PSObject.Properties[ 'TrustPointType' ] )
+		{
+			Line 2 "Type`t`t`t`t`t`t: " $Trust.TrustPointType # added in V2.00
+		}
 		Line 2 "Valid From`t`t`t`t`t: " $Trust.LastActiveRefreshTime
 		Line 2 "Valid To`t`t`t`t`t: " $Trust.NextActiveRefreshTime
 		Line 2 "Fully qualified domain name (FQDN)`t`t: " $Trust.TrustPointName
@@ -7374,7 +7823,10 @@ Function OutputTrustPoint
 		$rowdata = @()
 		$columnHeaders = @("Name",($htmlsilver -bor $htmlbold),"(Same as parent folder)",$htmlwhite)
 		$rowdata += @(,('Status',($htmlsilver -bor $htmlbold),$Trust.TrustPointState,$htmlwhite))
-		#$rowdata += @(,('Type',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
+		If( $Trust.PSObject.Properties[ 'TrustPointType' ] )
+		{
+			$rowdata += @(,('Type',($htmlsilver -bor $htmlbold),$Trust.TrustPointType,$htmlwhite)) # added in V2.00
+		}
 		$rowdata += @(,('Valid From',($htmlsilver -bor $htmlbold),$Trust.LastActiveRefreshTime,$htmlwhite))
 		$rowdata += @(,('Valid To',($htmlsilver -bor $htmlbold),$Trust.NextActiveRefreshTime,$htmlwhite))
 		$rowdata += @(,('Fully qualified domain name (FQDN)',($htmlsilver -bor $htmlbold),$Trust.TrustPointName,$htmlwhite))
