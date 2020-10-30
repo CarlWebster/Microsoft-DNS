@@ -12,7 +12,11 @@
 	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text, or 
 	HTML.
 
-	Creates a document named DNS.docx (or .PDF or .TXT or .HTML).
+	Creates a document named either: 
+		DNS Inventory Report for Server DNSServerName for the Domain <domain>.HTML 
+		(or .DOCX or .PDF or .TXT).
+		DNS Inventory Report for All DNS Servers for the Domain <domain>.HTML 
+		(or .DOCX or .PDF or .TXT).
 	
 	Version 2.0 changes the default output report from Word to HTML.
 	
@@ -23,7 +27,7 @@
 
 	Requires the DNSServer module.
 	
-	Word and PDF documents include a Cover Page, Table of Contents and Footer.
+	Word and PDF documents include a Cover Page, Table of Contents, and Footer.
 	
 	Includes support for the following language versions of Microsoft Word:
 		Catalan
@@ -69,20 +73,25 @@
 	Creates a formatted text file with a .txt extension.
 	This parameter is disabled by default.
 .PARAMETER AddDateTime
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	Adds a date Timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
 	June 1, 2020 at 6PM is 2020-06-01_1800.
-	Output filename will be DomainName_DNS_2020-06-01_1800.docx (or .pdf).
+	The output filename will be either:
+		DNS Inventory Report for Server <server> for the Domain 
+		<domain>_2020-06-01_1800.html (or .txt or .docx or .pdf)
+		DNS Inventory for All DNS Servers for the Domain 
+		<domain>_2020-06-01_1800.html (or .txt or .docx or .pdf)
 	This parameter is disabled by default.
 .PARAMETER AllDNSServers
 	The script will process all AD DNS servers that are online.
-	"All AD DNS Servers" is used for the report title.
+	"DNS Inventory Report for All DNS Servers for the Domain <domain>" is used for the 
+	report title.
 	This parameter is disabled by default.
 	
 	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
 	This parameter has an alias of ALL.
 .PARAMETER CompanyAddress
-	Company Address to use for the Cover Page, if the Cover Page has the Address field.
+	Company Address used for the Cover Page, if the Cover Page has the Address field.
 	
 	The following Cover Pages have an Address field:
 		Banded (Word 2013/2016)
@@ -98,7 +107,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CA.
 .PARAMETER CompanyEmail
-	Company Email to use for the Cover Page, if the Cover Page has the Email field.  
+	Company Email used for the Cover Page, if the Cover Page has the Email field.  
 	
 	The following Cover Pages have an Email field:
 		Facet (Word 2013/2016)
@@ -106,7 +115,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CE.
 .PARAMETER CompanyFax
-	Company Fax to use for the Cover Page, if the Cover Page has the Fax field.  
+	Company Fax used for the Cover Page, if the Cover Page has the Fax field.  
 	
 	The following Cover Pages have a Fax field:
 		Contrast (Word 2010)
@@ -115,7 +124,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CF.
 .PARAMETER CompanyName
-	Company Name to use for the Cover Page.  
+	Company Name used for the Cover Page.  
 	The default value is contained in 
 	HKCU:\Software\Microsoft\Office\Common\UserInfo\CompanyName or
 	HKCU:\Software\Microsoft\Office\Common\UserInfo\Company, whichever is populated 
@@ -124,7 +133,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CN.
 .PARAMETER CompanyPhone
-	Company Phone to use for the Cover Page, if the Cover Page has the Phone field.  
+	Company Phone used for the Cover Page, if the Cover Page has the Phone field.  
 	
 	The following Cover Pages have a Phone field:
 		Contrast (Word 2010)
@@ -133,7 +142,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CPh.
 .PARAMETER ComputerName
-	Specifies a computer to use to run the script against.
+	Specifies a computer used to run the script against.
 	ComputerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
 	If entered as localhost, the actual computer name is determined and used.
 	If entered as an IP address, an attempt is made to determine and use the actual 
@@ -201,7 +210,7 @@
 	Outputs all errors to a text file at the end of the script.
 	
 	This is used when the script developer requests more troubleshooting data.
-	Text file is placed in the same folder from where the script is run.
+	The text file is placed in the same folder from where the script runs.
 	
 	This parameter is disabled by default.
 .PARAMETER Folder
@@ -210,12 +219,12 @@
 	Generates a log file for troubleshooting.
 .PARAMETER ScriptInfo
 	Outputs information about the script to a text file.
-	Text file is placed in the same folder from where the script is run.
+	The text file is placed in the same folder from where the script runs.
 	
 	This parameter is disabled by default.
 	This parameter has an alias of SI.
 .PARAMETER UserName
-	User name to use for the Cover Page and Footer.
+	User name used for the Cover Page and Footer.
 	Default value is contained in $env:username
 	This parameter has an alias of UN.
 	This parameter is only valid with the MSWORD and PDF output parameters.
@@ -293,6 +302,23 @@
 
 	Creates an HTML document.
 .EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -ComputerName localhost
+	
+	The script resolves localhost to $env:computername, for example, DNSServer01.
+	The script runs remotely against the DNS server DNSServer01 and not localhost.
+	The output filename uses the server name DNSServer01 and not localhost.
+	
+	Creates an HTML file.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -ComputerName 192.168.1.222
+	
+	The script attempts to resolve 192.168.1.222 to the DNS hostname, for example, 
+	DNSServer01.
+	The script runs remotely against the DNS server DNSServer01 and not 192.18.1.222.
+	The output filename uses the server name DNSServer01 and not 192.168.1.222.
+
+	Creates an HTML file.
+.EXAMPLE
 	PS C:\PSScript .\DNS_Inventory_V2.ps1 -CompanyName "Carl Webster Consulting" 
 	-CoverPage "Mod" -UserName "Carl Webster" -ComputerName DNSServer01 -MSWord
 
@@ -301,7 +327,7 @@
 		Mod for the Cover Page format.
 		Carl Webster for the User Name.
 	
-	The script runs remotelyy against DNS server DNSServer01.
+	The script runs remotely against the DNS server DNSServer01.
 .EXAMPLE
 	PS C:\PSScript .\DNS_Inventory_V2.ps1 -CN "Carl Webster Consulting" -CP "Mod"
 	-UN "Carl Webster" -ComputerName DNSServer02 -Details -MSWord
@@ -311,15 +337,16 @@
 		Mod for the Cover Page format (alias CP).
 		Carl Webster for the User Name (alias UN).
 
-	The script runs remotely against DNS server DNSServer02.
+	The script runs remotely against the DNS server DNSServer02.
 	The output contains DNS Resource Record information.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -AddDateTime
 	
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	Adds a date Timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
 	July 25, 2020 at 6PM is 2020-07-25_1800.
-	The output filename is DomainName_DNS_2020-07-25_1800.html.
+	The output filename is DNS Inventory Report for Server <server> for the Domain 
+	<domain>_2020-07-25_1800.html.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -PDF -AddDateTime
 	
@@ -333,10 +360,11 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	Adds a date Timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
 	July 25, 2020 at 6PM is 2020-07-25_1800.
-	The output filename is DomainName_DNS_2020-07-25_1800.PDF.
+	The output filename is DNS Inventory Report for Server <server> for the Domain 
+	<domain>_2020-07-25_1800.pdf.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -Folder \\FileServer\ShareName
 	
@@ -370,14 +398,14 @@
 	
 	Creates four reports: HTML, Microsoft Word, PDF, and plain text.
 	
-	Creates a text file named DNSInventoryScriptErrors_yyyy-MM-dd_HHmm.txt that 
-	contains up to the last 250 errors reported by the script.
+	Creates a text file named DNSInventoryScriptErrors_yyyy-MM-dd_HHmm for the Domain 
+	<domain>.txt that contains up to the last 250 errors reported by the script.
 	
-	Creates a text file named DNSInventoryScriptInfo_yyyy-MM-dd_HHmm.txt that 
-	contains all the script parameters and other basic information.
+	Creates a text file named DNSInventoryScriptInfo_yyyy-MM-dd_HHmm for the Domain 
+	<domain>.txt that contains all the script parameters and other basic information.
 	
 	Creates a text file for transcript logging named 
-	DNSDocScriptTranscript_yyyy-MM-dd_HHmm.txt.
+	DNSDocScriptTranscript_yyyy-MM-dd_HHmm for the Domain <domain>.txt.
 
 	For Microsoft Word and PDF, uses all Default values.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
@@ -389,7 +417,7 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 	
-	The script runs remotely against DNS server DNSServer.
+	The script runs remotely against the DNS server DNSServer.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -SmtpServer mail.domain.tld -From 
 	XDAdmin@domain.tld -To ITGroup@domain.tld	
@@ -397,7 +425,7 @@
 	The script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
 	sending to ITGroup@domain.tld.
 
-	The script will use the default SMTP port 25 and will not use SSL.
+	The script will use the default SMTP port 25 and does not use SSL.
 
 	If the current user's credentials are not valid to send email, 
 	the user will be prompted to enter valid credentials.
@@ -413,7 +441,7 @@
 	To send unauthenticated email using an email relay server requires the From email account 
 	to use the name Anonymous.
 
-	The script will use the default SMTP port 25 and will not use SSL.
+	The script will use the default SMTP port 25 and does not use SSL.
 	
 	***GMAIL/G SUITE SMTP RELAY***
 	https://support.google.com/a/answer/2956491?hl=en
@@ -423,7 +451,7 @@
 	the "Less secure app access" option on your account.
 	***GMAIL/G SUITE SMTP RELAY***
 
-	The script will generate an anonymous secure password for the anonymous@domain.tld 
+	The script generates an anonymous, secure password for the anonymous@domain.tld 
 	account.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -SmtpServer 
@@ -466,15 +494,15 @@
 	If the current user's credentials are not valid to send email, 
 	the user will be prompted to enter valid credentials.
 .INPUTS
-	None.  You cannot pipe objects to this script.
+	None. You cannot pipe objects to this script.
 .OUTPUTS
-	No objects are output from this script.  
-	This script creates a Word, PDF, Formatted Text or HTML document.
+	No objects are output from this script.  This script creates a Word, PDF, HTML or 
+	formatted text document.
 .NOTES
 	NAME: DNS_Inventory_V2.ps1
 	VERSION: 2.00
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: October 27, 2020
+	LASTEDIT: October 30, 2020
 #>
 
 #endregion
@@ -583,39 +611,47 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 2.00 26-Oct-2020
-#	Add processing Forward Lookup Zones that are Signed
+#Version 2.00 2-Nov-2020
+#	Added processing Forward Lookup Zones that are Signed
 #		Key Master
 #		Next Secure (NSEC)
 #		Trust Anchor
 #		Advanced
 #	Changed color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
-#	Clean up the formatting of Text output
-#	Comment out Function CheckHTMLColor as it is no longer needed
+#	Cleaned up the formatting of Text output
+#	Commented out Function CheckHTMLColor as it is no longer needed
+#	For the -Dev, -Log, and -ScriptInfo output files, add the text "for the Domain <domain>"
 #	General code cleanup
-#	HTML is now the default output format.
-#	Stop using a Switch statement for HTML colors and use a pre-calculated HTML array (for speed).
+#	HTML is now the default output format
+#	Removed the original function TestComputerName and renamed TestComputerName2 to TestComputerName
+#		Added Functions testPort and testPortsOnOneIP
+#	Stopped using a Switch statement for HTML colors and use a pre-calculated HTML array (for speed)
 #	Updated Function ShowScriptOptions and ProcessScriptEnd for allowing multiple output types
+#	Updated the help text
+#	Updated the ReadMe file (https://carlwebster.sharefile.com/d-s247b4252c4e4865a)
 #	Updated the following Functions to the latest versions
-#		SetWordHashTable
+#		AddHTMLTable
+#		AddWordTable
 #		CheckWordPrereq
+#		FormatHTMLTable
+#		ProcessDocumentOutput
+#		SaveandCloseDocumentandShutdownWord
+#		SaveandCloseHTMLDocument
+#		SaveandCloseTextDocument
+#		SetFilenames
+#		SetWordCellFormat
+#		SetWordHashTable
+#		SetupHTML
+#		SetupText
 #		SetupWord
 #		WriteHTMLLine
-#		AddHTMLTable
-#		FormatHTMLTable
-#		SetupHTML
-#		AddWordTable
-#		SetWordCellFormat
-#		SaveandCloseDocumentandShutdownWord
-#		SetupText
-#		SaveandCloseTextDocument
-#		SaveandCloseHTMLDocument
-#		SetFilenames
-#		ProcessDocumentOutput
-#	Updated help text
-#	Updated ReadMe file (https://carlwebster.sharefile.com/d-s247b4252c4e4865a)
+#	Updated the report title and output filenames to:
+#		For using -Computername:
+#			DNS Inventory Report for Server <DNSServerName> for the Domain <domain>
+#		For using -AllDNSServers:
+#			DNS Inventory Report for All DNS Servers for the Domain <domain>
 #	You can now select multiple output formats. This required extensive code changes.
-
+#
 #Version 1.22 8-May-2020
 #	Add checking for a Word version of 0, which indicates the Office installation needs repairing
 #	Change color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
@@ -735,7 +771,14 @@ $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
 $global:emailCredentials = $Null
+$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
 
+If($ComputerName -eq "localhost")
+{
+	$ComputerName = $env:ComputerName
+	Write-Verbose "$(Get-Date): Computer name has been changed from localhost to $ComputerName"
+}
+	
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
 {
 	$HTML = $True
@@ -820,7 +863,7 @@ If($Script:pwdpath.EndsWith("\"))
 If($Log) 
 {
 	#start transcript logging
-	$Script:LogPath = "$Script:pwdpath\DNSDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	$Script:LogPath = "$Script:pwdpath\DNSDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 	
 	try 
 	{
@@ -838,7 +881,7 @@ If($Log)
 If($Dev)
 {
 	$Error.Clear()
-	$Script:DevErrorFile = "$Script:pwdPath\DNSInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	$Script:DevErrorFile = "$Script:pwdPath\DNSInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 }
 
 If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($To))
@@ -3730,135 +3773,131 @@ Function SetFilenames
 	ShowScriptOptions
 }
 
+Function testPort
+{
+	Param
+	(
+	[String] $computer,
+	[Int[]]  $ports,
+	[Int]    $timeOut,
+	[Bool]   $quiet = $false
+	)
+
+	If( $result = $computer -as [System.Net.IpAddress] )
+	{
+		## we got passed an IP address, not a DNS name. Resolve-DnsName doesn't just
+		## pass it through, but instead returns a PTR record. I consider it broken,
+		## but it is what it is.
+		$success = testPortsOnOneIP $computer $ports $timeOut $result.AddressFamily $quiet
+
+		Return $success
+	}
+
+	$results = Resolve-DnsName -Name $computer -Type A_AAAA -EA 0 4>$Null
+
+	$success = $false
+
+	ForEach( $result in $results )
+	{
+		$type = $result.Type.ToString()
+		If( $type -ne 'A' -and $type -ne 'AAAA' )
+		{
+			Continue
+		}
+
+		$ip = $result.IPAddress
+		If( $type -eq 'AAAA' )
+		{
+			If( -not ( canRoute $ip ) )
+			{
+				Continue
+			}
+
+			$family = [System.Net.Sockets.AddressFamily]::InterNetworkv6
+		}
+		Else
+		{
+			$family = [System.Net.Sockets.AddressFamily]::InterNetwork
+		}
+
+		$success = $success -or ( testPortsOnOneIP $ip $ports $timeOut $family $quiet )
+	}
+
+	$results = $null
+
+	$success
+}
+
+Function testPortsOnOneIP
+{
+	Param
+	(
+		[String] $ip,
+		[Int[]]  $ports,
+		[Int]    $timeOut,
+		[System.Net.Sockets.AddressFamily] $family,
+		[Bool]   $quiet
+	)
+
+	$success = $false
+
+	ForEach( $port in $ports )
+	{
+		$tcpclient = New-Object System.Net.Sockets.TcpClient( $family )
+
+		$async = $tcpclient.BeginConnect( $ip, $port, $null, $null )
+		$wait  = $async.AsyncWaitHandle.WaitOne( $timeOut, $false )
+		If( !$wait )
+		{
+			$tcpclient.Close()
+			Continue
+		}
+		Else
+		{
+			$error.Clear()
+			$null = $tcpclient.EndConnect( $async )
+			If( $error -and $error.Count -gt 0 )
+			{
+			}
+			Else
+			{
+				$success = $true
+			}
+			$tcpclient.Close()
+		}
+
+		$wait      = $null
+		$async     = $null
+		$tcpclient = $null
+
+		If( $success )
+		{
+			## break
+		}
+	}
+
+	$success
+}
+
 Function TestComputerName
 {
 	Param([string]$Cname)
+
+	$DNSPort = 53
+	$DNSTimeout = 300	#milliseconds
+
 	If(![String]::IsNullOrEmpty($CName)) 
 	{
 		#get computer name
 		#first test to make sure the computer is reachable
-		Write-Verbose "$(Get-Date): Testing to see if $CName is online and reachable"
-		If(Test-Connection -ComputerName $CName -quiet)
+		Write-Verbose "$(Get-Date): Testing to see if $CName is online, reachable, and a DNS server"
+		If(TestPort $CName $DNSPort $DNSTimeout)
 		{
-			Write-Verbose "$(Get-Date): Server $CName is online."
+			Write-Verbose "$(Get-Date): Server $CName is online and responding on port 53"
 		}
 		Else
 		{
-			Write-Verbose "$(Get-Date): Computer $CName is offline"
-			$ErrorActionPreference = $SaveEAPreference
-			Write-Error "
-			`n`n
-			`t`t
-			Computer $CName is offline.
-			`n`n
-			`t`t
-			Script cannot continue.
-			`n`n
-			"
-			Exit
-		}
-	}
-
-	#if computer name is localhost, get actual computer name
-	If($CName -eq "localhost")
-	{
-		$CName = $env:ComputerName
-		Write-Verbose "$(Get-Date): Computer name has been renamed from localhost to $CName"
-	}
-
-	#if computer name is an IP address, get host name from DNS
-	#http://blogs.technet.com/b/gary/archive/2009/08/29/resolve-ip-addresses-to-hostname-using-powershell.aspx
-	#help from Michael B. Smith
-	$ip = $CName -as [System.Net.IpAddress]
-	If($ip)
-	{
-		$Result = [System.Net.Dns]::gethostentry($ip).AddressList.IPAddressToString
-		
-		If($? -and $Null -ne $Result)
-		{
-			$CName = $Result.HostName
-			Write-Verbose "$(Get-Date): Computer name has been renamed from $($ip) to $CName"
-		}
-		Else
-		{
-			Write-Warning "Unable to resolve $CName to a hostname"
-		}
-	}
-	Else
-	{
-		#computer is online but for some reason $ComputerName cannot be converted to a System.Net.IpAddress
-	}
-
-	$Results = Get-DNSServer -ComputerName $CName -EA 0 2> $Null 3>$Null 4>$Null
-	If($Null -ne $Results)
-	{
-		#the computer is a dns server
-		Write-Verbose "$(Get-Date): Computer $CName is a DNS Server"
-		Write-Verbose "$(Get-Date): "
-		Return $CName
-	}
-	ElseIf($Null -eq $Results)
-	{
-		#the computer is not a dns server
-		Write-Verbose "$(Get-Date): Computer $CName is not a DNS Server"
-		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "
-		`n`n
-		`t`t
-		Computer $CName is not a DNS Server.
-		`n`n
-		`t`t
-		Rerun the script using -ComputerName with a valid DNS server name.
-		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
-		Exit
-	}
-
-	Return $CName
-}
-
-Function TestComputerName2
-{
-	Param([string]$Cname)
-	
-	If(![String]::IsNullOrEmpty($CName)) 
-	{
-		#get computer name
-		#first test to make sure the computer is reachable
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is online and reachable"
-		If(Test-Connection -ComputerName $CName -quiet)
-		{
-			Write-Verbose "$(Get-Date): Server $($CName) is online."
-		}
-		Else
-		{
-			Write-Verbose "$(Get-Date): Computer $($CName) is offline"
-			Write-Output "$(Get-Date): Computer $($CName) is offline" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
-			Return "BAD"
-		}
-	}
-
-	#if computer name is localhost, get actual computer name
-	If($CName -eq "localhost")
-	{
-		$CName = $env:ComputerName
-		Write-Verbose "$(Get-Date): Computer name has been changed from localhost to $($CName)"
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
-		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
-		If($? -and $Null -ne $results)
-		{
-			#the computer is a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
-			Return $CName
-		}
-		ElseIf(!$? -or $Null -eq $results)
-		{
-			#the computer is not a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
-			Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Write-Output "$(Get-Date): Computer $CName is either offline or not a DNS server (port 53)" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 			Return "BAD"
 		}
 	}
@@ -3874,45 +3913,45 @@ Function TestComputerName2
 		If($? -and $Null -ne $Result)
 		{
 			$CName = $Result.HostName
-			Write-Verbose "$(Get-Date): Computer name has been changed from $($ip) to $($CName)"
-			Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
+			Write-Verbose "$(Get-Date): Computer name has been changed from $ip to $CName"
+			Write-Verbose "$(Get-Date): Testing to see if $CName is a DNS Server"
 			$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
 			If($? -and $Null -ne $results)
 			{
 				#the computer is a dns server
-				Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+				Write-Verbose "$(Get-Date): Computer $CName is a DNS Server"
 				Return $CName
 			}
 			ElseIf(!$? -or $Null -eq $results)
 			{
 				#the computer is not a dns server
-				Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
-				Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+				Write-Verbose "$(Get-Date): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
+				Write-Output "$(Get-Date): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 				Return "BAD"
 			}
 		}
 		Else
 		{
-			Write-Verbose "$(Get-Date): Unable to resolve $($CName) to a hostname"
-			Write-Output "$(Get-Date): Unable to resolve $($CName) to a hostname" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Write-Verbose "$(Get-Date): Unable to resolve $CName to a hostname"
+			Write-Output "$(Get-Date): Unable to resolve $CName to a hostname" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 			Return "BAD"
 		}
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
+		Write-Verbose "$(Get-Date): Testing to see if $CName is a DNS Server"
 		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
 		If($? -and $Null -ne $results)
 		{
 			#the computer is a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+			Write-Verbose "$(Get-Date): Computer $CName is a DNS Server"
 			Return $CName
 		}
 		ElseIf(!$? -or $Null -eq $results)
 		{
 			#the computer is not a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
-			Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Write-Verbose "$(Get-Date): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
+			Write-Output "$(Get-Date): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 			Return "BAD"
 		}
 	}
@@ -4038,17 +4077,28 @@ Function ProcessScriptStart
 {
 	$script:startTime = Get-Date
 
-	#pre 1.20
-	#$ComputerName = TestComputerName $ComputerName
-	#$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
-	#[string]$Script:Title = "DNS Inventory Report for $Script:RptDomain"
-	
 	$Script:DNSServerNames = @()
 	If($AllDNSServers -eq $False)
 	{
-		$ComputerName = TestComputerName $ComputerName
-		$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
-		$Script:DNSServerNames += $ComputerName
+		$CName = TestComputerName $ComputerName
+		If($CName -ne "BAD")
+		{
+			$Script:DNSServerNames += $CName
+		}
+		Else
+		{
+			$ErrorActionPreference = $SaveEAPreference
+			Write-Error "
+			`n`n
+			`t`t
+			Computer $ComputerName is offline or is not a DNS server (port 53).
+			`n`n
+			`t`t
+			Script cannot continue.
+			`n`n
+			"
+			Exit
+		}
 	}
 	Else
 	{
@@ -4085,21 +4135,21 @@ Function ProcessScriptStart
 				Write-Verbose "$(Get-Date): $($cnt) DNS server was found"
 			}
 			
-			$Script:BadDNSErrorFile = "$Script:pwdPath\BadDNSServers_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+			$Script:BadDNSErrorFile = "$Script:pwdPath\BadDNSServers_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 
 			ForEach($Server in $AllServers)
 			{
 				$TmpArray = $Server.Split("=").Split(",")
 				$DNSServer = $TmpArray[1]
 				
-				$Result = TestComputerName2 $DNSServer
+				$Result = TestComputerName $DNSServer
 				
 				If($Result -ne "BAD")
 				{
 					$Script:DNSServerNames += $Result
 				}
 			}
-			Write-Verbose "$(Get-Date): $($Script:DNSServerNames.Count) DHCP servers will be processed"
+			Write-Verbose "$(Get-Date): $($Script:DNSServerNames.Count) DNS servers will be processed"
 			Write-Verbose "$(Get-Date): "
 		}
 	}
@@ -4136,7 +4186,7 @@ Function ProcessScriptEnd
 
 	If($ScriptInfo)
 	{
-		$SIFile = "$Script:pwdPath\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+		$SIFile = "$Script:pwdPath\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime       : $AddDateTime" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "All DNS Servers    : $AllDNSServers" 4>$Null
@@ -7764,7 +7814,7 @@ Function OutputTrustPoint
 		$ScriptInformation += @{ Data = "Secure Entry Point"; Value = $SEP; }
 		$ScriptInformation += @{ Data = "Algorithm"; Value = $SEPAlgorithm; }
 		#$ScriptInformation += @{ Data = "Delete this record when it becomes stale"; Value = "Can't find"; }
-		#$ScriptInformation += @{ Data = "Record time stamp"; Value = "Can't find"; }
+		#$ScriptInformation += @{ Data = "Record Timestamp"; Value = "Can't find"; }
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -7807,7 +7857,7 @@ Function OutputTrustPoint
 		Line 2 "Secure Entry Point`t`t`t`t: " $SEP
 		Line 2 "Algorithm`t`t`t`t`t: " $SEPAlgorithm
 		#Line 2 "Delete this record when it becomes stale`t: " "Can't find"
-		#Line 2 "Record time stamp`t`t`t`t: " "Can't find"
+		#Line 2 "Record Timestamp`t`t`t`t: " "Can't find"
 		Line 0 ""
 	}
 	If($HTML)
@@ -7836,7 +7886,7 @@ Function OutputTrustPoint
 		$rowdata += @(,('Secure Entry Point',($htmlsilver -bor $htmlbold),$SEP,$htmlwhite))
 		$rowdata += @(,('Algorithm',($htmlsilver -bor $htmlbold),$SEPAlgorithm,$htmlwhite))
 		#$rowdata += @(,('Delete this record when it becomes stale',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
-		#$rowdata += @(,('Record time stamp',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
+		#$rowdata += @(,('Record Timestamp',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
 
 		$msg = ""
 		$columnWidths = @("200","200")
@@ -8076,13 +8126,13 @@ ProcessScriptStart
 #V1.20, add support for the AllDNSServers parameter
 If($AllDNSServers -eq $False)
 {
-	[string]$Script:Title = "$($Script:RptDomain)_DNS"
-	SetFileNames "$($Script:RptDomain)_DNS"
+	[string]$Script:Title = "DNS Inventory Report for Server $ComputerName for the Domain $Script:RptDomain"
+	SetFileNames "DNS Inventory Report for Server $ComputerName for the Domain $Script:RptDomain"
 }
 Else
 {
-	[string]$Script:Title = "DNS Inventory Report for All DNS Servers"
-	SetFileNames "DNS Inventory for All DNS Servers"
+	[string]$Script:Title = "DNS Inventory Report for All DNS Servers for the Domain $Script:RptDomain"
+	SetFileNames "DNS Inventory for All DNS Servers for the Domain $Script:RptDomain"
 }
 
 ForEach($DNSServer in $Script:DNSServerNames)
@@ -8103,7 +8153,7 @@ ForEach($DNSServer in $Script:DNSServerNames)
 Write-Verbose "$(Get-Date): Finishing up document"
 #end of document processing
 
-$AbstractTitle = "Microsoft DNS Inventory Report"
+$AbstractTitle = "DNS Inventory Report"
 $SubjectTitle = "DNS Inventory Report"
 
 UpdateDocumentProperties $AbstractTitle $SubjectTitle
