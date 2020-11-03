@@ -5,12 +5,23 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
-#Version 2.00 2-Nov-2020
+#Version 2.00 4-Nov-2020
+#	Added an Appendix A to give an overview of Several DNS server and zone configuration Items when using -AllDNSServers:
+#		DNS Forwarders
+#		Zone Type
+#		AD Integration
+#		Signed
+#		Dynamic Updates
+#		Aging Enabled
+#		Refresh Interval
+#		NoRefresh Interval
+#		Scavenge Servers
 #	Added processing Forward Lookup Zones that are Signed
 #		Key Master
 #		Next Secure (NSEC)
 #		Trust Anchor
 #		Advanced
+#	Changed all Write-Verbose $(Get-Date) to add -Format G to put the dates in the user's locale
 #	Changed color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
 #	Cleaned up the formatting of Text output
 #	Commented out Function CheckHTMLColor as it is no longer needed
