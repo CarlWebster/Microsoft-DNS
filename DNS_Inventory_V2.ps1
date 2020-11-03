@@ -618,6 +618,7 @@ Param(
 #		AD Integration
 #		Signed
 #		Dynamic Updates
+#		Replication Scope
 #		Aging Enabled
 #		Refresh Interval
 #		NoRefresh Interval
@@ -8238,6 +8239,7 @@ Function ProcessAppendixA
 					IsDsIntegrated    = $Zone.IsDsIntegrated.ToString()
 					IsSigned          = $Zone.IsSigned.ToString()
 					DynamicUpdate     = $Zone.DynamicUpdate
+					ReplicationScope  = $Zone.ReplicationScope
 					AgingEnabled      = $AgingEnabled     
 					RefreshInterval   = $RefreshInterval  
 					NoRefreshInterval = $NoRefreshInterval
@@ -8447,22 +8449,24 @@ Function OutputAppendixA
 				If(!$First -and $Save -ne "$($Item.ZoneName)")
 				{
 					$AppendixWordTable += @{ 
-						ComputerName      = "";
-						ZoneName          = "";
-						ZoneType          = "";
-						IsDsIntegrated    = "";
-						IsSigned          = "";
-						DynamicUpdate     = "";
+						ComputerName     = "";
+						ZoneName         = "";
+						ZoneType         = "";
+						IsDsIntegrated   = "";
+						IsSigned         = "";
+						DynamicUpdate    = "";
+						ReplicationScope = "";
 					}
 				}
 
 				$AppendixWordTable += @{ 
-					ComputerName      = $Item.ComputerName;
-					ZoneName          = $Item.ZoneName;
-					ZoneType          = $Item.ZoneType;
-					IsDsIntegrated    = $Item.IsDsIntegrated;
-					IsSigned          = $Item.IsSigned;
-					DynamicUpdate     = $Item.DynamicUpdate;
+					ComputerName     = $Item.ComputerName;
+					ZoneName         = $Item.ZoneName;
+					ZoneType         = $Item.ZoneType;
+					IsDsIntegrated   = $Item.IsDsIntegrated;
+					IsSigned         = $Item.IsSigned;
+					DynamicUpdate    = $Item.DynamicUpdate;
+					ReplicationScope = $Item.ReplicationScope
 				}
 				
 				$Save = "$($Item.ZoneName)"
@@ -8473,8 +8477,8 @@ Function OutputAppendixA
 			}
 			
 			$Table = AddWordTable -Hashtable $AppendixWordTable `
-			-Columns ZoneName, ComputerName, ZoneType, IsDsIntegrated, IsSigned, DynamicUpdate `
-			-Headers "Zone Name", "Computer Name", "Zone Type", "AD Integrated", "Signed", "Dynamic Update" `
+			-Columns ZoneName, ComputerName, ZoneType, IsDsIntegrated, IsSigned, DynamicUpdate, ReplicationScope `
+			-Headers "Zone Name", "Computer Name", "Zone Type", "AD Integrated", "Signed", "Dynamic Update", "Replication Scope" `
 			-Format $wdTableGrid `
 			-AutoFit $wdAutoFitContent;
 
@@ -8538,12 +8542,13 @@ Function OutputAppendixA
 		If($Text)
 		{
 			Line 1 "Zone Configuration"
-			Line 2 "Zone Name                      Computer Name                  Zone Type  AD         Signed Dynamic            Aging    Refresh     NoRefresh   Scavenge       " 
-			Line 2 "                                                                         Integrated        Update             Enabled  Interval    Interval    Servers        "
-			Line 2 "=============================================================================================================================================================="
-			#       123456789012345678901234567890S123456789012345678901234567890S1234567890S1234567890S123456S123456789012345678S1234567SS12345678901S12345678901S123456789012345
-			#                                                                     Secondary  False      False  NonsecureAndSecure False    99:99:99:99 99:99:99:99 255.255.255.255
-			#       0                              1                              2          3          4      5                  6        7           8           9
+			Line 0 ""
+			Line 2 "Zone Name                      Computer Name                  Zone Type  AD         Signed Dynamic            Replication Aging    Refresh     NoRefresh   Scavenge       " 
+			Line 2 "                                                                         Integrated        Update             Scope       Enabled  Interval    Interval    Servers        "
+			Line 2 "=========================================================================================================================================================================="
+			#       123456789012345678901234567890S123456789012345678901234567890S1234567890S1234567890S123456S123456789012345678S12345678901S1234567SS12345678901S12345678901S123456789012345
+			#                                                                     Secondary  False      False  NonsecureAndSecure Forest      False    99:99:99:99 99:99:99:99 255.255.255.255
+			#       0                              1                              2          3          4      5                  6           7           8           9        10
 			$Save = ""
 			$First = $True
 			ForEach($Item in $Script:DNSZones)
@@ -8553,13 +8558,14 @@ Function OutputAppendixA
 					Line 0 ""
 				}
 
-				Line 2 ( "{0,-30} {1,-30} {2,-10} {3,-10} {4,-6} {5,-18} {6,-7}  {7,-11} {8,-11} {9, -15}" -f `
+				Line 2 ( "{0,-30} {1,-30} {2,-10} {3,-10} {4,-6} {5,-18} {6,-11} {7,-7}  {8,-11} {9,-11} {10, -15}" -f `
 				$Item.ZoneName,
 				$Item.ComputerName, 
 				$Item.ZoneType,
 				$Item.IsDsIntegrated,
 				$Item.IsSigned,
 				$Item.DynamicUpdate,
+				$Item.ReplicationScope,
 				$Item.AgingEnabled,
 				$Item.RefreshInterval,
 				$Item.NoRefreshInterval,
@@ -8594,6 +8600,7 @@ Function OutputAppendixA
 				$Item.IsDsIntegrated,$htmlwhite,
 				$Item.IsSigned,$htmlwhite,
 				$Item.DynamicUpdate,$htmlwhite,
+				$Item.ReplicationScope,$htmlwhite,
 				$Item.AgingEnabled,$htmlwhite,
 				$Item.RefreshInterval,$htmlwhite,
 				$Item.NoRefreshInterval,$htmlwhite,
@@ -8612,6 +8619,7 @@ Function OutputAppendixA
 			'AD Integrated',($global:htmlsb),
 			'Signed',($global:htmlsb),
 			'Dynamic Update',($global:htmlsb),
+			'Replication Scope',($global:htmlsb),
 			'Aging Enabled',($global:htmlsb),
 			'Refresh Interval',($global:htmlsb),
 			'NoRefresh Interval',($global:htmlsb),

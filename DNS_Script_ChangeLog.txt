@@ -12,6 +12,7 @@
 #		AD Integration
 #		Signed
 #		Dynamic Updates
+#		Replication Scope
 #		Aging Enabled
 #		Refresh Interval
 #		NoRefresh Interval
