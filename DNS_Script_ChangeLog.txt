@@ -5,6 +5,59 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 2.00 4-Nov-2020
+#	Added an Appendix A to give an overview of Several DNS server and zone configuration Items when using -AllDNSServers:
+#		DNS Forwarders
+#		Zone Type
+#		AD Integration
+#		Signed
+#		Dynamic Updates
+#		Replication Scope
+#		Aging Enabled
+#		Refresh Interval
+#		NoRefresh Interval
+#		Scavenge Servers
+#	Added processing Forward Lookup Zones that are Signed
+#		Key Master
+#		Next Secure (NSEC)
+#		Trust Anchor
+#		Advanced
+#	Changed all Write-Verbose $(Get-Date) to add -Format G to put the dates in the user's locale
+#	Changed color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
+#	Cleaned up the formatting of Text output
+#	Commented out Function CheckHTMLColor as it is no longer needed
+#	For the -Dev, -Log, and -ScriptInfo output files, add the text "for the Domain <domain>"
+#	General code cleanup
+#	HTML is now the default output format
+#	Removed the original function TestComputerName and renamed TestComputerName2 to TestComputerName
+#		Added Functions testPort and testPortsOnOneIP
+#	Stopped using a Switch statement for HTML colors and use a pre-calculated HTML array (for speed)
+#	Updated Function ShowScriptOptions and ProcessScriptEnd for allowing multiple output types
+#	Updated the help text
+#	Updated the ReadMe file (https://carlwebster.sharefile.com/d-s247b4252c4e4865a)
+#	Updated the following Functions to the latest versions
+#		AddHTMLTable
+#		AddWordTable
+#		CheckWordPrereq
+#		FormatHTMLTable
+#		ProcessDocumentOutput
+#		SaveandCloseDocumentandShutdownWord
+#		SaveandCloseHTMLDocument
+#		SaveandCloseTextDocument
+#		SetFilenames
+#		SetWordCellFormat
+#		SetWordHashTable
+#		SetupHTML
+#		SetupText
+#		SetupWord
+#		WriteHTMLLine
+#	Updated the report title and output filenames to:
+#		For using -Computername:
+#			DNS Inventory Report for Server <DNSServerName> for the Domain <domain>
+#		For using -AllDNSServers:
+#			DNS Inventory Report for All DNS Servers for the Domain <domain>
+#	You can now select multiple output formats. This required extensive code changes.
+
 #Version 1.22 8-May-2020
 #	Add checking for a Word version of 0, which indicates the Office installation needs repairing
 #	Change color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]

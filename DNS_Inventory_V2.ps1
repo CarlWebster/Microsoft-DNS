@@ -6,12 +6,28 @@
 
 <#
 .SYNOPSIS
-	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text, or HTML.
+	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text, or 
+	HTML.
 .DESCRIPTION
-	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text, or HTML.
-	Creates a document named DNS.docx (or .PDF or .TXT or .HTML).
+	Creates an inventory of Microsoft DNS using Microsoft Word, PDF, formatted text, or 
+	HTML.
+
+	Creates a document named either: 
+		DNS Inventory Report for Server DNSServerName for the Domain <domain>.HTML 
+		(or .DOCX or .PDF or .TXT).
+		DNS Inventory Report for All DNS Servers for the Domain <domain>.HTML 
+		(or .DOCX or .PDF or .TXT).
 	
-	Word and PDF documents include a Cover Page, Table of Contents and Footer.
+	Version 2.0 changes the default output report from Word to HTML.
+	
+	Word is NOT needed to run the script. This script outputs in Text and HTML.
+
+	You do NOT have to run this script on a DNS server. This script was developed 
+	and run from a Windows 10 VM.
+
+	Requires the DNSServer module.
+	
+	Word and PDF documents include a Cover Page, Table of Contents, and Footer.
 	
 	Includes support for the following language versions of Microsoft Word:
 		Catalan
@@ -43,10 +59,10 @@
 		
 .PARAMETER HTML
 	Creates an HTML file with an .html extension.
-	This parameter is disabled by default.
+	This parameter is set True if no other output format is selected.
 .PARAMETER MSWord
 	SaveAs DOCX file
-	This parameter is set True if no other output format is selected.
+	This parameter is disabled by default.
 .PARAMETER PDF
 	SaveAs PDF file instead of DOCX file.
 	This parameter is disabled by default.
@@ -57,20 +73,25 @@
 	Creates a formatted text file with a .txt extension.
 	This parameter is disabled by default.
 .PARAMETER AddDateTime
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	Adds a date Timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
 	June 1, 2020 at 6PM is 2020-06-01_1800.
-	Output filename will be DomainName_DNS_2020-06-01_1800.docx (or .pdf).
+	The output filename will be either:
+		DNS Inventory Report for Server <server> for the Domain 
+		<domain>_2020-06-01_1800.html (or .txt or .docx or .pdf)
+		DNS Inventory for All DNS Servers for the Domain 
+		<domain>_2020-06-01_1800.html (or .txt or .docx or .pdf)
 	This parameter is disabled by default.
 .PARAMETER AllDNSServers
 	The script will process all AD DNS servers that are online.
-	"All AD DNS Servers" is used for the report title.
+	"DNS Inventory Report for All DNS Servers for the Domain <domain>" is used for the 
+	report title.
 	This parameter is disabled by default.
 	
 	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
 	This parameter has an alias of ALL.
 .PARAMETER CompanyAddress
-	Company Address to use for the Cover Page, if the Cover Page has the Address field.
+	Company Address used for the Cover Page, if the Cover Page has the Address field.
 	
 	The following Cover Pages have an Address field:
 		Banded (Word 2013/2016)
@@ -86,7 +107,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CA.
 .PARAMETER CompanyEmail
-	Company Email to use for the Cover Page, if the Cover Page has the Email field.  
+	Company Email used for the Cover Page, if the Cover Page has the Email field.  
 	
 	The following Cover Pages have an Email field:
 		Facet (Word 2013/2016)
@@ -94,7 +115,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CE.
 .PARAMETER CompanyFax
-	Company Fax to use for the Cover Page, if the Cover Page has the Fax field.  
+	Company Fax used for the Cover Page, if the Cover Page has the Fax field.  
 	
 	The following Cover Pages have a Fax field:
 		Contrast (Word 2010)
@@ -103,7 +124,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CF.
 .PARAMETER CompanyName
-	Company Name to use for the Cover Page.  
+	Company Name used for the Cover Page.  
 	The default value is contained in 
 	HKCU:\Software\Microsoft\Office\Common\UserInfo\CompanyName or
 	HKCU:\Software\Microsoft\Office\Common\UserInfo\Company, whichever is populated 
@@ -112,7 +133,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CN.
 .PARAMETER CompanyPhone
-	Company Phone to use for the Cover Page, if the Cover Page has the Phone field.  
+	Company Phone used for the Cover Page, if the Cover Page has the Phone field.  
 	
 	The following Cover Pages have a Phone field:
 		Contrast (Word 2010)
@@ -121,7 +142,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CPh.
 .PARAMETER ComputerName
-	Specifies a computer to use to run the script against.
+	Specifies a computer used to run the script against.
 	ComputerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
 	If entered as localhost, the actual computer name is determined and used.
 	If entered as an IP address, an attempt is made to determine and use the actual 
@@ -189,7 +210,7 @@
 	Outputs all errors to a text file at the end of the script.
 	
 	This is used when the script developer requests more troubleshooting data.
-	Text file is placed in the same folder from where the script is run.
+	The text file is placed in the same folder from where the script runs.
 	
 	This parameter is disabled by default.
 .PARAMETER Folder
@@ -198,12 +219,12 @@
 	Generates a log file for troubleshooting.
 .PARAMETER ScriptInfo
 	Outputs information about the script to a text file.
-	Text file is placed in the same folder from where the script is run.
+	The text file is placed in the same folder from where the script runs.
 	
 	This parameter is disabled by default.
 	This parameter has an alias of SI.
-.PARAMETER UserName
-	User name to use for the Cover Page and Footer.
+.PARAMETER Username
+	Username used for the Cover Page and Footer.
 	Default value is contained in $env:username
 	This parameter has an alias of UN.
 	This parameter is only valid with the MSWORD and PDF output parameters.
@@ -222,7 +243,7 @@
 	Specifies the username for the To email address.
 	If SmtpServer is used, this is a required parameter.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -MSWord 
 	
 	Will use all default values.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
@@ -232,12 +253,14 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	
 	Tests to see if the computer, localhost, is a DNS server. 
 	If it is, the script runs. If not, the script aborts.
+
+	Creates a Microsoft Word document.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -ComputerName DNS01
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -ComputerName DNS01
 	
 	Will use all default values.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
@@ -247,11 +270,13 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	
 	Runs the script against the DNS server named DNS01.
+
+	Creates a Microsoft Word document.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -PDF
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -PDF
 	
 	Will use all default values and save the document as a PDF file.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
@@ -261,66 +286,69 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -TEXT
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -TEXT
 
-	Will use all default values and save the document as a formatted text file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
-	$env:username = Administrator
+	Tests to see if the computer, localhost, is a DNS server. 
+	If it is, the script runs. If not, the script aborts.
 
-	Carl Webster for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Creates a formatted text file.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -HTML
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1
 
-	Will use all default values and save the document as an HTML file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
-	$env:username = Administrator
+	Tests to see if the computer, localhost, is a DNS server. 
+	If it is, the script runs. If not, the script aborts.
 
-	Carl Webster for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Creates an HTML document.
 .EXAMPLE
-	PS C:\PSScript .\DNS_Inventory.ps1 -CompanyName "Carl Webster Consulting" 
-	-CoverPage "Mod" -UserName "Carl Webster"
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -ComputerName localhost
+	
+	The script resolves localhost to $env:computername, for example, DNSServer01.
+	The script runs remotely against the DNS server DNSServer01 and not localhost.
+	The output filename uses the server name DNSServer01 and not localhost.
+	
+	Creates an HTML file.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -ComputerName 192.168.1.222
+	
+	The script attempts to resolve 192.168.1.222 to the DNS hostname, for example, 
+	DNSServer01.
+	The script runs remotely against the DNS server DNSServer01 and not 192.18.1.222.
+	The output filename uses the server name DNSServer01 and not 192.168.1.222.
+
+	Creates an HTML file.
+.EXAMPLE
+	PS C:\PSScript .\DNS_Inventory_V2.ps1 -CompanyName "Carl Webster Consulting" 
+	-CoverPage "Mod" -UserName "Carl Webster" -ComputerName DNSServer01 -MSWord
 
 	Will use:
 		Carl Webster Consulting for the Company Name.
 		Mod for the Cover Page format.
-		Carl Webster for the User Name.
+		Carl Webster for the Username.
+	
+	The script runs remotely against the DNS server DNSServer01.
 .EXAMPLE
-	PS C:\PSScript .\DNS_Inventory.ps1 -CN "Carl Webster Consulting" -CP "Mod" -UN 
-	"Carl Webster"
+	PS C:\PSScript .\DNS_Inventory_V2.ps1 -CN "Carl Webster Consulting" -CP "Mod"
+	-UN "Carl Webster" -ComputerName DNSServer02 -Details -MSWord
 
 	Will use:
 		Carl Webster Consulting for the Company Name (alias CN).
 		Mod for the Cover Page format (alias CP).
-		Carl Webster for the User Name (alias UN).
+		Carl Webster for the Username (alias UN).
+
+	The script runs remotely against the DNS server DNSServer02.
+	The output contains DNS Resource Record information.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -AddDateTime
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -AddDateTime
 	
-	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
-	$env:username = Administrator
-
-	Carl Webster for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	Adds a date Timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
 	July 25, 2020 at 6PM is 2020-07-25_1800.
-	Output filename will be DomainName_DNS_2020-07-25_1800.docx
+	The output filename is DNS Inventory Report for Server <server> for the Domain 
+	<domain>_2020-07-25_1800.html.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -PDF -AddDateTime
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -PDF -AddDateTime
 	
 	Will use all default values and save the document as a PDF file.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
@@ -330,14 +358,19 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	Adds a date Timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
 	July 25, 2020 at 6PM is 2020-07-25_1800.
-	Output filename will be DomainName_DNS_2020-07-25_1800.PDF
+	The output filename is DNS Inventory Report for Server <server> for the Domain 
+	<domain>_2020-07-25_1800.pdf.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -Folder \\FileServer\ShareName
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -Folder \\FileServer\ShareName
+	
+	The output HTML file is saved in the path \\FileServer\ShareName.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -Details -MSWord
 	
 	Will use all default values.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
@@ -347,71 +380,58 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
-	
-	Output file is saved in the path \\FileServer\ShareName
-.EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -Details
-	
-	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
-	$env:username = Administrator
-
-	Carl Webster for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	
 	Includes details for all Resource Records for both Forward and Reverse lookup zones.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -AllDNSServers
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -AllDNSServers
 	
-	Will use all Default values.
+	The script finds all AD DNS servers and processes all online servers.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -ComputerName DNSServer01 -AllDNSServers
+	
+	Even though DNSServer01 is specified, the script finds all AD DNS servers 
+	and processes all online servers.
+.EXAMPLE
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -HTML -MSWord -PDF -Text -Dev -ScriptInfo -Log 
+	-ComputerName DNSServer
+	
+	Creates four reports: HTML, Microsoft Word, PDF, and plain text.
+	
+	Creates a text file named DNSInventoryScriptErrors_yyyy-MM-dd_HHmm for the Domain 
+	<domain>.txt that contains up to the last 250 errors reported by the script.
+	
+	Creates a text file named DNSInventoryScriptInfo_yyyy-MM-dd_HHmm for the Domain 
+	<domain>.txt that contains all the script parameters and other basic information.
+	
+	Creates a text file for transcript logging named 
+	DNSDocScriptTranscript_yyyy-MM-dd_HHmm for the Domain <domain>.txt.
+
+	For Microsoft Word and PDF, uses all Default values.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
+	Webster" or 
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
 	$env:username = Administrator
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	
-	The script will find all AD DNS servers and will process all servers that are 
-	online.
+	The script runs remotely against the DNS server DNSServer.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 -ComputerName DNSServer01 -AllDNSServers
-	
-	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Carl 
-	Webster" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Carl Webster"
-	$env:username = Administrator
-
-	Carl Webster for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-	
-	Even though DNSServer01 is specified, the script will find all AD DNS servers 
-	and will process all servers that are online.
-.EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 
-	-SmtpServer mail.domain.tld
-	-From XDAdmin@domain.tld 
-	-To ITGroup@domain.tld	
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -SmtpServer mail.domain.tld -From 
+	XDAdmin@domain.tld -To ITGroup@domain.tld	
 
 	The script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
 	sending to ITGroup@domain.tld.
 
-	The script will use the default SMTP port 25 and will not use SSL.
+	The script will use the default SMTP port 25 and does not use SSL.
 
 	If the current user's credentials are not valid to send email, 
 	the user will be prompted to enter valid credentials.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 
-	-SmtpServer mailrelay.domain.tld
-	-From Anonymous@domain.tld 
-	-To ITGroup@domain.tld	
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -SmtpServer mailrelay.domain.tld -From 
+	Anonymous@domain.tld -To ITGroup@domain.tld	
 
 	***SENDING UNAUTHENTICATED EMAIL***
 
@@ -421,7 +441,7 @@
 	To send unauthenticated email using an email relay server requires the From email account 
 	to use the name Anonymous.
 
-	The script will use the default SMTP port 25 and will not use SSL.
+	The script will use the default SMTP port 25 and does not use SSL.
 	
 	***GMAIL/G SUITE SMTP RELAY***
 	https://support.google.com/a/answer/2956491?hl=en
@@ -431,14 +451,12 @@
 	the "Less secure app access" option on your account.
 	***GMAIL/G SUITE SMTP RELAY***
 
-	The script will generate an anonymous secure password for the anonymous@domain.tld 
+	The script generates an anonymous, secure password for the anonymous@domain.tld 
 	account.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 
-	-SmtpServer labaddomain-com.mail.protection.outlook.com
-	-UseSSL
-	-From SomeEmailAddress@labaddomain.com 
-	-To ITGroupDL@labaddomain.com	
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -SmtpServer 
+	labaddomain-com.mail.protection.outlook.com -UseSSL -From 
+	SomeEmailAddress@labaddomain.com -To ITGroupDL@labaddomain.com	
 
 	***OFFICE 365 Example***
 
@@ -453,12 +471,8 @@
 
 	The script will use the default SMTP port 25 and will use SSL.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 
-	-SmtpServer smtp.office365.com 
-	-SmtpPort 587
-	-UseSSL 
-	-From Webster@CarlWebster.com 
-	-To ITGroup@CarlWebster.com	
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -SmtpServer smtp.office365.com -SmtpPort 587
+	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	The script will use the email server smtp.office365.com on port 587 using SSL, 
 	sending from webster@carlwebster.com, sending to ITGroup@carlwebster.com.
@@ -466,12 +480,8 @@
 	If the current user's credentials are not valid to send email, 
 	the user will be prompted to enter valid credentials.
 .EXAMPLE
-	PS C:\PSScript > .\DNS_Inventory.ps1 
-	-SmtpServer smtp.gmail.com 
-	-SmtpPort 587
-	-UseSSL 
-	-From Webster@CarlWebster.com 
-	-To ITGroup@CarlWebster.com	
+	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -SmtpServer smtp.gmail.com -SmtpPort 587
+	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	*** NOTE ***
 	To send email using a Gmail or g-suite account, you may have to turn ON
@@ -484,78 +494,72 @@
 	If the current user's credentials are not valid to send email, 
 	the user will be prompted to enter valid credentials.
 .INPUTS
-	None.  You cannot pipe objects to this script.
+	None. You cannot pipe objects to this script.
 .OUTPUTS
-	No objects are output from this script.  
-	This script creates a Word, PDF, Formatted Text or HTML document.
+	No objects are output from this script.  This script creates a Word, PDF, HTML or 
+	formatted text document.
 .NOTES
-	NAME: DNS_Inventory.ps1
-	VERSION: 1.22
+	NAME: DNS_Inventory_V2.ps1
+	VERSION: 2.00
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: May 8, 2020
+	LASTEDIT: November 4, 2020
 #>
 
 #endregion
 
 #region script parameters
 #thanks to @jeffwouters and Michael B. Smith for helping me with these parameters
-[CmdletBinding(SupportsShouldProcess = $False, ConfirmImpact = "None", DefaultParameterSetName = "Word") ]
+[CmdletBinding(SupportsShouldProcess = $False, ConfirmImpact = "None", DefaultParameterSetName = "") ]
 
 Param(
-	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
+	[parameter(Mandatory=$False)] 
 	[Switch]$HTML=$False,
 
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$MSWord=$False,
 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$PDF=$False,
 
-	[parameter(ParameterSetName="Text",Mandatory=$False)] 
+	[parameter(Mandatory=$False)] 
 	[Switch]$Text=$False,
 
 	[parameter(Mandatory=$False)] 
-	[Switch]$AddDateTime=$False,
-	
+	[string]$ComputerName="LocalHost",
+
 	[parameter(Mandatory=$False)] 
 	[Alias("ALL")]
 	[Switch]$AllDNSServers=$False,
 	
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(Mandatory=$False)] 
+	[Switch]$AddDateTime=$False,
+	
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CA")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyAddress="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CE")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyEmail="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CF")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyFax="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyName="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CPh")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyPhone="",
     
-	[parameter(Mandatory=$False)] 
-	[string]$ComputerName="LocalHost",
-
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CP")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
@@ -576,11 +580,10 @@ Param(
 	[Alias("SI")]
 	[Switch]$ScriptInfo=$False,
 	
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("UN")]
 	[ValidateNotNullOrEmpty()]
-	[string]$UserName=$env:username,
+	[string]$Username=$env:username,
 
 	[parameter(Mandatory=$False)] 
 	[string]$SmtpServer="",
@@ -608,6 +611,59 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
+#Version 2.00 4-Nov-2020
+#	Added an Appendix A to give an overview of Several DNS server and zone configuration Items when using -AllDNSServers:
+#		DNS Forwarders
+#		Zone Type
+#		AD Integration
+#		Signed
+#		Dynamic Updates
+#		Replication Scope
+#		Aging Enabled
+#		Refresh Interval
+#		NoRefresh Interval
+#		Scavenge Servers
+#	Added processing Forward Lookup Zones that are Signed
+#		Key Master
+#		Next Secure (NSEC)
+#		Trust Anchor
+#		Advanced
+#	Changed all Write-Verbose $(Get-Date) to add -Format G to put the dates in the user's locale
+#	Changed color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
+#	Cleaned up the formatting of Text output
+#	Commented out Function CheckHTMLColor as it is no longer needed
+#	For the -Dev, -Log, and -ScriptInfo output files, add the text "for the Domain <domain>"
+#	General code cleanup
+#	HTML is now the default output format
+#	Removed the original function TestComputerName and renamed TestComputerName2 to TestComputerName
+#		Added Functions testPort and testPortsOnOneIP
+#	Stopped using a Switch statement for HTML colors and use a pre-calculated HTML array (for speed)
+#	Updated Function ShowScriptOptions and ProcessScriptEnd for allowing multiple output types
+#	Updated the help text
+#	Updated the ReadMe file (https://carlwebster.sharefile.com/d-s247b4252c4e4865a)
+#	Updated the following Functions to the latest versions
+#		AddHTMLTable
+#		AddWordTable
+#		CheckWordPrereq
+#		FormatHTMLTable
+#		ProcessDocumentOutput
+#		SaveandCloseDocumentandShutdownWord
+#		SaveandCloseHTMLDocument
+#		SaveandCloseTextDocument
+#		SetFilenames
+#		SetWordCellFormat
+#		SetWordHashTable
+#		SetupHTML
+#		SetupText
+#		SetupWord
+#		WriteHTMLLine
+#	Updated the report title and output filenames to:
+#		For using -Computername:
+#			DNS Inventory Report for Server <DNSServerName> for the Domain <domain>
+#		For using -AllDNSServers:
+#			DNS Inventory Report for All DNS Servers for the Domain <domain>
+#	You can now select multiple output formats. This required extensive code changes.
+#
 #Version 1.22 8-May-2020
 #	Add checking for a Word version of 0, which indicates the Office installation needs repairing
 #	Change color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
@@ -670,7 +726,7 @@ Param(
 #	Added Log switch to create a transcript log
 #	I found two "If($Var = something)" which are now "If($Var -eq something)"
 #	In the function OutputLookupZoneDetails, with the "=" changed to "-eq" fix, the hostname was now always blank. Fixed.
-#	Many Switch bocks I never added "; break" to. Those are now fixed.
+#	Many Switch bocks I never added "; Break" to. Those are now fixed.
 #	Update functions ShowScriptOutput and ProcessScriptEnd for new Log parameter
 #	Updated help text
 #	Updated the WriteWordLine function 
@@ -726,84 +782,40 @@ Set-StrictMode -Version Latest
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
+$global:emailCredentials = $Null
+$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
 
-If($Null -eq $MSWord)
+If($ComputerName -eq "localhost")
 {
-	If($Text -or $HTML -or $PDF)
-	{
-		$MSWord = $False
-	}
-	Else
-	{
-		$MSWord = $True
-	}
+	$ComputerName = $env:ComputerName
+	Write-Verbose "$(Get-Date -Format G): Computer name has been changed from localhost to $ComputerName"
 }
-
+	
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
 {
-	$MSWord = $True
+	$HTML = $True
 }
-
-Write-Verbose "$(Get-Date): Testing output parameters"
 
 If($MSWord)
 {
-	Write-Verbose "$(Get-Date): MSWord is set"
+	Write-Verbose "$(Get-Date -Format G): MSWord is set"
 }
-ElseIf($PDF)
+If($PDF)
 {
-	Write-Verbose "$(Get-Date): PDF is set"
+	Write-Verbose "$(Get-Date -Format G): PDF is set"
 }
-ElseIf($Text)
+If($Text)
 {
-	Write-Verbose "$(Get-Date): Text is set"
+	Write-Verbose "$(Get-Date -Format G): Text is set"
 }
-ElseIf($HTML)
+If($HTML)
 {
-	Write-Verbose "$(Get-Date): HTML is set"
-}
-Else
-{
-	$ErrorActionPreference = $SaveEAPreference
-	Write-Verbose "$(Get-Date): Unable to determine output parameter"
-	If($Null -eq $MSWord)
-	{
-		Write-Verbose "$(Get-Date): MSWord is Null"
-	}
-	ElseIf($Null -eq $PDF)
-	{
-		Write-Verbose "$(Get-Date): PDF is Null"
-	}
-	ElseIf($Null -eq $Text)
-	{
-		Write-Verbose "$(Get-Date): Text is Null"
-	}
-	ElseIf($Null -eq $HTML)
-	{
-		Write-Verbose "$(Get-Date): HTML is Null"
-	}
-	Else
-	{
-		Write-Verbose "$(Get-Date): MSWord is $MSWord"
-		Write-Verbose "$(Get-Date): PDF is $PDF"
-		Write-Verbose "$(Get-Date): Text is $Text"
-		Write-Verbose "$(Get-Date): HTML is $HTML"
-	}
-	Write-Error "
-	`n`n
-	`t`t
-	Unable to determine output parameter.
-	`n`n
-	`t`t
-	Script cannot continue.
-	`n`n
-	"
-	Exit
+	Write-Verbose "$(Get-Date -Format G): HTML is set"
 }
 
 If($Folder -ne "")
 {
-	Write-Verbose "$(Get-Date): Testing folder path"
+	Write-Verbose "$(Get-Date -Format G): Testing folder path"
 	#does it exist
 	If(Test-Path $Folder -EA 0)
 	{
@@ -811,7 +823,7 @@ If($Folder -ne "")
 		If(Test-Path $Folder -pathType Container -EA 0)
 		{
 			#it exists and it is a folder
-			Write-Verbose "$(Get-Date): Folder path $Folder exists and is a folder"
+			Write-Verbose "$(Get-Date -Format G): Folder path $Folder exists and is a folder"
 		}
 		Else
 		{
@@ -863,17 +875,17 @@ If($Script:pwdpath.EndsWith("\"))
 If($Log) 
 {
 	#start transcript logging
-	$Script:LogPath = "$Script:pwdpath\DNSDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	$Script:LogPath = "$Script:pwdpath\DNSDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 	
 	try 
 	{
 		Start-Transcript -Path $Script:LogPath -Force -Verbose:$false | Out-Null
-		Write-Verbose "$(Get-Date): Transcript/log started at $Script:LogPath"
+		Write-Verbose "$(Get-Date -Format G): Transcript/log started at $Script:LogPath"
 		$Script:StartLog = $true
 	} 
 	catch 
 	{
-		Write-Verbose "$(Get-Date): Transcript/log failed at $Script:LogPath"
+		Write-Verbose "$(Get-Date -Format G): Transcript/log failed at $Script:LogPath"
 		$Script:StartLog = $false
 	}
 }
@@ -881,7 +893,7 @@ If($Log)
 If($Dev)
 {
 	$Error.Clear()
-	$Script:DevErrorFile = "$Script:pwdPath\DNSInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	$Script:DevErrorFile = "$Script:pwdPath\DNSInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 }
 
 If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($To))
@@ -966,7 +978,7 @@ If($MSWord -or $PDF)
 {
 	#try and fix the issue with the $CompanyName variable
 	$Script:CoName = $CompanyName
-	Write-Verbose "$(Get-Date): CoName is $Script:CoName"
+	Write-Verbose "$(Get-Date -Format G): CoName is $($Script:CoName)"
 	
 	#the following values were attained from 
 	#http://groovy.codehaus.org/modules/scriptom/1.6.0/scriptom-office-2K3-tlb/apidocs/
@@ -978,7 +990,8 @@ If($MSWord -or $PDF)
 	[int]$wdSeekMainDocument = 0
 	[int]$wdSeekPrimaryFooter = 4
 	[int]$wdStory = 6
-	[long]$wdColorRed = 255
+	[int]$wdColorRed = 255
+	[int]$wdColorWhite = 16777215
 	[int]$wdColorBlack = 0
 	[int]$wdWord2007 = 12
 	[int]$wdWord2010 = 14
@@ -1019,6 +1032,7 @@ If($MSWord -or $PDF)
 	[int]$wdStyleHeading4 = -5
 	[int]$wdStyleNoSpacing = -158
 	[int]$wdTableGrid = -155
+	[int]$wdTableLightListAccent3 = -206
 
 	#http://groovy.codehaus.org/modules/scriptom/1.6.0/scriptom-office-2K3-tlb/apidocs/org/codehaus/groovy/scriptom/tlb/office/word/WdLineStyle.html
 	[int]$wdLineStyleNone = 0
@@ -1026,52 +1040,75 @@ If($MSWord -or $PDF)
 
 	[int]$wdHeadingFormatTrue = -1
 	[int]$wdHeadingFormatFalse = 0 
+	
+	[string]$Script:RunningOS = (Get-WmiObject -class Win32_OperatingSystem -EA 0).Caption
 }
 
 If($HTML)
 {
-    Set-Variable htmlredmask         -Option AllScope -Value "#FF0000" 4>$Null
-    Set-Variable htmlcyanmask        -Option AllScope -Value "#00FFFF" 4>$Null
-    Set-Variable htmlbluemask        -Option AllScope -Value "#0000FF" 4>$Null
-    Set-Variable htmldarkbluemask    -Option AllScope -Value "#0000A0" 4>$Null
-    Set-Variable htmllightbluemask   -Option AllScope -Value "#ADD8E6" 4>$Null
-    Set-Variable htmlpurplemask      -Option AllScope -Value "#800080" 4>$Null
-    Set-Variable htmlyellowmask      -Option AllScope -Value "#FFFF00" 4>$Null
-    Set-Variable htmllimemask        -Option AllScope -Value "#00FF00" 4>$Null
-    Set-Variable htmlmagentamask     -Option AllScope -Value "#FF00FF" 4>$Null
-    Set-Variable htmlwhitemask       -Option AllScope -Value "#FFFFFF" 4>$Null
-    Set-Variable htmlsilvermask      -Option AllScope -Value "#C0C0C0" 4>$Null
-    Set-Variable htmlgraymask        -Option AllScope -Value "#808080" 4>$Null
-    Set-Variable htmlblackmask       -Option AllScope -Value "#000000" 4>$Null
-    Set-Variable htmlorangemask      -Option AllScope -Value "#FFA500" 4>$Null
-    Set-Variable htmlmaroonmask      -Option AllScope -Value "#800000" 4>$Null
-    Set-Variable htmlgreenmask       -Option AllScope -Value "#008000" 4>$Null
-    Set-Variable htmlolivemask       -Option AllScope -Value "#808000" 4>$Null
+	#V2.23 Prior versions used Set-Variable. That hid the variables
+	#from @code. So MBS switched to using $global:
 
-    Set-Variable htmlbold        -Option AllScope -Value 1 4>$Null
-    Set-Variable htmlitalics     -Option AllScope -Value 2 4>$Null
-    Set-Variable htmlred         -Option AllScope -Value 4 4>$Null
-    Set-Variable htmlcyan        -Option AllScope -Value 8 4>$Null
-    Set-Variable htmlblue        -Option AllScope -Value 16 4>$Null
-    Set-Variable htmldarkblue    -Option AllScope -Value 32 4>$Null
-    Set-Variable htmllightblue   -Option AllScope -Value 64 4>$Null
-    Set-Variable htmlpurple      -Option AllScope -Value 128 4>$Null
-    Set-Variable htmlyellow      -Option AllScope -Value 256 4>$Null
-    Set-Variable htmllime        -Option AllScope -Value 512 4>$Null
-    Set-Variable htmlmagenta     -Option AllScope -Value 1024 4>$Null
-    Set-Variable htmlwhite       -Option AllScope -Value 2048 4>$Null
-    Set-Variable htmlsilver      -Option AllScope -Value 4096 4>$Null
-    Set-Variable htmlgray        -Option AllScope -Value 8192 4>$Null
-    Set-Variable htmlolive       -Option AllScope -Value 16384 4>$Null
-    Set-Variable htmlorange      -Option AllScope -Value 32768 4>$Null
-    Set-Variable htmlmaroon      -Option AllScope -Value 65536 4>$Null
-    Set-Variable htmlgreen       -Option AllScope -Value 131072 4>$Null
-    Set-Variable htmlblack       -Option AllScope -Value 262144 4>$Null
-}
+    $global:htmlredmask       = "#FF0000" 4>$Null
+    $global:htmlcyanmask      = "#00FFFF" 4>$Null
+    $global:htmlbluemask      = "#0000FF" 4>$Null
+    $global:htmldarkbluemask  = "#0000A0" 4>$Null
+    $global:htmllightbluemask = "#ADD8E6" 4>$Null
+    $global:htmlpurplemask    = "#800080" 4>$Null
+    $global:htmlyellowmask    = "#FFFF00" 4>$Null
+    $global:htmllimemask      = "#00FF00" 4>$Null
+    $global:htmlmagentamask   = "#FF00FF" 4>$Null
+    $global:htmlwhitemask     = "#FFFFFF" 4>$Null
+    $global:htmlsilvermask    = "#C0C0C0" 4>$Null
+    $global:htmlgraymask      = "#808080" 4>$Null
+    $global:htmlblackmask     = "#000000" 4>$Null
+    $global:htmlorangemask    = "#FFA500" 4>$Null
+    $global:htmlmaroonmask    = "#800000" 4>$Null
+    $global:htmlgreenmask     = "#008000" 4>$Null
+    $global:htmlolivemask     = "#808000" 4>$Null
 
-If($TEXT)
-{
-	[System.Text.StringBuilder] $global:Output = New-Object System.Text.StringBuilder( 16384 )
+    $global:htmlbold        = 1 4>$Null
+    $global:htmlitalics     = 2 4>$Null
+    $global:htmlred         = 4 4>$Null
+    $global:htmlcyan        = 8 4>$Null
+    $global:htmlblue        = 16 4>$Null
+    $global:htmldarkblue    = 32 4>$Null
+    $global:htmllightblue   = 64 4>$Null
+    $global:htmlpurple      = 128 4>$Null
+    $global:htmlyellow      = 256 4>$Null
+    $global:htmllime        = 512 4>$Null
+    $global:htmlmagenta     = 1024 4>$Null
+    $global:htmlwhite       = 2048 4>$Null
+    $global:htmlsilver      = 4096 4>$Null
+    $global:htmlgray        = 8192 4>$Null
+    $global:htmlolive       = 16384 4>$Null
+    $global:htmlorange      = 32768 4>$Null
+    $global:htmlmaroon      = 65536 4>$Null
+    $global:htmlgreen       = 131072 4>$Null
+	$global:htmlblack       = 262144 4>$Null
+
+	$global:htmlsb          = ( $htmlsilver -bor $htmlBold ) ## point optimization
+
+	$global:htmlColor = 
+	@{
+		$htmlred       = $htmlredmask
+		$htmlcyan      = $htmlcyanmask
+		$htmlblue      = $htmlbluemask
+		$htmldarkblue  = $htmldarkbluemask
+		$htmllightblue = $htmllightbluemask
+		$htmlpurple    = $htmlpurplemask
+		$htmlyellow    = $htmlyellowmask
+		$htmllime      = $htmllimemask
+		$htmlmagenta   = $htmlmagentamask
+		$htmlwhite     = $htmlwhitemask
+		$htmlsilver    = $htmlsilvermask
+		$htmlgray      = $htmlgraymask
+		$htmlolive     = $htmlolivemask
+		$htmlorange    = $htmlorangemask
+		$htmlmaroon    = $htmlmaroonmask
+		$htmlgreen     = $htmlgreenmask
+		$htmlblack     = $htmlblackmask
+	}
 }
 #endregion
 
@@ -1080,7 +1117,7 @@ Function SetWordHashTable
 {
 	Param([string]$CultureCode)
 
-	#optimized by Michael B. SMith
+	#optimized by Michael B. Smith
 	
 	# DE and FR translations for Word 2010 by Vladimir Radojevic
 	# Vladimir.Radojevic@Commerzreal.com
@@ -1113,11 +1150,10 @@ Function SetWordHashTable
 			'en-'	{ 'Automatic Table 2'; Break }
 			'es-'	{ 'Tabla automática 2'; Break }
 			'fi-'	{ 'Automaattinen taulukko 2'; Break }
-			'fr-'	{ 'Table automatique 2'; Break } #changed 13-feb-2017 david roquier and samuel legrand
+			'fr-'	{ 'Table automatique 2'; Break } #changed 10-feb-2017 david roquier and samuel legrand
 			'nb-'	{ 'Automatisk tabell 2'; Break }
 			'nl-'	{ 'Automatische inhoudsopgave 2'; Break }
 			'pt-'	{ 'Sumário Automático 2'; Break }
-			# fix in 1.20 thanks to Johan Kallio 'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
 			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
 			'zh-'	{ '自动目录 2'; Break }
 		}
@@ -1167,18 +1203,18 @@ Function GetCulture
 
 	Switch ($WordValue)
 	{
-		{$CatalanArray -contains $_} {$CultureCode = "ca-"}
-		{$ChineseArray -contains $_} {$CultureCode = "zh-"}
-		{$DanishArray -contains $_} {$CultureCode = "da-"}
-		{$DutchArray -contains $_} {$CultureCode = "nl-"}
-		{$EnglishArray -contains $_} {$CultureCode = "en-"}
-		{$FinnishArray -contains $_} {$CultureCode = "fi-"}
-		{$FrenchArray -contains $_} {$CultureCode = "fr-"}
-		{$GermanArray -contains $_} {$CultureCode = "de-"}
-		{$NorwegianArray -contains $_} {$CultureCode = "nb-"}
-		{$PortugueseArray -contains $_} {$CultureCode = "pt-"}
-		{$SpanishArray -contains $_} {$CultureCode = "es-"}
-		{$SwedishArray -contains $_} {$CultureCode = "sv-"}
+		{$CatalanArray -contains $_}	{$CultureCode = "ca-"}
+		{$ChineseArray -contains $_}	{$CultureCode = "zh-"}
+		{$DanishArray -contains $_}		{$CultureCode = "da-"}
+		{$DutchArray -contains $_}		{$CultureCode = "nl-"}
+		{$EnglishArray -contains $_}	{$CultureCode = "en-"}
+		{$FinnishArray -contains $_}	{$CultureCode = "fi-"}
+		{$FrenchArray -contains $_}		{$CultureCode = "fr-"}
+		{$GermanArray -contains $_}		{$CultureCode = "de-"}
+		{$NorwegianArray -contains $_}	{$CultureCode = "nb-"}
+		{$PortugueseArray -contains $_}	{$CultureCode = "pt-"}
+		{$SpanishArray -contains $_}	{$CultureCode = "es-"}
+		{$SwedishArray -contains $_}	{$CultureCode = "sv-"}
 		Default {$CultureCode = "en-"}
 	}
 	
@@ -1461,16 +1497,24 @@ Function CheckWordPrereq
 	If((Test-Path  REGISTRY::HKEY_CLASSES_ROOT\Word.Application) -eq $False)
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Host "`n`n`t`tThis script directly outputs to Microsoft Word, please install Microsoft Word`n`n"
-		Exit
+		
+		If(($MSWord -eq $False) -and ($PDF -eq $True))
+		{
+			Write-Host "`n`n`t`tThis script uses Microsoft Word's SaveAs PDF function, please install Microsoft Word`n`n"
+			Exit
+		}
+		Else
+		{
+			Write-Host "`n`n`t`tThis script directly outputs to Microsoft Word, please install Microsoft Word`n`n"
+			Exit
+		}
 	}
 
 	#find out our session (usually "1" except on TS/RDC or Citrix)
 	$SessionID = (Get-Process -PID $PID).SessionId
 	
 	#Find out if winword is running in our session
-	#[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0)|Where-Object {$_.SessionId -eq $SessionID}) -ne $Null
-	[bool]$wordrunning = $null -ne ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID})	
+	[bool]$wordrunning = $null –ne ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID})
 	If($wordrunning)
 	{
 		$ErrorActionPreference = $SaveEAPreference
@@ -1550,32 +1594,45 @@ Function FindWordDocumentEnd
 
 Function SetupWord
 {
-	Write-Verbose "$(Get-Date): Setting up Word"
+	Write-Verbose "$(Get-Date -Format G): Setting up Word"
     
+	If(!$AddDateTime)
+	{
+		[string]$Script:WordFileName = "$($Script:pwdpath)\$($OutputFileName).docx"
+		If($PDF)
+		{
+			[string]$Script:PDFFileName = "$($Script:pwdpath)\$($OutputFileName).pdf"
+		}
+	}
+	ElseIf($AddDateTime)
+	{
+		[string]$Script:WordFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).docx"
+		If($PDF)
+		{
+			[string]$Script:PDFFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
+		}
+	}
+
 	# Setup word for output
-	Write-Verbose "$(Get-Date): Create Word comObject."
+	Write-Verbose "$(Get-Date -Format G): Create Word comObject."
 	$Script:Word = New-Object -comobject "Word.Application" -EA 0 4>$Null
 	
 	If(!$? -or $Null -eq $Script:Word)
 	{
-		Write-Warning "The Word object could not be created.  You may need to repair your Word installation."
+		Write-Warning "The Word object could not be created. You may need to repair your Word installation."
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
 		`t`t
-		The Word object could not be created.
+		The Word object could not be created. You may need to repair your Word installation.
 		`n`n
 		`t`t
-		You may need to repair your Word installation.
-		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
+		Script cannot Continue.
+		`n`n"
 		Exit
 	}
 
-	Write-Verbose "$(Get-Date): Determine Word language value"
+	Write-Verbose "$(Get-Date -Format G): Determine Word language value"
 	If( ( validStateProp $Script:Word Language Value__ ) )
 	{
 		[int]$Script:WordLanguageValue = [int]$Script:Word.Language.Value__
@@ -1591,15 +1648,15 @@ Function SetupWord
 		Write-Error "
 		`n`n
 		`t`t
-		Unable to determine the Word language value.
+		Unable to determine the Word language value. You may need to repair your Word installation.
 		`n`n
 		`t`t
-		Script cannot continue.
+		Script cannot Continue.
 		`n`n
 		"
 		AbortScript
 	}
-	Write-Verbose "$(Get-Date): Word language value is $Script:WordLanguageValue"
+	Write-Verbose "$(Get-Date -Format G): Word language value is $($Script:WordLanguageValue)"
 	
 	$Script:WordCultureCode = GetCulture $Script:WordLanguageValue
 	
@@ -1624,10 +1681,7 @@ Function SetupWord
 		Write-Error "
 		`n`n
 		`t`t
-		Microsoft Word 2007 is no longer supported.
-		`n`n
-		`t`t
-		Script will end.
+		Microsoft Word 2007 is no longer supported.`n`n`t`tScript will end.
 		`n`n
 		"
 		AbortScript
@@ -1640,7 +1694,7 @@ Function SetupWord
 		The Word Version is 0. You should run a full online repair of your Office installation.
 		`n`n
 		`t`t
-		Script cannot continue.
+		Script cannot Continue.
 		`n`n
 		"
 		Exit
@@ -1653,38 +1707,41 @@ Function SetupWord
 		`t`t
 		You are running an untested or unsupported version of Microsoft Word.
 		`n`n
-		`t`t
-		Script will end.
-		`n`n
-		`t`t
-		Please send info on your version of Word to webster@carlwebster.com
+		`t`tScript will end.`n`n`t`tPlease send info on your version of Word to webster@carlwebster.com
 		`n`n
 		"
 		AbortScript
 	}
 
 	#only validate CompanyName if the field is blank
-	If([String]::IsNullOrEmpty($Script:CoName))
+	If([String]::IsNullOrEmpty($CompanyName))
 	{
-		Write-Verbose "$(Get-Date): Company name is blank.  Retrieve company name from registry."
+		Write-Verbose "$(Get-Date -Format G): Company name is blank. Retrieve company name from registry."
 		$TmpName = ValidateCompanyName
 		
 		If([String]::IsNullOrEmpty($TmpName))
 		{
-			Write-Warning "`n`n`t`tCompany Name is blank so Cover Page will not show a Company Name."
-			Write-Warning "`n`t`tCheck HKCU:\Software\Microsoft\Office\Common\UserInfo for Company or CompanyName value."
-			Write-Warning "`n`t`tYou may want to use the -CompanyName parameter if you need a Company Name on the cover page.`n`n"
+			Write-Host "
+		Company Name is blank so Cover Page will not show a Company Name.
+		Check HKCU:\Software\Microsoft\Office\Common\UserInfo for Company or CompanyName value.
+		You may want to use the -CompanyName parameter if you need a Company Name on the cover page.
+			" -Foreground White
+			$Script:CoName = $TmpName
 		}
 		Else
 		{
 			$Script:CoName = $TmpName
-			Write-Verbose "$(Get-Date): Updated company name to $Script:CoName"
+			Write-Verbose "$(Get-Date -Format G): Updated company name to $($Script:CoName)"
 		}
+	}
+	Else
+	{
+		$Script:CoName = $CompanyName
 	}
 
 	If($Script:WordCultureCode -ne "en-")
 	{
-		Write-Verbose "$(Get-Date): Check Default Cover Page for $WordCultureCode"
+		Write-Verbose "$(Get-Date -Format G): Check Default Cover Page for $($WordCultureCode)"
 		[bool]$CPChanged = $False
 		Switch ($Script:WordCultureCode)
 		{
@@ -1787,11 +1844,11 @@ Function SetupWord
 
 		If($CPChanged)
 		{
-			Write-Verbose "$(Get-Date): Changed Default Cover Page from Sideline to $CoverPage"
+			Write-Verbose "$(Get-Date -Format G): Changed Default Cover Page from Sideline to $($CoverPage)"
 		}
 	}
 
-	Write-Verbose "$(Get-Date): Validate cover page $($CoverPage) for culture code $Script:WordCultureCode"
+	Write-Verbose "$(Get-Date -Format G): Validate cover page $($CoverPage) for culture code $($Script:WordCultureCode)"
 	[bool]$ValidCP = $False
 	
 	$ValidCP = ValidateCoverPage $Script:WordVersion $CoverPage $Script:WordCultureCode
@@ -1799,40 +1856,38 @@ Function SetupWord
 	If(!$ValidCP)
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Verbose "$(Get-Date): Word language value $Script:WordLanguageValue"
-		Write-Verbose "$(Get-Date): Culture code $Script:WordCultureCode"
+		Write-Verbose "$(Get-Date -Format G): Word language value $($Script:WordLanguageValue)"
+		Write-Verbose "$(Get-Date -Format G): Culture code $($Script:WordCultureCode)"
 		Write-Error "
 		`n`n
 		`t`t
-		For $Script:WordProduct, $CoverPage is not a valid Cover Page option.
+		For $($Script:WordProduct), $($CoverPage) is not a valid Cover Page option.
 		`n`n
 		`t`t
-		Script cannot continue.
+		Script cannot Continue.
 		`n`n
 		"
 		AbortScript
 	}
 
-	ShowScriptOptions
-
 	$Script:Word.Visible = $False
 
 	#http://jdhitsolutions.com/blog/2012/05/san-diego-2012-powershell-deep-dive-slides-and-demos/
 	#using Jeff's Demo-WordReport.ps1 file for examples
-	Write-Verbose "$(Get-Date): Load Word Templates"
+	Write-Verbose "$(Get-Date -Format G): Load Word Templates"
 
 	[bool]$Script:CoverPagesExist = $False
 	[bool]$BuildingBlocksExist = $False
 
 	$Script:Word.Templates.LoadBuildingBlocks()
 	#word 2010/2013/2016
-	$BuildingBlocksCollection = $Script:Word.Templates | Where-Object {$_.name -eq "Built-In Building Blocks.dotx"}
+	$BuildingBlocksCollection = $Script:Word.Templates | Where-Object{$_.name -eq "Built-In Building Blocks.dotx"}
 
-	Write-Verbose "$(Get-Date): Attempt to load cover page $CoverPage"
+	Write-Verbose "$(Get-Date -Format G): Attempt to load cover page $($CoverPage)"
 	$part = $Null
 
 	$BuildingBlocksCollection | 
-	ForEach-Object{
+	ForEach-Object {
 		If ($_.BuildingBlockEntries.Item($CoverPage).Name -eq $CoverPage) 
 		{
 			$BuildingBlocks = $_
@@ -1861,43 +1916,37 @@ Function SetupWord
 
 	If(!$Script:CoverPagesExist)
 	{
-		Write-Verbose "$(Get-Date): Cover Pages are not installed or the Cover Page $CoverPage does not exist."
-		Write-Warning "Cover Pages are not installed or the Cover Page $CoverPage does not exist."
-		Write-Warning "This report will not have a Cover Page."
+		Write-Verbose "$(Get-Date -Format G): Cover Pages are not installed or the Cover Page $($CoverPage) does not exist."
+		Write-Host "Cover Pages are not installed or the Cover Page $($CoverPage) does not exist." -Foreground White
+		Write-Host "This report will not have a Cover Page." -Foreground White
 	}
 
-	Write-Verbose "$(Get-Date): Create empty word doc"
+	Write-Verbose "$(Get-Date -Format G): Create empty word doc"
 	$Script:Doc = $Script:Word.Documents.Add()
 	If($Null -eq $Script:Doc)
 	{
-		Write-Verbose "$(Get-Date): "
+		Write-Verbose "$(Get-Date -Format G): "
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		An empty Word document could not be created.
+	An empty Word document could not be created. You may need to repair your Word installation.
 		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
+	Script cannot Continue.
+		`n`n"
 		AbortScript
 	}
 
 	$Script:Selection = $Script:Word.Selection
 	If($Null -eq $Script:Selection)
 	{
-		Write-Verbose "$(Get-Date): "
+		Write-Verbose "$(Get-Date -Format G): "
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		An unknown error happened selecting the entire Word document for default formatting options.
+	An unknown error happened selecting the entire Word document for default formatting options.
 		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
+	Script cannot Continue.
+		`n`n"
 		AbortScript
 	}
 
@@ -1906,7 +1955,7 @@ Function SetupWord
 	$Script:Word.ActiveDocument.DefaultTabStop = 36
 
 	#Disable Spell and Grammar Check to resolve issue and improve performance (from Pat Coughlin)
-	Write-Verbose "$(Get-Date): Disable grammar and spell checking"
+	Write-Verbose "$(Get-Date -Format G): Disable grammar and spell checking"
 	#bug reported 1-Apr-2014 by Tim Mangan
 	#save current options first before turning them off
 	$Script:CurrentGrammarOption = $Script:Word.Options.CheckGrammarAsYouType
@@ -1917,18 +1966,18 @@ Function SetupWord
 	If($BuildingBlocksExist)
 	{
 		#insert new page, getting ready for table of contents
-		Write-Verbose "$(Get-Date): Insert new page, getting ready for table of contents"
+		Write-Verbose "$(Get-Date -Format G): Insert new page, getting ready for table of contents"
 		$part.Insert($Script:Selection.Range,$True) | Out-Null
 		$Script:Selection.InsertNewPage()
 
 		#table of contents
-		Write-Verbose "$(Get-Date): Table of Contents - $($Script:MyHash.Word_TableOfContents)"
+		Write-Verbose "$(Get-Date -Format G): Table of Contents - $($Script:MyHash.Word_TableOfContents)"
 		$toc = $BuildingBlocks.BuildingBlockEntries.Item($Script:MyHash.Word_TableOfContents)
 		If($Null -eq $toc)
 		{
-			Write-Verbose "$(Get-Date): "
-			Write-Verbose "$(Get-Date): Table of Content - $Script:MyHash.Word_TableOfContents could not be retrieved."
-			Write-Warning "This report will not have a Table of Contents."
+			Write-Verbose "$(Get-Date -Format G): "
+			Write-Host "Table of Content - $($Script:MyHash.Word_TableOfContents) could not be retrieved." -Foreground White
+			Write-Host "This report will not have a Table of Contents." -Foreground White
 		}
 		Else
 		{
@@ -1937,16 +1986,16 @@ Function SetupWord
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date): Table of Contents are not installed."
-		Write-Warning "Table of Contents are not installed so this report will not have a Table of Contents."
+		Write-Host "Table of Contents are not installed." -Foreground White
+		Write-Host "Table of Contents are not installed so this report will not have a Table of Contents." -Foreground White
 	}
 
 	#set the footer
-	Write-Verbose "$(Get-Date): Set the footer"
+	Write-Verbose "$(Get-Date -Format G): Set the footer"
 	[string]$footertext = "Report created by $username"
 
 	#get the footer
-	Write-Verbose "$(Get-Date): Get the footer and format font"
+	Write-Verbose "$(Get-Date -Format G): Get the footer and format font"
 	$Script:Doc.ActiveWindow.ActivePane.view.SeekView = $wdSeekPrimaryFooter
 	#get the footer and format font
 	$footers = $Script:Doc.Sections.Last.Footers
@@ -1960,15 +2009,15 @@ Function SetupWord
 			$footer.range.Font.Bold = $True
 		}
 	} #end ForEach
-	Write-Verbose "$(Get-Date): Footer text"
+	Write-Verbose "$(Get-Date -Format G): Footer text"
 	$Script:Selection.HeaderFooter.Range.Text = $footerText
 
 	#add page numbering
-	Write-Verbose "$(Get-Date): Add page numbering"
+	Write-Verbose "$(Get-Date -Format G): Add page numbering"
 	$Script:Selection.HeaderFooter.PageNumbers.Add($wdAlignPageNumberRight) | Out-Null
 
 	FindWordDocumentEnd
-	Write-Verbose "$(Get-Date):"
+	Write-Verbose "$(Get-Date -Format G):"
 	#end of Jeff Hicks 
 }
 
@@ -1981,7 +2030,7 @@ Function UpdateDocumentProperties
 	{
 		If($Script:CoverPagesExist)
 		{
-			Write-Verbose "$(Get-Date): Set Cover Page Properties"
+			Write-Verbose "$(Get-Date -Format G): Set Cover Page Properties"
 			#8-Jun-2017 put these 4 items in alpha order
             Set-DocumentProperty -Document $Script:Doc -DocProperty Author -Value $UserName
             Set-DocumentProperty -Document $Script:Doc -DocProperty Company -Value $Script:CoName
@@ -2033,7 +2082,7 @@ Function UpdateDocumentProperties
 			[string]$abstract = (Get-Date -Format d).ToString()
 			$ab.Text = $abstract
 
-			Write-Verbose "$(Get-Date): Update the Table of Contents"
+			Write-Verbose "$(Get-Date -Format G): Update the Table of Contents"
 			#update the Table of Contents
 			$Script:Doc.TablesOfContents.item(1).Update()
 			$cp = $Null
@@ -2219,7 +2268,7 @@ Function WriteWordLine
 .Synopsis
 	Writes a line of output for HTML output
 .DESCRIPTION
-	This function formats an HTML line
+	This Function formats an HTML line
 .USAGE
 	WriteHTMLLine <Style> <Tabs> <Name> <Value> <Font Name> <Font Size> <Options>
 
@@ -2241,12 +2290,12 @@ Function WriteWordLine
 	Writes a line omitting font and font size and setting the italics attribute
 
 .EXAMPLE
-	WriteHTMLLine 0 0 "This is a regular line of text in the default font in bold" "" $Null 0 $htmlbold
+	WriteHTMLLine 0 0 "This is a regular line of text in the default font in bold" "" $Null 0 $htmlBold
 
 	Writes a line omitting font and font size and setting the bold attribute
 
 .EXAMPLE
-	WriteHTMLLine 0 0 "This is a regular line of text in the default font in bold italics" "" $Null 0 ($htmlbold -bor $htmlitalics)
+	WriteHTMLLine 0 0 "This is a regular line of text in the default font in bold italics" "" $Null 0 ($htmlBold -bor $htmlitalics)
 
 	Writes a line omitting font and font size and setting both italics and bold options
 
@@ -2261,7 +2310,7 @@ Function WriteWordLine
 	Writes a line using Courier New Font and 0 font point size (default = 2 if set to 0)
 
 .EXAMPLE	
-	WriteHTMLLine 0 0 "This is a regular line of RED text indented 0 tab stops with the computer name as data in 10 point Courier New bold italics: " $env:computername "Courier New" 2 ($htmlbold -bor $htmlred -bor $htmlitalics)
+	WriteHTMLLine 0 0 "This is a regular line of RED text indented 0 tab stops with the computer name as data in 10 point Courier New bold italics: " $env:computername "Courier New" 2 ($htmlBold -bor $htmlred -bor $htmlitalics)
 
 	Writes a line using Courier New Font with first and second string values to be used, also uses 10 point font with bold, italics and red color options set.
 
@@ -2305,222 +2354,388 @@ Function WriteWordLine
 		htmlblack       
 #>
 
+#V3.00
+# to suppress $crlf in HTML documents, replace this with '' (empty string)
+# but this was added to make the HTML readable
+$crlf = [System.Environment]::NewLine
+
 Function WriteHTMLLine
 #Function created by Ken Avram
 #Function created to make output to HTML easy in this script
 #headings fixed 12-Oct-2016 by Webster
 #errors with $HTMLStyle fixed 7-Dec-2017 by Webster
+# re-implemented/re-based for v3.00 by Michael B. Smith
 {
-	Param([int]$style=0, 
-	[int]$tabs = 0, 
-	[string]$name = '', 
-	[string]$value = '', 
-	[string]$fontName="Calibri",
-	[int]$fontSize=1,
-	[int]$options=$htmlblack)
+	Param
+	(
+		[Int]    $style    = 0, 
+		[Int]    $tabs     = 0, 
+		[String] $name     = '', 
+		[String] $value    = '', 
+		[String] $fontName = $null,
+		[Int]    $fontSize = 1,
+		[Int]    $options  = $htmlblack
+	)
 
+	#V3.00 - FIXME - long story short, this Function was wrong and had been wrong for a long time. 
+	## The Function generated invalid HTML, and ignored fontname and fontsize parameters. I fixed
+	## those items, but that made the report unreadable, because all of the formatting had been based
+	## on this Function not working properly.
 
-	#Build output style
-	[string]$output = ""
+	## here is a typical H1 previously generated:
+	## <h1>///&nbsp;&nbsp;Forest Information&nbsp;&nbsp;\\\<font face='Calibri' color='#000000' size='1'></h1></font>
 
-	If([String]::IsNullOrEmpty($Name))	
+	## fixing the Function generated this (unreadably small):
+	## <h1><font face='Calibri' color='#000000' size='1'>///&nbsp;&nbsp;Forest Information&nbsp;&nbsp;\\\</font></h1>
+
+	## So I took all the fixes out. This routine now generates valid HTML, but the fontName, fontSize,
+	## and options parameters are ignored; so the routine generates equivalent output as before. I took
+	## the fixes out instead of fixing all the call sites, because there are 225 call sites! If you are
+	## willing to update all the call sites, you can easily re-instate the fixes. They have only been
+	## commented out with '##' below.
+
+	## If( [String]::IsNullOrEmpty( $fontName ) )
+	## {
+	##	$fontName = 'Calibri'
+	## }
+	## If( $fontSize -le 0 )
+	## {
+	##	$fontSize = 1
+	## }
+
+	## ## output data is stored here
+	## [String] $output = ''
+	[System.Text.StringBuilder] $sb = New-Object System.Text.StringBuilder( 1024 )
+
+	If( [String]::IsNullOrEmpty( $name ) )	
 	{
-		$HTMLBody = "<p></p>"
+		## $HTMLBody = '<p></p>'
+		$null = $sb.Append( '<p></p>' )
 	}
 	Else
 	{
-		$color = CheckHTMLColor $options
+		## #V3.00
+		[Bool] $ital = $options -band $htmlitalics
+		[Bool] $bold = $options -band $htmlBold
+		## $color = $global:htmlColor[ $options -band 0xffffc ]
 
-		#build # of tabs
+		## ## build the HTML output string
+##		$HTMLBody = ''
+##		If( $ital ) { $HTMLBody += '<i>' }
+##		If( $bold ) { $HTMLBody += '<b>' } 
+		If( $ital ) { $null = $sb.Append( '<i>' ) }
+		If( $bold ) { $null = $sb.Append( '<b>' ) } 
 
-		While($tabs -gt 0)
-		{ 
-			$output += "&nbsp;&nbsp;&nbsp;&nbsp;"; $tabs--; 
+		Switch( $style )
+		{
+			1 { $HTMLOpen = '<h1>'; $HTMLClose = '</h1>'; Break }
+			2 { $HTMLOpen = '<h2>'; $HTMLClose = '</h2>'; Break }
+			3 { $HTMLOpen = '<h3>'; $HTMLClose = '</h3>'; Break }
+			4 { $HTMLOpen = '<h4>'; $HTMLClose = '</h4>'; Break }
+			Default { $HTMLOpen = ''; $HTMLClose = ''; Break }
 		}
 
-		$HTMLFontName = $fontName		
+		## $HTMLBody += $HTMLOpen
+		$null = $sb.Append( $HTMLOpen )
 
-		$HTMLBody = ""
-
-		If($options -band $htmlitalics) 
-		{
-			$HTMLBody += "<i>"
-		} 
-
-		If($options -band $htmlbold) 
-		{
-			$HTMLBody += "<b>"
-		} 
-
-		#output the rest of the parameters.
-		$output += $name + $value
-
-		Switch ($style)
-		{
-			1 {$HTMLStyle = "<h1>"; Break}
-			2 {$HTMLStyle = "<h2>"; Break}
-			3 {$HTMLStyle = "<h3>"; Break}
-			4 {$HTMLStyle = "<h4>"; Break}
-			Default {$HTMLStyle = ""; Break}
-		}
-
-		$HTMLBody += $HTMLStyle + $output
-
-		Switch ($style)
-		{
-			1 {$HTMLStyle = "</h1>"; Break}
-			2 {$HTMLStyle = "</h2>"; Break}
-			3 {$HTMLStyle = "</h3>"; Break}
-			4 {$HTMLStyle = "</h4>"; Break}
-			Default {$HTMLStyle = ""; Break}
-		}
-
-		#added by webster 12-oct-2016
-		#if a heading, don't add the <br>
-		#moved to after the two switch statements on 7-Dec-2017 to fix $HTMLStyle has not been set error
-		If($HTMLStyle -eq "")
-		{
-			$HTMLBody += "<br><font face='" + $HTMLFontName + "' " + "color='" + $color + "' size='"  + $fontsize + "'>"
-		}
-		Else
-		{
-			$HTMLBody += "<font face='" + $HTMLFontName + "' " + "color='" + $color + "' size='"  + $fontsize + "'>"
-		}
+		## If($HTMLClose -eq '')
+		## {
+		##	$HTMLBody += "<br><font face='" + $fontName + "' " + "color='" + $color + "' size='"  + $fontSize + "'>"
+		## }
+		## Else
+		## {
+		##	$HTMLBody += "<font face='" + $fontName + "' " + "color='" + $color + "' size='"  + $fontSize + "'>"
+		## }
 		
-		$HTMLBody += $HTMLStyle +  "</font>"
+##		While( $tabs -gt 0 )
+##		{ 
+##			$output += '&nbsp;&nbsp;&nbsp;&nbsp;'
+##			$tabs--
+##		}
+		## output the rest of the parameters.
+##		$output += $name + $value
+		## $HTMLBody += $output
+		$null = $sb.Append( ( '&nbsp;&nbsp;&nbsp;&nbsp;' * $tabs ) + $name + $value )
 
-		If($options -band $htmlitalics) 
-		{
-			$HTMLBody += "</i>"
-		} 
+		## $HTMLBody += '</font>'
+##		If( $HTMLClose -eq '' ) { $HTMLBody += '<br>'     }
+##		Else                    { $HTMLBody += $HTMLClose }
 
-		If($options -band $htmlbold) 
-		{
-			$HTMLBody += "</b>"
-		} 
+##		If( $ital ) { $HTMLBody += '</i>' }
+##		If( $bold ) { $HTMLBody += '</b>' } 
 
-		#added by webster 12-oct-2016
-		#if a heading, don't add the <br />
-		#moved to inside the Else statement on 7-Dec-2017 to fix $HTMLStyle has not been set error
-		If($HTMLStyle -eq "")
-		{
-			$HTMLBody += "<br />"
-		}
+##		If( $HTMLClose -eq '' ) { $HTMLBody += '<br />' }
+
+		If( $HTMLClose -eq '' ) { $null = $sb.Append( '<br>' )     }
+		Else                    { $null = $sb.Append( $HTMLClose ) }
+
+		If( $ital ) { $null = $sb.Append( '</i>' ) }
+		If( $bold ) { $null = $sb.Append( '</b>' ) } 
+
+		If( $HTMLClose -eq '' ) { $null = $sb.Append( '<br />' ) }
 	}
+	##$HTMLBody += $crlf
+	$null = $sb.AppendLine( '' )
 
-	out-file -FilePath $Script:FileName1 -Append -InputObject $HTMLBody 4>$Null
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $sb.ToString() 4>$Null
 }
 #endregion
 
 #region HTML table functions
 #***********************************************************************************************************
-# AddHTMLTable - Called from FormatHTMLTable function
+# AddHTMLTable - Called from FormatHTMLTable Function
 # Created by Ken Avram
 # modified by Jake Rutski
+# re-implemented by Michael B. Smith for v2.00. Also made the documentation match reality.
 #***********************************************************************************************************
 Function AddHTMLTable
 {
-	Param([string]$fontName="Calibri",
-	[int]$fontSize=2,
-	[int]$colCount=0,
-	[int]$rowCount=0,
-	[object[]]$rowInfo=@(),
-	[object[]]$fixedInfo=@())
+	Param
+	(
+		[String]   $fontName  = 'Calibri',
+		[Int]      $fontSize  = 2,
+		[Int]      $colCount  = 0,
+		[Int]      $rowCount  = 0,
+		[Object[]] $rowInfo   = $null,
+		[Object[]] $fixedInfo = $null
+	)
+	#V3.00 - Use StringBuilder - MBS
+	## In the normal case, tables are only a few dozen cells. But in the case
+	## of Sites, OUs, and Users - there may be many hundreds of thousands of 
+	## cells. Using normal strings is too slow.
 
-	For($rowidx = $RowIndex;$rowidx -le $rowCount;$rowidx++)
+	#V3.00
+	## If( $ExtraSpecialVerbose )
+	## {
+	##	$global:rowInfo1 = $rowInfo
+	## }
+<#
+	If( $SuperVerbose )
 	{
-		$rd = @($rowInfo[$rowidx - 2])
-		$htmlbody = $htmlbody + "<tr>"
-		For($columnIndex = 0; $columnIndex -lt $colCount; $columnindex+=2)
+		wv "AddHTMLTable: fontName '$fontName', fontsize $fontSize, colCount $colCount, rowCount $rowCount"
+		If( $null -ne $rowInfo -and $rowInfo.Count -gt 0 )
 		{
-			$tmp = CheckHTMLColor $rd[$columnIndex+1]
-
-			If($fixedInfo.Length -eq 0)
+			wv "AddHTMLTable: rowInfo has $( $rowInfo.Count ) elements"
+			If( $ExtraSpecialVerbose )
 			{
-				$htmlbody += "<td style=""background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
-			}
-			Else
-			{
-				$htmlbody += "<td style=""width:$($fixedInfo[$columnIndex/2]); background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
-			}
-
-			If($rd[$columnIndex+1] -band $htmlbold)
-			{
-				$htmlbody += "<b>"
-			}
-			If($rd[$columnIndex+1] -band $htmlitalics)
-			{
-				$htmlbody += "<i>"
-			}
-			If($Null -ne $rd[$columnIndex])
-			{
-				$cell = $rd[$columnIndex].tostring()
-				If($cell -eq " " -or $cell.length -eq 0)
+				wv "AddHTMLTable: rowInfo length $( $rowInfo.Length )"
+				For( $ii = 0; $ii -lt $rowInfo.Length; $ii++ )
 				{
-					$htmlbody += "&nbsp;&nbsp;&nbsp;"
-				}
-				Else
-				{
-					For($i=0;$i -lt $cell.length;$i++)
+					$row = $rowInfo[ $ii ]
+					wv "AddHTMLTable: index $ii, type $( $row.GetType().FullName ), length $( $row.Length )"
+					For( $yyy = 0; $yyy -lt $row.Length; $yyy++ )
 					{
-						If($cell[$i] -eq " ")
-						{
-							$htmlbody += "&nbsp;"
-						}
-						If($cell[$i] -ne " ")
-						{
-							Break
-						}
+						wv "AddHTMLTable: index $ii, yyy = $yyy, val = '$( $row[ $yyy ] )'"
 					}
-					$htmlbody += $cell
+					wv "AddHTMLTable: done"
 				}
+			}
+		}
+		Else
+		{
+			wv "AddHTMLTable: rowInfo is empty"
+		}
+		If( $null -ne $fixedInfo -and $fixedInfo.Count -gt 0 )
+		{
+			wv "AddHTMLTable: fixedInfo has $( $fixedInfo.Count ) elements"
+		}
+		Else
+		{
+			wv "AddHTMLTable: fixedInfo is empty"
+		}
+	}
+#>
+
+	$fwLength = If( $null -ne $fixedInfo ) { $fixedInfo.Count } else { 0 }
+
+	##$htmlbody = ''
+	[System.Text.StringBuilder] $sb = New-Object System.Text.StringBuilder( 8192 )
+
+	If( $rowInfo -and $rowInfo.Length -lt $rowCount )
+	{
+##		$oldCount = $rowCount
+		$rowCount = $rowInfo.Length
+##		If( $SuperVerbose )
+##		{
+##			wv "AddHTMLTable: updated rowCount to $rowCount from $oldCount, based on rowInfo.Length"
+##		}
+	}
+
+	For( $rowCountIndex = 0; $rowCountIndex -lt $rowCount; $rowCountIndex++ )
+	{
+		$null = $sb.AppendLine( '<tr>' )
+		## $htmlbody += '<tr>'
+		## $htmlbody += $crlf #V3.00 - make the HTML readable
+
+		## each row of rowInfo is an array
+		## each row consists of tuples: an item of text followed by an item of formatting data
+<#		
+		$row = $rowInfo[ $rowCountIndex ]
+		If( $ExtraSpecialVerbose )
+		{
+			wv "!!!!! AddHTMLTable: rowCountIndex = $rowCountIndex, row.Length = $( $row.Length ), row gettype = $( $row.GetType().FullName )"
+			wv "!!!!! AddHTMLTable: colCount $colCount"
+			wv "!!!!! AddHTMLTable: row[0].Length $( $row[0].Length )"
+			wv "!!!!! AddHTMLTable: row[0].GetType $( $row[0].GetType().FullName )"
+			$subRow = $row
+			If( $subRow -is [Array] -and $subRow[ 0 ] -is [Array] )
+			{
+				$subRow = $subRow[ 0 ]
+				wv "!!!!! AddHTMLTable: deref subRow.Length $( $subRow.Length ), subRow.GetType $( $subRow.GetType().FullName )"
+			}
+
+			For( $columnIndex = 0; $columnIndex -lt $subRow.Length; $columnIndex += 2 )
+			{
+				$item = $subRow[ $columnIndex ]
+				wv "!!!!! AddHTMLTable: item.GetType $( $item.GetType().FullName )"
+				## If( !( $item -is [String] ) -and $item -is [Array] )
+##				If( $item -is [Array] -and $item[ 0 ] -is [Array] )				
+##				{
+##					$item = $item[ 0 ]
+##					wv "!!!!! AddHTMLTable: dereferenced item.GetType $( $item.GetType().FullName )"
+##				}
+				wv "!!!!! AddHTMLTable: rowCountIndex = $rowCountIndex, columnIndex = $columnIndex, val '$item'"
+			}
+			wv "!!!!! AddHTMLTable: done"
+		}
+#>
+
+		## reset
+		$row = $rowInfo[ $rowCountIndex ]
+
+		$subRow = $row
+		If( $subRow -is [Array] -and $subRow[ 0 ] -is [Array] )
+		{
+			$subRow = $subRow[ 0 ]
+			## wv "***** AddHTMLTable: deref rowCountIndex $rowCountIndex, subRow.Length $( $subRow.Length ), subRow.GetType $( $subRow.GetType().FullName )"
+		}
+
+		$subRowLength = $subRow.Count
+		For( $columnIndex = 0; $columnIndex -lt $colCount; $columnIndex += 2 )
+		{
+			$item = If( $columnIndex -lt $subRowLength ) { $subRow[ $columnIndex ] } Else { 0 }
+			## If( !( $item -is [String] ) -and $item -is [Array] )
+##			If( $item -is [Array] -and $item[ 0 ] -is [Array] )
+##			{
+##				$item = $item[ 0 ]
+##			}
+
+			$text   = If( $item ) { $item.ToString() } Else { '' }
+			$format = If( ( $columnIndex + 1 ) -lt $subRowLength ) { $subRow[ $columnIndex + 1 ] } Else { 0 }
+			## item, text, and format ALWAYS have values, even if empty values
+			$color  = $global:htmlColor[ $format -band 0xffffc ]
+			[Bool] $bold = $format -band $htmlBold
+			[Bool] $ital = $format -band $htmlitalics
+<#			
+			If( $ExtraSpecialVerbose )
+			{
+				wv "***** columnIndex $columnIndex, subRow.Length $( $subRow.Length ), item GetType $( $item.GetType().FullName ), item '$item'"
+				wv "***** format $format, color $color, text '$text'"
+				wv "***** format gettype $( $format.GetType().Fullname ), text gettype $( $text.GetType().Fullname )"
+			}
+#>
+
+			If( $fwLength -eq 0 )
+			{
+				$null = $sb.Append( "<td style=""background-color:$( $color )""><font face='$( $fontName )' size='$( $fontSize )'>" )
+				##$htmlbody += "<td style=""background-color:$( $color )""><font face='$( $fontName )' size='$( $fontSize )'>"
 			}
 			Else
 			{
-				$htmlbody += "&nbsp;&nbsp;&nbsp;"
+				$null = $sb.Append( "<td style=""width:$( $fixedInfo[ $columnIndex / 2 ] ); background-color:$( $color )""><font face='$( $fontName )' size='$( $fontSize )'>" )
+				##$htmlbody += "<td style=""width:$( $fixedInfo[ $columnIndex / 2 ] ); background-color:$( $color )""><font face='$( $fontName )' size='$( $fontSize )'>"
 			}
-			If($rd[$columnIndex+1] -band $htmlbold)
+
+			##If( $bold ) { $htmlbody += '<b>' }
+			##If( $ital ) { $htmlbody += '<i>' }
+			If( $bold ) { $null = $sb.Append( '<b>' ) }
+			If( $ital ) { $null = $sb.Append( '<i>' ) }
+
+			If( $text -eq ' ' -or $text.length -eq 0)
 			{
-				$htmlbody += "</b>"
+				##$htmlbody += '&nbsp;&nbsp;&nbsp;'
+				$null = $sb.Append( '&nbsp;&nbsp;&nbsp;' )
 			}
-			If($rd[$columnIndex+1] -band $htmlitalics)
+			Else
 			{
-				$htmlbody += "</i>"
+				For($inx = 0; $inx -lt $text.length; $inx++ )
+				{
+					If( $text[ $inx ] -eq ' ' )
+					{
+						##$htmlbody += '&nbsp;'
+						$null = $sb.Append( '&nbsp;' )
+					}
+					Else
+					{
+						Break
+					}
+				}
+				##$htmlbody += $text
+				$null = $sb.Append( $text )
 			}
-			$htmlbody += "</font></td>"
+
+##			If( $bold ) { $htmlbody += '</b>' }
+##			If( $ital ) { $htmlbody += '</i>' }
+			If( $bold ) { $null = $sb.Append( '</b>' ) }
+			If( $ital ) { $null = $sb.Append( '</i>' ) }
+
+			$null = $sb.AppendLine( '</font></td>' )
+##			$htmlbody += '</font></td>'
+##			$htmlbody += $crlf
 		}
-		$htmlbody += "</tr>"
+
+		$null = $sb.AppendLine( '</tr>' )
+##		$htmlbody += '</tr>'
+##		$htmlbody += $crlf
 	}
-	out-file -FilePath $Script:FileName1 -Append -InputObject $HTMLBody 4>$Null 
+
+##	If( $ExtraSpecialVerbose )
+##	{
+##		$global:rowInfo = $rowInfo
+##		wv "!!!!! AddHTMLTable: HTML = '$htmlbody'"
+##	}
+
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $sb.ToString() 4>$Null 
 }
 
 #***********************************************************************************************************
 # FormatHTMLTable 
 # Created by Ken Avram
 # modified by Jake Rutski
+# reworked by Michael B. Smith for v2.23
 #***********************************************************************************************************
 
 <#
 .Synopsis
-	Format table for HTML output document
+	Format table for a HTML output document.
 .DESCRIPTION
-	This function formats a table for HTML from an array of strings
+	This function formats a table for HTML from multiple arrays of strings.
 .PARAMETER noBorder
-	If set to $true, a table will be generated without a border (border='0')
+	If set to $true, a table will be generated without a border (border = '0'). Otherwise the table will be generated
+	with a border (border = '1').
 .PARAMETER noHeadCols
-	This parameter should be used when generating tables without column headers
-	Set this parameter equal to the number of columns in the table
+	This parameter should be used when generating tables which do not have a separate array containing column headers
+	(columnArray is not specified). Set this parameter equal to the number of columns in the table.
 .PARAMETER rowArray
-	This parameter contains the row data array for the table
+	This parameter contains the row data array for the table.
 .PARAMETER columnArray
-	This parameter contains column header data for the table
+	This parameter contains column header data for the table.
 .PARAMETER fixedWidth
 	This parameter contains widths for columns in pixel format ("100px") to override auto column widths
 	The variable should contain a width for each column you wish to override the auto-size setting
-	For example: $columnWidths = @("100px","110px","120px","130px","140px")
+	For example: $fixedWidth = @("100px","110px","120px","130px","140px")
+.PARAMETER tableHeader
+	A string containing the header for the table (printed at the top of the table, left justified). The
+	default is a blank string.
+.PARAMETER tableWidth
+	The width of the table in pixels, or 'auto'. The default is 'auto'.
+.PARAMETER fontName
+	The name of the font to use in the table. The default is 'Calibri'.
+.PARAMETER fontSize
+	The size of the font to use in the table. The default is 2. Note that this is the HTML size, not the pixel size.
 
 .USAGE
-	FormatHTMLTable <Table Header> <Table Format> <Font Name> <Font Size>
+	FormatHTMLTable <Table Header> <Table Width> <Font Name> <Font Size>
 
 .EXAMPLE
 	FormatHTMLTable "Table Heading" "auto" "Calibri" 3
@@ -2553,7 +2768,7 @@ Function AddHTMLTable
 	Then Load the array.  If you are using column headers then load those into the column headers array, otherwise the first line of the table goes into the column headers array
 	and the second and subsequent lines go into the $rowdata table as shown below:
 
-	$columnHeaders = @('Display Name',($htmlsilver -bor $htmlbold),'Status',($htmlsilver -bor $htmlbold),'Startup Type',($htmlsilver -bor $htmlbold))
+	$columnHeaders = @('Display Name',$htmlsb,'Status',$htmlsb,'Startup Type',$htmlsb)
 
 	The first column is the actual name to display, the second are the attributes of the column i.e. color anded with bold or italics.  For the anding, parens are required or it will
 	not format correctly.
@@ -2561,18 +2776,18 @@ Function AddHTMLTable
 	This is following by adding rowdata as shown below.  As more columns are added the columns will auto adjust to fit the size of the page.
 
 	$rowdata = @()
-	$columnHeaders = @("User Name",($htmlsilver -bor $htmlbold),$UserName,$htmlwhite)
-	$rowdata += @(,('Save as PDF',($htmlsilver -bor $htmlbold),$PDF.ToString(),$htmlwhite))
-	$rowdata += @(,('Save as TEXT',($htmlsilver -bor $htmlbold),$TEXT.ToString(),$htmlwhite))
-	$rowdata += @(,('Save as WORD',($htmlsilver -bor $htmlbold),$MSWORD.ToString(),$htmlwhite))
-	$rowdata += @(,('Save as HTML',($htmlsilver -bor $htmlbold),$HTML.ToString(),$htmlwhite))
-	$rowdata += @(,('Add DateTime',($htmlsilver -bor $htmlbold),$AddDateTime.ToString(),$htmlwhite))
-	$rowdata += @(,('Hardware Inventory',($htmlsilver -bor $htmlbold),$Hardware.ToString(),$htmlwhite))
-	$rowdata += @(,('Computer Name',($htmlsilver -bor $htmlbold),$ComputerName,$htmlwhite))
-	$rowdata += @(,('Filename1',($htmlsilver -bor $htmlbold),$Script:FileName1,$htmlwhite))
-	$rowdata += @(,('OS Detected',($htmlsilver -bor $htmlbold),$Script:RunningOS,$htmlwhite))
-	$rowdata += @(,('PSUICulture',($htmlsilver -bor $htmlbold),$PSCulture,$htmlwhite))
-	$rowdata += @(,('PoSH version',($htmlsilver -bor $htmlbold),$Host.Version.ToString(),$htmlwhite))
+	$columnHeaders = @("User Name",$htmlsb,$UserName,$htmlwhite)
+	$rowdata += @(,('Save as PDF',$htmlsb,$PDF.ToString(),$htmlwhite))
+	$rowdata += @(,('Save as TEXT',$htmlsb,$TEXT.ToString(),$htmlwhite))
+	$rowdata += @(,('Save as WORD',$htmlsb,$MSWORD.ToString(),$htmlwhite))
+	$rowdata += @(,('Save as HTML',$htmlsb,$HTML.ToString(),$htmlwhite))
+	$rowdata += @(,('Add DateTime',$htmlsb,$AddDateTime.ToString(),$htmlwhite))
+	$rowdata += @(,('Hardware Inventory',$htmlsb,$Hardware.ToString(),$htmlwhite))
+	$rowdata += @(,('Computer Name',$htmlsb,$ComputerName,$htmlwhite))
+	$rowdata += @(,('Filename1',$htmlsb,$Script:FileName1,$htmlwhite))
+	$rowdata += @(,('OS Detected',$htmlsb,$Script:RunningOS,$htmlwhite))
+	$rowdata += @(,('PSUICulture',$htmlsb,$PSCulture,$htmlwhite))
+	$rowdata += @(,('PoSH version',$htmlsb,$Host.Version.ToString(),$htmlwhite))
 	FormatHTMLTable "Example of Horizontal AutoFitContents HTML Table" -rowArray $rowdata
 
 	The 'rowArray' paramater is mandatory to build the table, but it is not set as such in the function - if nothing is passed, the table will be empty.
@@ -2598,24 +2813,66 @@ Function AddHTMLTable
 		htmlmaroon      
 		htmlgreen       
 		htmlblack     
-
 #>
 
 Function FormatHTMLTable
 {
-	Param([string]$tableheader,
-	[string]$tablewidth="auto",
-	[string]$fontName="Calibri",
-	[int]$fontSize=2,
-	[switch]$noBorder=$false,
-	[int]$noHeadCols=1,
-	[object[]]$rowArray=@(),
-	[object[]]$fixedWidth=@(),
-	[object[]]$columnArray=@())
+	Param
+	(
+		[String]   $tableheader = '',
+		[String]   $tablewidth  = 'auto',
+		[String]   $fontName    = 'Calibri',
+		[Int]      $fontSize    = 2,
+		[Switch]   $noBorder    = $false,
+		[Int]      $noHeadCols  = 1,
+		[Object[]] $rowArray    = $null,
+		[Object[]] $fixedWidth  = $null,
+		[Object[]] $columnArray = $null
+	)
 
-	$HTMLBody = "<b><font face='" + $fontname + "' size='" + ($fontsize + 1) + "'>" + $tableheader + "</font></b>"
+	## FIXME - the help text for this Function is wacky wrong - MBS
+	## FIXME - Use StringBuilder - MBS - this only builds the table header - benefit relatively small
+<#
+	If( $SuperVerbose )
+	{
+		wv "FormatHTMLTable: fontname '$fontname', size $fontSize, tableheader '$tableheader'"
+		wv "FormatHTMLTable: noborder $noborder, noheadcols $noheadcols"
+		If( $rowarray -and $rowarray.count -gt 0 )
+		{
+			wv "FormatHTMLTable: rowarray has $( $rowarray.count ) elements"
+		}
+		Else
+		{
+			wv "FormatHTMLTable: rowarray is empty"
+		}
+		If( $columnarray -and $columnarray.count -gt 0 )
+		{
+			wv "FormatHTMLTable: columnarray has $( $columnarray.count ) elements"
+		}
+		Else
+		{
+			wv "FormatHTMLTable: columnarray is empty"
+		}
+		If( $fixedwidth -and $fixedwidth.count -gt 0 )
+		{
+			wv "FormatHTMLTable: fixedwidth has $( $fixedwidth.count ) elements"
+		}
+		Else
+		{
+			wv "FormatHTMLTable: fixedwidth is empty"
+		}
+	}
+#>
 
-	If($columnArray.Length -eq 0)
+	$HTMLBody = ''
+	If( $tableheader.Length -gt 0 )
+	{
+		$HTMLBody += "<b><font face='" + $fontname + "' size='" + ($fontsize + 1) + "'>" + $tableheader + "</font></b>" + $crlf
+	}
+
+	$fwSize = If( $null -eq $fixedWidth ) { 0 } else { $fixedWidth.Count }
+
+	If( $null -eq $columnArray -or $columnArray.Length -eq 0)
 	{
 		$NumCols = $noHeadCols + 1
 	}  # means we have no column headers, just a table
@@ -2624,102 +2881,130 @@ Function FormatHTMLTable
 		$NumCols = $columnArray.Length
 	}  # need to add one for the color attrib
 
-	If($Null -ne $rowArray)
-	{
-		$NumRows = $rowArray.length + 1
-	}
-	Else
+	If( $null -eq $rowArray )
 	{
 		$NumRows = 1
 	}
-
-	If($noBorder)
+	Else
 	{
-		$htmlbody += "<table border='0' width='" + $tablewidth + "'>"
+		$NumRows = $rowArray.length + 1
+	}
+
+	If( $noBorder )
+	{
+		$HTMLBody += "<table border='0' width='" + $tablewidth + "'>"
 	}
 	Else
 	{
-		$htmlbody += "<table border='1' width='" + $tablewidth + "'>"
+		$HTMLBody += "<table border='1' width='" + $tablewidth + "'>"
 	}
+	$HTMLBody += $crlf
 
-	If(!($columnArray.Length -eq 0))
+	If( $columnArray -and $columnArray.Length -gt 0 )
 	{
-		$htmlbody += "<tr>"
+		$HTMLBody += '<tr>' + $crlf
 
-		For($columnIndex = 0; $columnIndex -lt $NumCols; $columnindex+=2)
+		For( $columnIndex = 0; $columnIndex -lt $NumCols; $columnindex += 2 )
 		{
-			$tmp = CheckHTMLColor $columnArray[$columnIndex+1]
-			If($fixedWidth.Length -eq 0)
+			#V3.00
+			$val = $columnArray[ $columnIndex + 1 ]
+			$tmp = $global:htmlColor[ $val -band 0xffffc ]
+			[Bool] $bold = $val -band $htmlBold
+			[Bool] $ital = $val -band $htmlitalics
+
+			If( $fwSize -eq 0 )
 			{
-				$htmlbody += "<td style=""background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
+				$HTMLBody += "<td style=""background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
 			}
 			Else
 			{
-				$htmlbody += "<td style=""width:$($fixedWidth[$columnIndex/2]); background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
+				$HTMLBody += "<td style=""width:$($fixedWidth[$columnIndex / 2]); background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
 			}
 
-			If($columnArray[$columnIndex+1] -band $htmlbold)
+			If( $bold ) { $HTMLBody += '<b>' }
+			If( $ital ) { $HTMLBody += '<i>' }
+
+			$array = $columnArray[ $columnIndex ]
+			If( $array )
 			{
-				$htmlbody += "<b>"
-			}
-			If($columnArray[$columnIndex+1] -band $htmlitalics)
-			{
-				$htmlbody += "<i>"
-			}
-			If($Null -ne $columnArray[$columnIndex])
-			{
-				If($columnArray[$columnIndex] -eq " " -or $columnArray[$columnIndex].length -eq 0)
+				If( $array -eq ' ' -or $array.Length -eq 0 )
 				{
-					$htmlbody += "&nbsp;&nbsp;&nbsp;"
+					$HTMLBody += '&nbsp;&nbsp;&nbsp;'
 				}
 				Else
 				{
-					For($i=0;$i -lt $columnArray[$columnIndex].length;$i+=2)
+					For( $i = 0; $i -lt $array.Length; $i += 2 )
 					{
-						If($columnArray[$columnIndex][$i] -eq " ")
+						If( $array[ $i ] -eq ' ' )
 						{
-							$htmlbody += "&nbsp;"
+							$HTMLBody += '&nbsp;'
 						}
-						If($columnArray[$columnIndex][$i] -ne " ")
+						Else
 						{
 							Break
 						}
 					}
-					$htmlbody += $columnArray[$columnIndex]
+					$HTMLBody += $array
 				}
 			}
 			Else
 			{
-				$htmlbody += "&nbsp;&nbsp;&nbsp;"
+				$HTMLBody += '&nbsp;&nbsp;&nbsp;'
 			}
-			If($columnArray[$columnIndex+1] -band $htmlbold)
-			{
-				$htmlbody += "</b>"
-			}
-			If($columnArray[$columnIndex+1] -band $htmlitalics)
-			{
-				$htmlbody += "</i>"
-			}
-			$htmlbody += "</font></td>"
+			
+			If( $bold ) { $HTMLBody += '</b>' }
+			If( $ital ) { $HTMLBody += '</i>' }
+
+			$HTMLBody += '</font></td>'
+			$HTMLBody += $crlf
 		}
-		$htmlbody += "</tr>"
+
+		$HTMLBody += '</tr>' + $crlf
 	}
-	$rowindex = 2
-	If($Null -ne $rowArray)
+
+	#V3.00
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $HTMLBody 4>$Null 
+	$HTMLBody = ''
+
+	##$rowindex = 2
+	If( $rowArray )
 	{
-		AddHTMLTable $fontName $fontSize -colCount $numCols -rowCount $NumRows -rowInfo $rowArray -fixedInfo $fixedWidth
-		$rowArray = @()
-		$htmlbody = "</table>"
+<#
+		If( $ExtraSpecialVerbose )
+		{
+			wv "***** FormatHTMLTable: rowarray length $( $rowArray.Length )"
+			For( $ii = 0; $ii -lt $rowArray.Length; $ii++ )
+			{
+				$row = $rowArray[ $ii ]
+				wv "***** FormatHTMLTable: index $ii, type $( $row.GetType().FullName ), length $( $row.Length )"
+				For( $yyy = 0; $yyy -lt $row.Length; $yyy++ )
+				{
+					wv "***** FormatHTMLTable: index $ii, yyy = $yyy, val = '$( $row[ $yyy ] )'"
+				}
+				wv "***** done"
+			}
+			wv "***** FormatHTMLTable: rowCount $NumRows"
+		}
+#>
+
+		AddHTMLTable -fontName $fontName -fontSize $fontSize `
+			-colCount $numCols -rowCount $NumRows `
+			-rowInfo $rowArray -fixedInfo $fixedWidth
+		##$rowArray = @()
+		$rowArray = $null
+		$HTMLBody = '</table>'
 	}
 	Else
 	{
-		$HTMLBody += "</table>"
-	}	
-	out-file -FilePath $Script:FileName1 -Append -InputObject $HTMLBody 4>$Null 
+		$HTMLBody += '</table>'
+	}
+
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $HTMLBody 4>$Null 
 }
 #endregion
 
 #region other HTML functions
+<#
 #***********************************************************************************************************
 # CheckHTMLColor - Called from AddHTMLTable WriteHTMLLine and FormatHTMLTable
 #***********************************************************************************************************
@@ -2727,6 +3012,8 @@ Function CheckHTMLColor
 {
 	Param($hash)
 
+	#V2.23 -- this is really slow. several ways to fixit. so fixit. MBS
+	#V2.23 - obsolete. replaced by using $global:htmlColor lookup table
 	If($hash -band $htmlwhite)
 	{
 		Return $htmlwhitemask
@@ -2796,21 +3083,22 @@ Function CheckHTMLColor
 		Return $htmlolivemask
 	}
 }
+#>
 
 Function SetupHTML
 {
-	Write-Verbose "$(Get-Date): Setting up HTML"
+	Write-Verbose "$(Get-Date -Format G): Setting up HTML"
 	If(!$AddDateTime)
 	{
-		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).html"
+		[string]$Script:HTMLFileName = "$($Script:pwdpath)\$($OutputFileName).html"
 	}
 	ElseIf($AddDateTime)
 	{
-		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).html"
+		[string]$Script:HTMLFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).html"
 	}
 
 	$htmlhead = "<html><head><meta http-equiv='Content-Language' content='da'><title>" + $Script:Title + "</title></head><body>"
-	out-file -FilePath $Script:Filename1 -Force -InputObject $HTMLHead 4>$Null
+	Out-File -FilePath $Script:HTMLFileName -Force -InputObject $HTMLHead 4>$Null
 }
 #endregion
 
@@ -2908,7 +3196,7 @@ Function AddWordTable
 			{
 				Write-Error "The specified number of columns does not match the specified number of headers.";
 			}
-		} ## end elseif
+		} ## end Elseif
 	} ## end Begin
 
 	Process
@@ -2922,7 +3210,7 @@ Function AddWordTable
 			{
 				If($Null -eq $Columns) 
 				{
-					## Build the available columns from all available PSCustomObject note properties
+					## Build the available columns from all availble PSCustomObject note properties
 					[string[]] $Columns = @();
 					## Add each NoteProperty name to the array
 					ForEach($Property in ($CustomObject | Get-Member -MemberType NoteProperty)) 
@@ -2934,7 +3222,7 @@ Function AddWordTable
 				## Add the table headers from -Headers or -Columns (except when in -List(view)
 				If(-not $List) 
 				{
-					Write-Debug ("$(Get-Date): `t`tBuilding table headers");
+					Write-Debug ("$(Get-Date -Format G): `t`tBuilding table headers");
 					If($Null -ne $Headers) 
 					{
                         [ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $Headers));
@@ -2946,7 +3234,7 @@ Function AddWordTable
 				}
 
 				## Iterate through each PSCustomObject
-				Write-Debug ("$(Get-Date): `t`tBuilding table rows");
+				Write-Debug ("$(Get-Date -Format G): `t`tBuilding table rows");
 				ForEach($Object in $CustomObject) 
 				{
 					$OrderedValues = @();
@@ -2958,7 +3246,7 @@ Function AddWordTable
 					## Use the ordered list to add each column in specified order
 					[ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $OrderedValues));
 				} ## end foreach
-				Write-Debug ("$(Get-Date): `t`t`tAdded '{0}' table rows" -f ($CustomObject.Count));
+				Write-Debug ("$(Get-Date -Format G): `t`t`tAdded '{0}' table rows" -f ($CustomObject.Count));
 			} ## end CustomObject
 
 			Default 
@@ -2973,7 +3261,7 @@ Function AddWordTable
 				## Add the table headers from -Headers or -Columns (except when in -List(view)
 				If(-not $List) 
 				{
-					Write-Debug ("$(Get-Date): `t`tBuilding table headers");
+					Write-Debug ("$(Get-Date -Format G): `t`tBuilding table headers");
 					If($Null -ne $Headers) 
 					{ 
 						[ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $Headers));
@@ -2985,7 +3273,7 @@ Function AddWordTable
 				}
                 
 				## Iterate through each Hashtable
-				Write-Debug ("$(Get-Date): `t`tBuilding table rows");
+				Write-Debug ("$(Get-Date -Format G): `t`tBuilding table rows");
 				ForEach($Hash in $Hashtable) 
 				{
 					$OrderedValues = @();
@@ -2998,12 +3286,12 @@ Function AddWordTable
 					[ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $OrderedValues));
 				} ## end foreach
 
-				Write-Debug ("$(Get-Date): `t`t`tAdded '{0}' table rows" -f $Hashtable.Count);
+				Write-Debug ("$(Get-Date -Format G): `t`t`tAdded '{0}' table rows" -f $Hashtable.Count);
 			} ## end default
 		} ## end switch
 
 		## Create a MS Word range and set its text to our tab-delimited, concatenated string
-		Write-Debug ("$(Get-Date): `t`tBuilding table range");
+		Write-Debug ("$(Get-Date -Format G): `t`tBuilding table range");
 		$WordRange = $Script:Doc.Application.Selection.Range;
 		$WordRange.Text = $WordRangeString.ToString();
 
@@ -3029,7 +3317,7 @@ Function AddWordTable
 
 		## Invoke ConvertToTable method - with named arguments - to convert Word range to a table
 		## See http://msdn.microsoft.com/en-us/library/office/aa171893(v=office.11).aspx
-		Write-Debug ("$(Get-Date): `t`tConverting range to table");
+		Write-Debug ("$(Get-Date -Format G): `t`tConverting range to table");
 		## Store the table reference just in case we need to set alternate row coloring
 		$WordTable = $WordRange.GetType().InvokeMember(
 			"ConvertToTable",                               # Method name
@@ -3045,7 +3333,7 @@ Function AddWordTable
 		## Implement grid lines (will wipe out any existing formatting
 		If($Format -lt 0) 
 		{
-			Write-Debug ("$(Get-Date): `t`tSetting table format");
+			Write-Debug ("$(Get-Date -Format G): `t`tSetting table format");
 			$WordTable.Style = $Format;
 		}
 
@@ -3057,7 +3345,7 @@ Function AddWordTable
 
 		If(!$List)
 		{
-			#the next line causes the heading row to flow across page breaks
+			#the next line causes the heading row to flow across page Breaks
 			$WordTable.Rows.First.Headingformat = $wdHeadingFormatTrue;
 		}
 
@@ -3170,7 +3458,7 @@ Function SetWordCellFormat
 					If($Null -ne $Color) { $Cell.Range.Font.Color = $Color; }
 					If($Size -ne 0) { $Cell.Range.Font.Size = $Size; }
 					If($Solid) { $Cell.Shading.Texture = 0; } ## wdTextureNone
-				} # end foreach
+				} # end ForEach
 			} # end Collection
 			'Cell' 
 			{
@@ -3198,7 +3486,7 @@ Function SetWordCellFormat
 					If($Solid) { $Cell.Shading.Texture = 0; } ## wdTextureNone
 				}
 			} # end Hashtable
-		} # end switch
+		} # end Switch
 	} # end process
 }
 
@@ -3267,15 +3555,6 @@ Function SetWordTableAlternateRowColor
 #endregion
 
 #region general script functions
-Function Banner
-{
-	Write-Host "                                                                                    " -BackgroundColor Black -ForegroundColor White
-	Write-Host "               This FREE script was brought to you by Conversant Group              " -BackgroundColor Black -ForegroundColor White
-	Write-Host "We design, build, and manage infrastructure for a secure, dependable user experience" -BackgroundColor Black -ForegroundColor White
-	Write-Host "                       Visit our website conversantgroup.com                        " -BackgroundColor Black -ForegroundColor White
-	Write-Host "                                                                                    " -BackgroundColor Black -ForegroundColor White
-}
-
 Function validStateProp( [object] $object, [string] $topLevel, [string] $secondLevel )
 {
 	#function created 8-jan-2014 by Michael B. Smith
@@ -3307,65 +3586,76 @@ Function validObject( [object] $object, [string] $topLevel )
 
 Function ShowScriptOptions
 {
-	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): Add DateTime    : $AddDateTime"
-	Write-Verbose "$(Get-Date): All DNS Servers : $AllDNSServers"
+	Write-Verbose "$(Get-Date -Format G): "
+	Write-Verbose "$(Get-Date -Format G): "
+	Write-Verbose "$(Get-Date -Format G): Add DateTime    : $AddDateTime"
+	Write-Verbose "$(Get-Date -Format G): All DNS Servers : $AllDNSServers"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Company Name    : $Script:CoName"
+		Write-Verbose "$(Get-Date -Format G): Company Name    : $Script:CoName"
 	}
-	Write-Verbose "$(Get-Date): Computer Name   : $ComputerName"
+	Write-Verbose "$(Get-Date -Format G): Computer Name   : $ComputerName"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Company Address : $($CompanyAddress)"
-		Write-Verbose "$(Get-Date): Company Email   : $($CompanyEmail)"
-		Write-Verbose "$(Get-Date): Company Fax     : $($CompanyFax)"
-		Write-Verbose "$(Get-Date): Company Phone   : $($CompanyPhone)"
-		Write-Verbose "$(Get-Date): Cover Page      : $CoverPage"
+		Write-Verbose "$(Get-Date -Format G): Company Address : $($CompanyAddress)"
+		Write-Verbose "$(Get-Date -Format G): Company Email   : $($CompanyEmail)"
+		Write-Verbose "$(Get-Date -Format G): Company Fax     : $($CompanyFax)"
+		Write-Verbose "$(Get-Date -Format G): Company Phone   : $($CompanyPhone)"
+		Write-Verbose "$(Get-Date -Format G): Cover Page      : $CoverPage"
 	}
-	Write-Verbose "$(Get-Date): Details         : $Details"
-	Write-Verbose "$(Get-Date): Dev             : $Dev"
+	Write-Verbose "$(Get-Date -Format G): Details         : $Details"
+	Write-Verbose "$(Get-Date -Format G): Dev             : $Dev"
 	If($Dev)
 	{
-		Write-Verbose "$(Get-Date): DevErrorFile    : $Script:DevErrorFile"
+		Write-Verbose "$(Get-Date -Format G): DevErrorFile    : $Script:DevErrorFile"
 	}
-	Write-Verbose "$(Get-Date): Filename1       : $Script:Filename1"
+	If($MSWord)
+	{
+		Write-Verbose "$(Get-Date -Format G): Word FileName   : $($Script:WordFileName)"
+	}
+	If($HTML)
+	{
+		Write-Verbose "$(Get-Date -Format G): HTML FileName   : $($Script:HTMLFileName)"
+	} 
 	If($PDF)
 	{
-		Write-Verbose "$(Get-Date): Filename2       : $Script:Filename2"
+		Write-Verbose "$(Get-Date -Format G): PDF FileName    : $($Script:PDFFileName)"
 	}
-	Write-Verbose "$(Get-Date): Folder          : $Folder"
-	Write-Verbose "$(Get-Date): From            : $From"
-	Write-Verbose "$(Get-Date): Log             : $($Log)"
-	Write-Verbose "$(Get-Date): Save As HTML    : $HTML"
-	Write-Verbose "$(Get-Date): Save As PDF     : $PDF"
-	Write-Verbose "$(Get-Date): Save As Text    : $Text"
-	Write-Verbose "$(Get-Date): Save As Word    : $MSWord"
-	Write-Verbose "$(Get-Date): Script Info     : $ScriptInfo"
-	Write-Verbose "$(Get-Date): Smtp Port       : $SmtpPort"
-	Write-Verbose "$(Get-Date): Smtp Server     : $SmtpServer"
-	Write-Verbose "$(Get-Date): Title           : $Script:Title"
-	Write-Verbose "$(Get-Date): To              : $To"
-	Write-Verbose "$(Get-Date): Use SSL         : $UseSSL"
+	If($Text)
+	{
+		Write-Verbose "$(Get-Date -Format G): Text FileName   : $($Script:TextFileName)"
+	}
+	Write-Verbose "$(Get-Date -Format G): Folder          : $Folder"
+	Write-Verbose "$(Get-Date -Format G): From            : $From"
+	Write-Verbose "$(Get-Date -Format G): Log             : $($Log)"
+	Write-Verbose "$(Get-Date -Format G): Save As HTML    : $HTML"
+	Write-Verbose "$(Get-Date -Format G): Save As PDF     : $PDF"
+	Write-Verbose "$(Get-Date -Format G): Save As Text    : $Text"
+	Write-Verbose "$(Get-Date -Format G): Save As Word    : $MSWord"
+	Write-Verbose "$(Get-Date -Format G): Script Info     : $ScriptInfo"
+	Write-Verbose "$(Get-Date -Format G): Smtp Port       : $SmtpPort"
+	Write-Verbose "$(Get-Date -Format G): Smtp Server     : $SmtpServer"
+	Write-Verbose "$(Get-Date -Format G): Title           : $Script:Title"
+	Write-Verbose "$(Get-Date -Format G): To              : $To"
+	Write-Verbose "$(Get-Date -Format G): Use SSL         : $UseSSL"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): User Name       : $UserName"
+		Write-Verbose "$(Get-Date -Format G): Username        : $UserName"
 	}
-	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): OS Detected     : $Script:RunningOS"
-	Write-Verbose "$(Get-Date): PSUICulture     : $PSUICulture"
-	Write-Verbose "$(Get-Date): PSCulture       : $PSCulture"
+	Write-Verbose "$(Get-Date -Format G): "
+	Write-Verbose "$(Get-Date -Format G): OS Detected     : $Script:RunningOS"
+	Write-Verbose "$(Get-Date -Format G): PSUICulture     : $PSUICulture"
+	Write-Verbose "$(Get-Date -Format G): PSCulture       : $PSCulture"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Word version    : $WordProduct"
-		Write-Verbose "$(Get-Date): Word language   : $Script:WordLanguageValue"
+		Write-Verbose "$(Get-Date -Format G): Word version    : $WordProduct"
+		Write-Verbose "$(Get-Date -Format G): Word language   : $Script:WordLanguageValue"
 	}
-	Write-Verbose "$(Get-Date): PoSH version    : $($Host.Version)"
-	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): Script start  : $Script:StartTime"
-	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): "
+	Write-Verbose "$(Get-Date -Format G): PoSH version    : $($Host.Version)"
+	Write-Verbose "$(Get-Date -Format G): "
+	Write-Verbose "$(Get-Date -Format G): Script start  : $Script:StartTime"
+	Write-Verbose "$(Get-Date -Format G): "
+	Write-Verbose "$(Get-Date -Format G): "
 }
 
 Function SaveandCloseDocumentandShutdownWord
@@ -3375,107 +3665,61 @@ Function SaveandCloseDocumentandShutdownWord
 	$Script:Word.Options.CheckGrammarAsYouType = $Script:CurrentGrammarOption
 	$Script:Word.Options.CheckSpellingAsYouType = $Script:CurrentSpellingOption
 
-	Write-Verbose "$(Get-Date): Save and Close document and Shutdown Word"
+	Write-Verbose "$(Get-Date -Format G): Save and Close document and Shutdown Word"
 	If($Script:WordVersion -eq $wdWord2010)
 	{
 		#the $saveFormat below passes StrictMode 2
-		#I found this at the following two links
-		#http://blogs.technet.com/b/bshukla/archive/2011/09/27/3347395.aspx
+		#I found this at the following link
 		#http://msdn.microsoft.com/en-us/library/microsoft.office.interop.word.wdsaveformat(v=office.14).aspx
 		If($PDF)
 		{
-			Write-Verbose "$(Get-Date): Saving as DOCX file first before saving to PDF"
+			Write-Verbose "$(Get-Date -Format G): Saving as DOCX file first before saving to PDF"
 		}
 		Else
 		{
-			Write-Verbose "$(Get-Date): Saving DOCX file"
+			Write-Verbose "$(Get-Date -Format G): Saving DOCX file"
 		}
-		If($AddDateTime)
-		{
-			$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).docx"
-			If($PDF)
-			{
-				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
-			}
-		}
-		Write-Verbose "$(Get-Date): Running $Script:WordProduct and detected operating system $Script:RunningOS"
+		Write-Verbose "$(Get-Date -Format G): Running $($Script:WordProduct) and detected operating system $($Script:RunningOS)"
 		$saveFormat = [Enum]::Parse([Microsoft.Office.Interop.Word.WdSaveFormat], "wdFormatDocumentDefault")
-		$Script:Doc.SaveAs([REF]$Script:FileName1, [ref]$SaveFormat)
+		$Script:Doc.SaveAs([REF]$Script:WordFileName, [ref]$SaveFormat)
 		If($PDF)
 		{
-			Write-Verbose "$(Get-Date): Now saving as PDF"
+			Write-Verbose "$(Get-Date -Format G): Now saving as PDF"
 			$saveFormat = [Enum]::Parse([Microsoft.Office.Interop.Word.WdSaveFormat], "wdFormatPDF")
-			$Script:Doc.SaveAs([REF]$Script:FileName2, [ref]$saveFormat)
+			$Script:Doc.SaveAs([REF]$Script:PDFFileName, [ref]$saveFormat)
 		}
 	}
 	ElseIf($Script:WordVersion -eq $wdWord2013 -or $Script:WordVersion -eq $wdWord2016)
 	{
 		If($PDF)
 		{
-			Write-Verbose "$(Get-Date): Saving as DOCX file first before saving to PDF"
+			Write-Verbose "$(Get-Date -Format G): Saving as DOCX file first before saving to PDF"
 		}
 		Else
 		{
-			Write-Verbose "$(Get-Date): Saving DOCX file"
+			Write-Verbose "$(Get-Date -Format G): Saving DOCX file"
 		}
-		If($AddDateTime)
-		{
-			$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).docx"
-			If($PDF)
-			{
-				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
-			}
-		}
-		Write-Verbose "$(Get-Date): Running $Script:WordProduct and detected operating system $Script:RunningOS"
-		$Script:Doc.SaveAs2([REF]$Script:FileName1, [ref]$wdFormatDocumentDefault)
+		Write-Verbose "$(Get-Date -Format G): Running $($Script:WordProduct) and detected operating system $($Script:RunningOS)"
+		$Script:Doc.SaveAs2([REF]$Script:WordFileName, [ref]$wdFormatDocumentDefault)
 		If($PDF)
 		{
-			Write-Verbose "$(Get-Date): Now saving as PDF"
-			$Script:Doc.SaveAs([REF]$Script:FileName2, [ref]$wdFormatPDF)
+			Write-Verbose "$(Get-Date -Format G): Now saving as PDF"
+			$Script:Doc.SaveAs([REF]$Script:PDFFileName, [ref]$wdFormatPDF)
 		}
 	}
 
-	Write-Verbose "$(Get-Date): Closing Word"
+	Write-Verbose "$(Get-Date -Format G): Closing Word"
 	$Script:Doc.Close()
 	$Script:Word.Quit()
-	If($PDF)
-	{
-		[int]$cnt = 0
-		While(Test-Path $Script:FileName1)
-		{
-			$cnt++
-			If($cnt -gt 1)
-			{
-				Write-Verbose "$(Get-Date): Waiting another 10 seconds to allow Word to fully close (try # $cnt)"
-				Start-Sleep -Seconds 10
-				$Script:Word.Quit()
-				If($cnt -gt 2)
-				{
-					#kill the winword process
-
-					#find out our session (usually "1" except on TS/RDC or Citrix)
-					$SessionID = (Get-Process -PID $PID).SessionId
-					
-					#Find out if winword is running in our session
-					$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}).Id
-					If($wordprocess -gt 0)
-					{
-						Write-Verbose "$(Get-Date): Attempting to stop WinWord process # $wordprocess"
-						Stop-Process $wordprocess -EA 0
-					}
-				}
-			}
-			Write-Verbose "$(Get-Date): Attempting to delete $Script:FileName1 since only $Script:FileName2 is needed (try # $cnt)"
-			Remove-Item $Script:FileName1 -EA 0 4>$Null
-		}
-	}
-	Write-Verbose "$(Get-Date): System Cleanup"
+	Write-Verbose "$(Get-Date -Format G): System Cleanup"
 	[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
 	If(Test-Path variable:global:word)
 	{
 		Remove-Variable -Name word -Scope Global 4>$Null
 	}
 	$SaveFormat = $Null
+	[gc]::collect() 
+	[gc]::WaitForPendingFinalizers()
 	
 	#is the winword process still running? kill it
 
@@ -3487,200 +3731,185 @@ Function SaveandCloseDocumentandShutdownWord
 	$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}).Id
 	If($null -ne $wordprocess -and $wordprocess -gt 0)
 	{
-		Write-Verbose "$(Get-Date): WinWord process is still running. Attempting to stop WinWord process # $wordprocess"
+		Write-Verbose "$(Get-Date -Format G): WinWord process is still running. Attempting to stop WinWord process # $($wordprocess)"
 		Stop-Process $wordprocess -EA 0
+	}
+}
+
+Function SetupText
+{
+	Write-Verbose "$(Get-Date -Format G): Setting up Text"
+
+	[System.Text.StringBuilder] $global:Output = New-Object System.Text.StringBuilder( 16384 )
+
+	If(!$AddDateTime)
+	{
+		[string]$Script:TextFileName = "$($Script:pwdpath)\$($OutputFileName).txt"
+	}
+	ElseIf($AddDateTime)
+	{
+		[string]$Script:TextFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 	}
 }
 
 Function SaveandCloseTextDocument
 {
-	If($AddDateTime)
-	{
-		$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
-	}
-
-	Write-Output $global:Output.ToString() | Out-File $Script:Filename1 4>$Null
+	Write-Verbose "$(Get-Date -Format G): Saving Text file"
+	Write-Output $global:Output.ToString() | Out-File $Script:TextFileName 4>$Null
 }
-
 
 Function SaveandCloseHTMLDocument
 {
-	Out-File -FilePath $Script:FileName1 -Append -InputObject "<p></p></body></html>" 4>$Null
+	Write-Verbose "$(Get-Date -Format G): Saving HTML file"
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject "<p></p></body></html>" 4>$Null
 }
 
-Function SetFileName1andFileName2
+Function SetFilenames
 {
 	Param([string]$OutputFileName)
 	
-	#set $filename1 and $filename2 with no file extension
-	If($AddDateTime)
-	{
-		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName)"
-		If($PDF)
-		{
-			[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName)"
-		}
-	}
-
 	If($MSWord -or $PDF)
 	{
 		CheckWordPreReq
-
-		If(!$AddDateTime)
-		{
-			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).docx"
-			If($PDF)
-			{
-				[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName).pdf"
-			}
-		}
-
+		
 		SetupWord
 	}
-	ElseIf($Text)
+	If($Text)
 	{
-		If(!$AddDateTime)
-		{
-			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).txt"
-		}
-		ShowScriptOptions
+		SetupText
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		SetupHTML
-		ShowScriptOptions
 	}
+	ShowScriptOptions
+}
+
+Function testPort
+{
+	Param
+	(
+	[String] $computer,
+	[Int[]]  $ports,
+	[Int]    $timeOut,
+	[Bool]   $quiet = $false
+	)
+
+	If( $result = $computer -as [System.Net.IpAddress] )
+	{
+		## we got passed an IP address, not a DNS name. Resolve-DnsName doesn't just
+		## pass it through, but instead returns a PTR record. I consider it broken,
+		## but it is what it is.
+		$success = testPortsOnOneIP $computer $ports $timeOut $result.AddressFamily $quiet
+
+		Return $success
+	}
+
+	$results = Resolve-DnsName -Name $computer -Type A_AAAA -EA 0 4>$Null
+
+	$success = $false
+
+	ForEach( $result in $results )
+	{
+		$type = $result.Type.ToString()
+		If( $type -ne 'A' -and $type -ne 'AAAA' )
+		{
+			Continue
+		}
+
+		$ip = $result.IPAddress
+		If( $type -eq 'AAAA' )
+		{
+			If( -not ( canRoute $ip ) )
+			{
+				Continue
+			}
+
+			$family = [System.Net.Sockets.AddressFamily]::InterNetworkv6
+		}
+		Else
+		{
+			$family = [System.Net.Sockets.AddressFamily]::InterNetwork
+		}
+
+		$success = $success -or ( testPortsOnOneIP $ip $ports $timeOut $family $quiet )
+	}
+
+	$results = $null
+
+	$success
+}
+
+Function testPortsOnOneIP
+{
+	Param
+	(
+		[String] $ip,
+		[Int[]]  $ports,
+		[Int]    $timeOut,
+		[System.Net.Sockets.AddressFamily] $family,
+		[Bool]   $quiet
+	)
+
+	$success = $false
+
+	ForEach( $port in $ports )
+	{
+		$tcpclient = New-Object System.Net.Sockets.TcpClient( $family )
+
+		$async = $tcpclient.BeginConnect( $ip, $port, $null, $null )
+		$wait  = $async.AsyncWaitHandle.WaitOne( $timeOut, $false )
+		If( !$wait )
+		{
+			$tcpclient.Close()
+			Continue
+		}
+		Else
+		{
+			$error.Clear()
+			$null = $tcpclient.EndConnect( $async )
+			If( $error -and $error.Count -gt 0 )
+			{
+			}
+			Else
+			{
+				$success = $true
+			}
+			$tcpclient.Close()
+		}
+
+		$wait      = $null
+		$async     = $null
+		$tcpclient = $null
+
+		If( $success )
+		{
+			## break
+		}
+	}
+
+	$success
 }
 
 Function TestComputerName
 {
 	Param([string]$Cname)
+
+	$DNSPort = 53
+	$DNSTimeout = 300	#milliseconds
+
 	If(![String]::IsNullOrEmpty($CName)) 
 	{
 		#get computer name
 		#first test to make sure the computer is reachable
-		Write-Verbose "$(Get-Date): Testing to see if $CName is online and reachable"
-		If(Test-Connection -ComputerName $CName -quiet)
+		Write-Verbose "$(Get-Date -Format G): Testing to see if $CName is online, reachable, and a DNS server"
+		If(TestPort $CName $DNSPort $DNSTimeout)
 		{
-			Write-Verbose "$(Get-Date): Server $CName is online."
+			Write-Verbose "$(Get-Date -Format G): Server $CName is online and responding on port 53"
 		}
 		Else
 		{
-			Write-Verbose "$(Get-Date): Computer $CName is offline"
-			$ErrorActionPreference = $SaveEAPreference
-			Write-Error "
-			`n`n
-			`t`t
-			Computer $CName is offline.
-			`n`n
-			`t`t
-			Script cannot continue.
-			`n`n
-			"
-			Exit
-		}
-	}
-
-	#if computer name is localhost, get actual computer name
-	If($CName -eq "localhost")
-	{
-		$CName = $env:ComputerName
-		Write-Verbose "$(Get-Date): Computer name has been renamed from localhost to $CName"
-	}
-
-	#if computer name is an IP address, get host name from DNS
-	#http://blogs.technet.com/b/gary/archive/2009/08/29/resolve-ip-addresses-to-hostname-using-powershell.aspx
-	#help from Michael B. Smith
-	$ip = $CName -as [System.Net.IpAddress]
-	If($ip)
-	{
-		$Result = [System.Net.Dns]::gethostentry($ip).AddressList.IPAddressToString
-		
-		If($? -and $Null -ne $Result)
-		{
-			$CName = $Result.HostName
-			Write-Verbose "$(Get-Date): Computer name has been renamed from $($ip) to $CName"
-		}
-		Else
-		{
-			Write-Warning "Unable to resolve $CName to a hostname"
-		}
-	}
-	Else
-	{
-		#computer is online but for some reason $ComputerName cannot be converted to a System.Net.IpAddress
-	}
-
-	$Results = Get-DNSServer -ComputerName $CName -EA 0 2> $Null 3>$Null 4>$Null
-	If($Null -ne $Results)
-	{
-		#the computer is a dns server
-		Write-Verbose "$(Get-Date): Computer $CName is a DNS Server"
-		Write-Verbose "$(Get-Date): "
-		Return $CName
-	}
-	ElseIf($Null -eq $Results)
-	{
-		#the computer is not a dns server
-		Write-Verbose "$(Get-Date): Computer $CName is not a DNS Server"
-		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "
-		`n`n
-		`t`t
-		Computer $CName is not a DNS Server.
-		`n`n
-		`t`t
-		Rerun the script using -ComputerName with a valid DNS server name.
-		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
-		Exit
-	}
-
-	Return $CName
-}
-
-Function TestComputerName2
-{
-	Param([string]$Cname)
-	
-	If(![String]::IsNullOrEmpty($CName)) 
-	{
-		#get computer name
-		#first test to make sure the computer is reachable
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is online and reachable"
-		If(Test-Connection -ComputerName $CName -quiet)
-		{
-			Write-Verbose "$(Get-Date): Server $($CName) is online."
-		}
-		Else
-		{
-			Write-Verbose "$(Get-Date): Computer $($CName) is offline"
-			Write-Output "$(Get-Date): Computer $($CName) is offline" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
-			Return "BAD"
-		}
-	}
-
-	#if computer name is localhost, get actual computer name
-	If($CName -eq "localhost")
-	{
-		$CName = $env:ComputerName
-		Write-Verbose "$(Get-Date): Computer name has been changed from localhost to $($CName)"
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
-		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
-		If($? -and $Null -ne $results)
-		{
-			#the computer is a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
-			Return $CName
-		}
-		ElseIf(!$? -or $Null -eq $results)
-		{
-			#the computer is not a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
-			Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Write-Output "$(Get-Date -Format G): Computer $CName is either offline or not a DNS server (port 53)" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 			Return "BAD"
 		}
 	}
@@ -3696,50 +3925,50 @@ Function TestComputerName2
 		If($? -and $Null -ne $Result)
 		{
 			$CName = $Result.HostName
-			Write-Verbose "$(Get-Date): Computer name has been changed from $($ip) to $($CName)"
-			Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
+			Write-Verbose "$(Get-Date -Format G): Computer name has been changed from $ip to $CName"
+			Write-Verbose "$(Get-Date -Format G): Testing to see if $CName is a DNS Server"
 			$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
 			If($? -and $Null -ne $results)
 			{
 				#the computer is a dns server
-				Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+				Write-Verbose "$(Get-Date -Format G): Computer $CName is a DNS Server"
 				Return $CName
 			}
 			ElseIf(!$? -or $Null -eq $results)
 			{
 				#the computer is not a dns server
-				Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
-				Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+				Write-Verbose "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
+				Write-Output "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 				Return "BAD"
 			}
 		}
 		Else
 		{
-			Write-Verbose "$(Get-Date): Unable to resolve $($CName) to a hostname"
-			Write-Output "$(Get-Date): Unable to resolve $($CName) to a hostname" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Write-Verbose "$(Get-Date -Format G): Unable to resolve $CName to a hostname"
+			Write-Output "$(Get-Date -Format G): Unable to resolve $CName to a hostname" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 			Return "BAD"
 		}
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is a DNS Server"
+		Write-Verbose "$(Get-Date -Format G): Testing to see if $CName is a DNS Server"
 		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
 		If($? -and $Null -ne $results)
 		{
 			#the computer is a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is a DNS Server"
+			Write-Verbose "$(Get-Date -Format G): Computer $CName is a DNS Server"
 			Return $CName
 		}
 		ElseIf(!$? -or $Null -eq $results)
 		{
 			#the computer is not a dns server
-			Write-Verbose "$(Get-Date): Computer $($CName) is not a DNS Server"
-			Write-Output "$(Get-Date): Computer $($CName) is not a DNS Server" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
+			Write-Verbose "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
+			Write-Output "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console" | Out-File $Script:BadDNSErrorFile -Append 4>$Null
 			Return "BAD"
 		}
 	}
 
-	Write-Verbose "$(Get-Date): "
+	Write-Verbose "$(Get-Date -Format G): "
 	Return $CName
 }
 
@@ -3749,56 +3978,91 @@ Function ProcessDocumentOutput
 	{
 		SaveandCloseDocumentandShutdownWord
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		SaveandCloseTextDocument
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		SaveandCloseHTMLDocument
 	}
 
 	$GotFile = $False
 
-	If($PDF)
+	If($MSWord)
 	{
-		If(Test-Path "$Script:FileName2")
+		If(Test-Path "$($Script:WordFileName)")
 		{
-			Write-Verbose "$(Get-Date): $Script:FileName2 is ready for use"
+			Write-Verbose "$(Get-Date -Format G): $($Script:WordFileName) is ready for use"
 			$GotFile = $True
 		}
 		Else
 		{
-			Write-Warning "$(Get-Date): Unable to save the output file, $Script:FileName2"
-			Write-Error "Unable to save the output file, $Script:FileName2"
+			Write-Warning "$(Get-Date -Format G): Unable to save the output file, $($Script:WordFileName)"
+			Write-Error "Unable to save the output file, $($Script:WordFileName)"
 		}
 	}
-	Else
+	If($PDF)
 	{
-		If(Test-Path $Script:FileName1)
+		If(Test-Path "$($Script:PDFFileName)")
 		{
-			Write-Verbose "$(Get-Date): $Script:FileName1 is ready for use"
+			Write-Verbose "$(Get-Date -Format G): $($Script:PDFFileName) is ready for use"
 			$GotFile = $True
 		}
 		Else
 		{
-			Write-Warning "$(Get-Date): Unable to save the output file, $Script:FileName1"
-			Write-Error "Unable to save the output file, $Script:FileName1"
+			Write-Warning "$(Get-Date -Format G): Unable to save the output file, $($Script:PDFFileName)"
+			Write-Error "Unable to save the output file, $($Script:PDFFileName)"
+		}
+	}
+	If($Text)
+	{
+		If(Test-Path "$($Script:TextFileName)")
+		{
+			Write-Verbose "$(Get-Date -Format G): $($Script:TextFileName) is ready for use"
+			$GotFile = $True
+		}
+		Else
+		{
+			Write-Warning "$(Get-Date -Format G): Unable to save the output file, $($Script:TextFileName)"
+			Write-Error "Unable to save the output file, $($Script:TextFileName)"
+		}
+	}
+	If($HTML)
+	{
+		If(Test-Path "$($Script:HTMLFileName)")
+		{
+			Write-Verbose "$(Get-Date -Format G): $($Script:HTMLFileName) is ready for use"
+			$GotFile = $True
+		}
+		Else
+		{
+			Write-Warning "$(Get-Date -Format G): Unable to save the output file, $($Script:HTMLFileName)"
+			Write-Error "Unable to save the output file, $($Script:HTMLFileName)"
 		}
 	}
 	
 	#email output file if requested
 	If($GotFile -and ![System.String]::IsNullOrEmpty( $SmtpServer ))
 	{
+		$emailattachments = @()
+		If($MSWord)
+		{
+			$emailAttachments += $Script:WordFileName
+		}
 		If($PDF)
 		{
-			$emailAttachment = $Script:FileName2
+			$emailAttachments += $Script:PDFFileName
 		}
-		Else
+		If($Text)
 		{
-			$emailAttachment = $Script:FileName1
+			$emailAttachments += $Script:TextFileName
 		}
-		SendEmail $emailAttachment
+		If($HTML)
+		{
+			$emailAttachments += $Script:HTMLFileName
+		}
+		SendEmail $emailAttachments
 	}
 }
 
@@ -3807,14 +4071,14 @@ Function AbortScript
 	If($MSWord -or $PDF)
 	{
 		$Script:Word.quit()
-		Write-Verbose "$(Get-Date): System Cleanup"
+		Write-Verbose "$(Get-Date -Format G): System Cleanup"
 		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
 		If(Test-Path variable:global:word)
 		{
 			Remove-Variable -Name word -Scope Global
 		}
 	}
-	Write-Verbose "$(Get-Date): Script has been aborted"
+	Write-Verbose "$(Get-Date -Format G): Script has been aborted"
 	$ErrorActionPreference = $SaveEAPreference
 	Exit
 }
@@ -3825,21 +4089,32 @@ Function ProcessScriptStart
 {
 	$script:startTime = Get-Date
 
-	#pre 1.20
-	#$ComputerName = TestComputerName $ComputerName
-	#$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
-	#[string]$Script:Title = "DNS Inventory Report for $Script:RptDomain"
-	
 	$Script:DNSServerNames = @()
 	If($AllDNSServers -eq $False)
 	{
-		$ComputerName = TestComputerName $ComputerName
-		$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
-		$Script:DNSServerNames += $ComputerName
+		$CName = TestComputerName $ComputerName
+		If($CName -ne "BAD")
+		{
+			$Script:DNSServerNames += $CName
+		}
+		Else
+		{
+			$ErrorActionPreference = $SaveEAPreference
+			Write-Error "
+			`n`n
+			`t`t
+			Computer $ComputerName is offline or is not a DNS server (port 53).
+			`n`n
+			`t`t
+			Script cannot continue.
+			`n`n
+			"
+			Exit
+		}
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date): Retrieving all DNS servers in domain"
+		Write-Verbose "$(Get-Date -Format G): Retrieving all DNS servers in domain"
 		$ComputerName = "All DNS Servers"
 		
 		$ALLServers = dsquery * forestroot -filter "(servicePrincipalName=DNS*)"
@@ -3864,42 +4139,45 @@ Function ProcessScriptStart
 			If($AllServers -is [array])
 			{
 				$cnt = $AllServers.Count
-				Write-Verbose "$(Get-Date): $($cnt) DNS servers were found"
+				Write-Verbose "$(Get-Date -Format G): $($cnt) DNS servers were found"
 			}
 			Else
 			{
 				$cnt = 1
-				Write-Verbose "$(Get-Date): $($cnt) DNS server was found"
+				Write-Verbose "$(Get-Date -Format G): $($cnt) DNS server was found"
 			}
 			
-			$Script:BadDNSErrorFile = "$Script:pwdPath\BadDNSServers_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+			$Script:BadDNSErrorFile = "$Script:pwdPath\BadDNSServers_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 
 			ForEach($Server in $AllServers)
 			{
 				$TmpArray = $Server.Split("=").Split(",")
 				$DNSServer = $TmpArray[1]
 				
-				$Result = TestComputerName2 $DNSServer
+				$Result = TestComputerName $DNSServer
 				
 				If($Result -ne "BAD")
 				{
 					$Script:DNSServerNames += $Result
 				}
 			}
-			Write-Verbose "$(Get-Date): $($Script:DNSServerNames.Count) DHCP servers will be processed"
-			Write-Verbose "$(Get-Date): "
+			
+			$Script:DNSServerNames = $Script:DNSServerNames | Sort-Object
+			
+			Write-Verbose "$(Get-Date -Format G): $($Script:DNSServerNames.Count) DNS servers will be processed"
+			Write-Verbose "$(Get-Date -Format G): "
 		}
 	}
 }
 
 Function ProcessScriptEnd
 {
-	Write-Verbose "$(Get-Date): Script has completed"
-	Write-Verbose "$(Get-Date): "
+	Write-Verbose "$(Get-Date -Format G): Script has completed"
+	Write-Verbose "$(Get-Date -Format G): "
 
 	#http://poshtips.com/measuring-elapsed-time-in-powershell/
-	Write-Verbose "$(Get-Date): Script started: $Script:StartTime"
-	Write-Verbose "$(Get-Date): Script ended: $(Get-Date)"
+	Write-Verbose "$(Get-Date -Format G): Script started: $Script:StartTime"
+	Write-Verbose "$(Get-Date -Format G): Script ended: $(Get-Date)"
 	$runtime = $(Get-Date) - $Script:StartTime
 	$Str = [string]::format("{0} days, {1} hours, {2} minutes, {3}.{4} seconds", `
 		$runtime.Days, `
@@ -3907,7 +4185,7 @@ Function ProcessScriptEnd
 		$runtime.Minutes, `
 		$runtime.Seconds,
 		$runtime.Milliseconds)
-	Write-Verbose "$(Get-Date): Elapsed time: $Str"
+	Write-Verbose "$(Get-Date -Format G): Elapsed time: $Str"
 
 	If($Dev)
 	{
@@ -3923,7 +4201,7 @@ Function ProcessScriptEnd
 
 	If($ScriptInfo)
 	{
-		$SIFile = "$Script:pwdPath\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+		$SIFile = "$Script:pwdPath\DNSInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm) for the Domain $Script:RptDomain.txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime       : $AddDateTime" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "All DNS Servers    : $AllDNSServers" 4>$Null
@@ -3946,10 +4224,21 @@ Function ProcessScriptEnd
 		{
 			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile       : $Script:DevErrorFile" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Filename1          : $Script:FileName1" 4>$Null
+		If($MSWord)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "Word FileName      : $($Script:WordFileName)" 4>$Null
+		}
+		If($HTML)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "HTML FileName      : $($Script:HTMLFileName)" 4>$Null
+		}
 		If($PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Filename2          : $Script:FileName2" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "PDF Filename       : $($Script:PDFFileName)" 4>$Null
+		}
+		If($Text)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "Text FileName      : $($Script:TextFileName)" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "Folder             : $Folder" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "From               : $From" 4>$Null
@@ -3965,7 +4254,7 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Use SSL            : $UseSSL" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "User Name          : $UserName" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Username           : $UserName" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "OS Detected        : $RunningOS" 4>$Null
@@ -3991,19 +4280,17 @@ Function ProcessScriptEnd
 			try 
 			{
 				Stop-Transcript | Out-Null
-				Write-Verbose "$(Get-Date): $Script:LogPath is ready for use"
+				Write-Verbose "$(Get-Date -Format G): $Script:LogPath is ready for use"
 			} 
 			catch 
 			{
-				Write-Verbose "$(Get-Date): Transcript/log stop failed"
+				Write-Verbose "$(Get-Date -Format G): Transcript/log stop failed"
 			}
 		}
 	}
 	$runtime = $Null
 	$Str = $Null
 	$ErrorActionPreference = $SaveEAPreference
-	
-	Banner
 }
 #endregion
 
@@ -4011,7 +4298,7 @@ Function ProcessScriptEnd
 Function SendEmail
 {
 	Param([array]$Attachments)
-	Write-Verbose "$(Get-Date): Prepare to email"
+	Write-Verbose "$(Get-Date -Format G): Prepare to email"
 
 	$emailAttachment = $Attachments
 	$emailSubject = $Script:Title
@@ -4051,28 +4338,28 @@ $Script:Title is attached.
 		
 		If($?)
 		{
-			Write-Verbose "$(Get-Date): Email successfully sent using anonymous credentials"
+			Write-Verbose "$(Get-Date -Format G): Email successfully sent using anonymous credentials"
 		}
 		ElseIf(!$?)
 		{
 			$e = $error[0]
 
-			Write-Verbose "$(Get-Date): Email was not sent:"
-			Write-Warning "$(Get-Date): Exception: $e.Exception" 
+			Write-Verbose "$(Get-Date -Format G): Email was not sent:"
+			Write-Warning "$(Get-Date -Format G): Exception: $e.Exception" 
 		}
 	}
 	Else
 	{
 		If($UseSSL)
 		{
-			Write-Verbose "$(Get-Date): Trying to send email using current user's credentials with SSL"
+			Write-Verbose "$(Get-Date -Format G): Trying to send email using current user's credentials with SSL"
 			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
 			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
 			-UseSSL *>$Null
 		}
 		Else
 		{
-			Write-Verbose  "$(Get-Date): Trying to send email using current user's credentials without SSL"
+			Write-Verbose  "$(Get-Date -Format G): Trying to send email using current user's credentials without SSL"
 			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
 			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To *>$Null
 		}
@@ -4085,7 +4372,7 @@ $Script:Title is attached.
 			If($null -ne $e.Exception -and $e.Exception.ToString().Contains("5.7"))
 			{
 				#The server response was: 5.7.xx SMTP; Client was not authenticated to send anonymous mail during MAIL FROM
-				Write-Verbose "$(Get-Date): Current user's credentials failed. Ask for usable credentials."
+				Write-Verbose "$(Get-Date -Format G): Current user's credentials failed. Ask for usable credentials."
 
 				If($Dev)
 				{
@@ -4111,20 +4398,20 @@ $Script:Title is attached.
 
 				If($?)
 				{
-					Write-Verbose "$(Get-Date): Email successfully sent using new credentials"
+					Write-Verbose "$(Get-Date -Format G): Email successfully sent using new credentials"
 				}
 				ElseIf(!$?)
 				{
 					$e = $error[0]
 
-					Write-Verbose "$(Get-Date): Email was not sent:"
-					Write-Warning "$(Get-Date): Exception: $e.Exception" 
+					Write-Verbose "$(Get-Date -Format G): Email was not sent:"
+					Write-Warning "$(Get-Date -Format G): Exception: $e.Exception" 
 				}
 			}
 			Else
 			{
-				Write-Verbose "$(Get-Date): Email was not sent:"
-				Write-Warning "$(Get-Date): Exception: $e.Exception" 
+				Write-Verbose "$(Get-Date -Format G): Email was not sent:"
+				Write-Warning "$(Get-Date -Format G): Exception: $e.Exception" 
 			}
 		}
 	}
@@ -4137,8 +4424,8 @@ Function ProcessDNSServer
 	Param([string] $DNSServerName)
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date): Processing DNS Server"
-	Write-Verbose "$(Get-Date): `tRetrieving DNS Server Information using Server $DNSServerName"
+	Write-Verbose "$(Get-Date -Format G): Processing DNS Server"
+	Write-Verbose "$(Get-Date -Format G): `tRetrieving DNS Server Information using Server $DNSServerName"
 	
 	$Script:DNSServerData = Get-DNSServer -ComputerName $DNSServerName -EA 0 2>$Null 3>$Null 4>$Null
 	
@@ -4211,27 +4498,25 @@ Function OutputDNSServer
 			}
 		}
 	) | Sort-Object -Property NameServer
-	#$global:saveRHS1 = $RHs
 
-	Write-Verbose "$(Get-Date): `t`tOutput DNS Server Settings for $DNSServerName"
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput DNS Server Settings for $DNSServerName"
 	$txt = "DNS Server Properties for $DNSServerName"
 	If($MSWord -or $PDF)
 	{
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 $txt
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 $txt
-		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 $txt
 	}
 	
 	#Interfaces tab
-	Write-Verbose "$(Get-Date): `t`t`tInterfaces"
+	Write-Verbose "$(Get-Date -Format G): `t`t`tInterfaces"
 
 	#coutesy of MBS
 	#if the value does not exist, then All IP Addresses is selected
@@ -4247,12 +4532,19 @@ Function OutputDNSServer
 		}
 		Else
 		{
-			$ips = ""
-			ForEach($IP in $ServerSettings.ListeningIPAddress)
+			$First = $True
+			ForEach($ipa in $ServerSettings.ListeningIPAddress)
 			{
-				$ips += "$IP`r"
+				If($First)
+				{
+					$ScriptInformation += @{ Data = "Only the following IP addresses"; Value = $ipa; }
+				}
+				Else
+				{
+					$ScriptInformation += @{ Data = ""; Value = $ipa; }
+				}
+				$First = $False
 			}
-			$ScriptInformation += @{ Data = "Listen on the following IP addresses"; Value = $ips; }
 		}
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
@@ -4271,17 +4563,18 @@ Function OutputDNSServer
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Interfaces"
-		Line 0 "Listen on: "
 		If($Null -eq $AllIPs)
 		{
-			Line 1 "All IP addresses"
+			Line 1 "Listen on: "
+			Line 2 "All IP addresses"
 		}
 		Else
 		{
-			Line 1 "Only the following IP addresses: " 
+			Line 1 "Listen on: "
+			Line 2 "Only the following IP addresses: " 
 			ForEach($IP in $ServerSettings.ListeningIPAddress)
 			{
 				Line 2 $IP
@@ -4289,25 +4582,22 @@ Function OutputDNSServer
 		}
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 2 0 "Interfaces"
-		#WriteHTMLLine 0 0 "Listen on: "
 		$rowdata = @()
 		If($Null -eq $AllIPs)
 		{
-			#WriteHTMLLine 0 1 "All IP addresses"
 			$columnHeaders = @("Listen on",($htmlsilver -bor $htmlbold),"All IP addresses",$htmlwhite)
 		}
 		Else
 		{
-			$ips = ""
 			$First = $True
 			ForEach($ipa in $ServerSettings.ListeningIPAddress)
 			{
 				If($First)
 				{
-					$columnHeaders = @("Listen on the following IP addresses",($htmlsilver -bor $htmlbold),$ipa,$htmlwhite)
+					$columnHeaders = @("Only the following IP addresses",($htmlsilver -bor $htmlbold),$ipa,$htmlwhite)
 				}
 				Else
 				{
@@ -4324,7 +4614,7 @@ Function OutputDNSServer
 	}
 
 	#Forwarders tab
-	Write-Verbose "$(Get-Date): `t`t`tForwarders"
+	Write-Verbose "$(Get-Date -Format G): `t`t`tForwarders"
 	If($DNSForwarders.UseRootHint)
 	{
 		$UseRootHints = "Yes"
@@ -4333,14 +4623,28 @@ Function OutputDNSServer
 	{
 		$UseRootHints = "No"
 	}
-	
+
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Forwarders"
 		[System.Collections.Hashtable[]] $FwdWordTable = @();
-		ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
+	}
+	If($Text)
+	{
+		Line 0 "Forwarders"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 2 0 "Forwarders"
+		$rowdata = @()
+	}
+	
+	ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
+	{
+		$Resolved = ResolveIPtoFQDN $IP
+
+		If($MSWord -or $PDF)
 		{
-			$Resolved = ResolveIPtoFQDN $IP
 			$WordTableRowHash = @{ 
 			IPAddress = $IP;
 			ServerFQDN = $Resolved;
@@ -4348,6 +4652,22 @@ Function OutputDNSServer
 
 			$FwdWordTable += $WordTableRowHash;
 		}
+		If($Text)
+		{
+			Line 1 "IP Address`t: " $IP
+			Line 1 "Server FQDN`t: " $Resolved
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			$rowdata += @(,(
+			$Resolved,$htmlwhite,
+			$IP,$htmlwhite))
+		}
+	}
+
+	If($MSWord -or $PDF)
+	{
 		$Table = AddWordTable -Hashtable $FwdWordTable `
 		-Columns ServerFQDN, IPAddress `
 		-Headers "Server FQDN", "IP Address" `
@@ -4365,6 +4685,21 @@ Function OutputDNSServer
 		$Table = $Null
 		WriteWordLine 0 0 ""
 
+	}
+	If($HTML)
+	{
+		$columnHeaders = @(
+		'Server FQDN',($htmlsilver -bor $htmlbold),
+		'IP Address',($htmlsilver -bor $htmlbold))
+
+		$msg = ""
+		$columnWidths = @("200","150")
+		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
+		WriteHTMLLine 0 0 " "
+	}
+
+	If($MSWord -or $PDF)
+	{
 		[System.Collections.Hashtable[]] $ScriptInformation = @()
 		$ScriptInformation += @{ Data = "Number of seconds before forward queries time out"; Value = $DNSForwarders.Timeout; }
 		$ScriptInformation += @{ Data = "Use root hints if no forwarders are available"; Value = $UseRootHints; }
@@ -4385,41 +4720,15 @@ Function OutputDNSServer
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
-		Line 0 "Forwarders"
-		ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
-		{
-			$Resolved = ResolveIPtoFQDN $IP
-			Line 0 "IP Address`t: " $IP
-			Line 0 "Server FQDN`t: " $Resolved
-			Line 0 ""
-		}
 		Line 0 ""
-		Line 0 "Number of seconds before forward queries time out: " $DNSForwarders.Timeout
-		Line 0 "Use root hints if no forwarders are available`t : " $UseRootHints
+		Line 1 "Number of seconds before forward queries time out: " $DNSForwarders.Timeout
+		Line 1 "Use root hints if no forwarders are available`t : " $UseRootHints
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
-		WriteHTMLLine 2 0 "Forwarders"
-		$rowdata = @()
-		ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
-		{
-			$Resolved = ResolveIPtoFQDN $IP
-			$rowdata += @(,(
-			$Resolved,$htmlwhite,
-			$IP,$htmlwhite))
-		}
-		$columnHeaders = @(
-		'Server FQDN',($htmlsilver -bor $htmlbold),
-		'IP Address',($htmlsilver -bor $htmlbold))
-
-		$msg = ""
-		$columnWidths = @("200","150")
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
-		WriteHTMLLine 0 0 " "
-		
 		$rowdata = @()
 		$columnHeaders = @("Number of seconds before forward queries time out",($htmlsilver -bor $htmlbold),$DNSForwarders.Timeout.ToString(),$htmlwhite)
 		$rowdata += @(,('Use root hints if no forwarders are available',($htmlsilver -bor $htmlbold),$UseRootHints,$htmlwhite))
@@ -4429,9 +4738,8 @@ Function OutputDNSServer
 		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
 		WriteHTMLLine 0 0 " "
 	}
-	
 	#Advanced tab
-	Write-Verbose "$(Get-Date): `t`t`tAdvanced"
+	Write-Verbose "$(Get-Date -Format G): `t`t`tAdvanced"
 	
 	$ServerVersion = "$($ServerSettings.MajorVersion).$($ServerSettings.MinorVersion).$($ServerSettings.BuildNumber) (0x{0:X})" -f $ServerSettings.BuildNumber
 
@@ -4500,18 +4808,18 @@ Function OutputDNSServer
 	
 	Switch ($ServerSettings.NameCheckFlag)
 	{
-		0 {$NameCheck = "Strict RFC (ANSI)"; break}
-		1 {$NameCheck = "Non RFC (ANSI)"; break}
-		2 {$NameCheck = "Multibyte (UTF8)"; break}
-		3 {$NameCheck = "All names"; break}
+		0 {$NameCheck = "Strict RFC (ANSI)"; Break}
+		1 {$NameCheck = "Non RFC (ANSI)"; Break}
+		2 {$NameCheck = "Multibyte (UTF8)"; Break}
+		3 {$NameCheck = "All names"; Break}
 		Default {$NameCheck = "Unknown: NameCheckFlag Value is $($ServerSettings.NameCheckFlag)"}
 	}
 	
 	Switch ($ServerSettings.BootMethod)
 	{
-		3 {$LoadZone = "From Active Directory and registry"; break}
-		2 {$LoadZone = "From registry"; break}
-		Default {$LoadZone = "Unknown: BootMethod Value is $($ServerSettings.BootMethod)"; break}
+		3 {$LoadZone = "From Active Directory and registry"; Break}
+		2 {$LoadZone = "From registry"; Break}
+		Default {$LoadZone = "Unknown: BootMethod Value is $($ServerSettings.BootMethod)"; Break}
 	}
 	
 	If($ServerScavenging.ScavengingInterval.days -gt 0 -or  $ServerScavenging.ScavengingInterval.hours -gt 0)
@@ -4587,35 +4895,33 @@ Function OutputDNSServer
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Advanced"
-		Line 0 "Server version number: " $ServerVersion
+		Line 1 "Server version number: " $ServerVersion
 		Line 0 ""
 		Line 0 "Server options:"
-		Line 0 "Disable recursion (also disables forwarders)`t: " $Recursion
-		Line 0 "Enable BIND secondaries`t`t`t`t: " $Bind
-		Line 0 "Fail on load if bad zone data`t`t`t: " $FailOnLoad
-		Line 0 "Enable round robin`t`t`t`t: " $RoundRobin
-		Line 0 "Enable netmask ordering`t`t`t`t: " $NetMask
-		Line 0 "Secure cache against pollution`t`t`t: " $Pollution
-		Line 0 "Enable DNSSec validation for remote responses`t: " $DNSSEC
+		Line 1 "Disable recursion (also disables forwarders)`t: " $Recursion
+		Line 1 "Enable BIND secondaries`t`t`t`t: " $Bind
+		Line 1 "Fail on load if bad zone data`t`t`t: " $FailOnLoad
+		Line 1 "Enable round robin`t`t`t`t: " $RoundRobin
+		Line 1 "Enable netmask ordering`t`t`t`t: " $NetMask
+		Line 1 "Secure cache against pollution`t`t`t: " $Pollution
+		Line 1 "Enable DNSSec validation for remote responses`t: " $DNSSEC
 		Line 0 ""
-		Line 0 "Name checking`t`t`t`t`t: " $NameCheck
-		Line 0 "Load zone data on startup`t`t`t: " $LoadZone
+		Line 1 "Name checking`t`t`t`t`t: " $NameCheck
+		Line 1 "Load zone data on startup`t`t`t: " $LoadZone
 		Line 0 ""
-		Line 0 "Enable automatic scavenging of stale records`t: " $EnableScavenging
+		Line 1 "Enable automatic scavenging of stale records`t: " $EnableScavenging
 		If($EnableScavenging -eq "Selected")
 		{
-			Line 0 "Scavenging period`t`t`t`t: " $ScavengingInterval
+			Line 1 "Scavenging period`t`t`t`t: " $ScavengingInterval
 		}
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 2 0 "Advanced"
-		#WriteHTMLLine 0 0 "Server version number: " $ServerVersion
-		#WriteHTMLLine 0 0 " "
 		$rowdata = @()
 		$columnHeaders = @("Server version number",($htmlsilver -bor $htmlbold),$ServerVersion,$htmlwhite)
 
@@ -4648,56 +4954,106 @@ Function OutputDNSServer
 	}
 	
 	#Root Hints tab
-	Write-Verbose "$(Get-Date): `t`t`tRoot Hints"
-	#$global:saveRHs = $RHs
+	Write-Verbose "$(Get-Date -Format G): `t`t`tRoot Hints"
 
 	#V1.11 Thanks to MBS, Root Hint servers are now sorted and processed more efficiently
 	
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Root Hints"
+		WriteWordLine 3 0 "Name servers:"
 		[System.Collections.Hashtable[]] $RootWordTable = @();
-		ForEach($RH in $RHs)
+	}
+	If($Text)
+	{
+		Line 0 "Root Hints"
+		Line 1 "Name servers:"
+		Line 1 "Server Fully Qualified Domain Name  IP Address"
+		Line 1 "-------------------------------------------------------"
+		#       a.root-servers.net.                 255.255.255.255
+		#                                           2001:503:ba3e::2:30
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 2 0 "Root Hints"
+		WriteHTMLLine 3 0 "Name servers:"
+		$rowdata = @()
+	}
+
+	ForEach($RH in $RHs)
+	{
+		$cnt = 0
+		$ip = $Null
+		$PrvIP = $Null
+		If($rh.NameServer -is [array])
 		{
-			$cnt = 0
-			$ip = $Null
-			$PrvIP = $Null
-			If($rh.NameServer -is [array])
+			$nameServer = $rh.NameServer[0]
+		}
+		Else
+		{
+			$nameServer = $rh.NameServer
+		}
+		$ipAddresses = $rh.IPAddresss
+		ForEach( $ipAddress in $ipAddresses )
+		{
+			$cnt++
+			$ip = $IPAddress.IPAddressToString
+			
+			If($PrvIP -ne $ip)
 			{
-				$nameServer = $rh.NameServer[0]
-			}
-			Else
-			{
-				$nameServer = $rh.NameServer
-			}
-			$ipAddresses = $rh.IPAddresss
-			ForEach( $ipAddress in $ipAddresses )
-			{
-				$cnt++
-				$ip = $IPAddress.IPAddressToString
-				
-				If($PrvIP -ne $ip)
+				If($cnt -eq 1)
 				{
-					If($cnt -eq 1)
+					If($MSWord -or $PDF)
 					{
 						$WordTableRowHash = @{ 
 						ServerFQDN = $NameServer;
 						IPAddress = $ip;
 						}
 					}
-					Else
+					If($Text)
+					{
+						Line 1 "" $NameServer -NoNewLine
+						Line 1 "`t    " $ip
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$NameServer,$htmlwhite,
+						$ip,$htmlwhite))
+					}
+				}
+				Else
+				{
+					If($MSWord -or $PDF)
 					{
 						$WordTableRowHash = @{ 
 						ServerFQDN = "";
 						IPAddress = $ip;
 						}
 					}
+					If($Text)
+					{
+						Line 4 "    " $ip
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						"",$htmlwhite,
+						$ip,$htmlwhite))
+					}
 				}
-				$RootWordTable += $WordTableRowHash;
-				$PrvIP = $ip
 			}
-		}
 
+			If($MSWord -or $PDF)
+			{
+				$RootWordTable += $WordTableRowHash;
+			}
+			$PrvIP = $ip
+		}
+	}
+
+	If($MSWord -or $PDF)
+	{
 		$Table = AddWordTable -Hashtable $RootWordTable `
 		-Columns ServerFQDN, IPAddress `
 		-Headers "Server Fully Qualified Domain Name (FQDN)", "IP Address" `
@@ -4715,91 +5071,12 @@ Function OutputDNSServer
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
-		Line 0 "Root Hints"
-		Line 0 "Server Fully Qualified Domain Name  IP Address"
-		Line 0 "-------------------------------------------------------"
-		#       a.root-servers.net.                 255.255.255.255
-		#                                           2001:503:ba3e::2:30
-													
-		ForEach($RH in $RHs)
-		{
-			$cnt = 0
-			$ip = $Null
-			$PrvIP = $Null
-			If($rh.NameServer -is [array])
-			{
-				$nameServer = $rh.NameServer[0]
-			}
-			Else
-			{
-				$nameServer = $rh.NameServer
-			}
-			$ipAddresses = $rh.IPAddresss
-			ForEach( $ipAddress in $ipAddresses )
-			{
-				$cnt++
-				$ip = $IPAddress.IPAddressToString
-				
-				If($PrvIP -ne $ip)
-				{
-					If($cnt -eq 1)
-					{
-						Line 0 "" $NameServer -NoNewLine
-						Line 0 "`t`t    " $ip
-					}
-					Else
-					{
-						Line 4 "    " $ip
-					}
-				}
-				$PrvIP = $ip
-			}
-		}
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
-		WriteHTMLLine 2 0 "Root Hints"
-		$rowdata = @()
-		ForEach($RH in $RHs)
-		{
-			$cnt = 0
-			$ip = $Null
-			$PrvIP = $Null
-			If($rh.NameServer -is [array])
-			{
-				$nameServer = $rh.NameServer[0]
-			}
-			Else
-			{
-				$nameServer = $rh.NameServer
-			}
-			$ipAddresses = $rh.IPAddresss
-			ForEach( $ipAddress in $ipAddresses )
-			{
-				$cnt++
-				$ip = $IPAddress.IPAddressToString
-				
-				If($PrvIP -ne $ip)
-				{
-					If($cnt -eq 1)
-					{
-						$rowdata += @(,(
-						$NameServer,$htmlwhite,
-						$ip,$htmlwhite))
-					}
-					Else
-					{
-						$rowdata += @(,(
-						"",$htmlwhite,
-						$ip,$htmlwhite))
-					}
-				}
-				$PrvIP = $ip
-			}
-		}
 		$columnHeaders = @(
 		'Server Fully Qualified Domain Name (FQDN)',($htmlsilver -bor $htmlbold),
 		'IP Address',($htmlsilver -bor $htmlbold))
@@ -4811,16 +5088,16 @@ Function OutputDNSServer
 	}
 	
 	#Event Logging
-	Write-Verbose "$(Get-Date): `t`t`tEvent Logging"
+	Write-Verbose "$(Get-Date -Format G): `t`t`tEvent Logging"
 	
 	Switch ($ServerDiagnostics.EventLogLevel)
 	{
-		0 {$LogLevel = "No events"; break}
-		1 {$LogLevel = "Errors only"; break}
-		2 {$LogLevel = "Errors and warnings"; break}
-		4 {$LogLevel = "All events"; break}	#my value is 7, everyone else appears to be 4
-		7 {$LogLevel = "All events"; break}	#leaving as separate stmts for now just in case
-		Default {$LogLevel = "Unknown: EventLogLevel Value is $($ServerDiagnostics.EventLogLevel)"; break}
+		0 {$LogLevel = "No events"; Break}
+		1 {$LogLevel = "Errors only"; Break}
+		2 {$LogLevel = "Errors and warnings"; Break}
+		4 {$LogLevel = "All events"; Break}	#my value is 7, everyone else appears to be 4
+		7 {$LogLevel = "All events"; Break}	#leaving as separate stmts for now just in case
+		Default {$LogLevel = "Unknown: EventLogLevel Value is $($ServerDiagnostics.EventLogLevel)"; Break}
 	}
 	
 	If($MSWord -or $PDF)
@@ -4845,13 +5122,13 @@ Function OutputDNSServer
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Event Logging"
-		Line 0 "Log the following events: " $LogLevel
+		Line 1 "Log the following events: " $LogLevel
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 2 0 "Event Logging"
 		$rowdata = @()
@@ -4869,7 +5146,7 @@ Function ResolveIPtoFQDN
 {
 	Param([string]$cname)
 
-	Write-Verbose "$(Get-Date): `t`t`t`tAttempting to resolve $cname"
+	Write-Verbose "$(Get-Date -Format G): `t`t`t`tAttempting to resolve $cname"
 	
 	$ip = $CName -as [System.Net.IpAddress]
 	
@@ -4897,7 +5174,7 @@ Function ProcessForwardLookupZones
 	
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date): Processing Forward Lookup Zones"
+	Write-Verbose "$(Get-Date -Format G): Processing Forward Lookup Zones"
 
 	$txt = "Forward Lookup Zones"
 	If($MSWord -or $PDF)
@@ -4905,12 +5182,11 @@ Function ProcessForwardLookupZones
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 $txt
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 $txt
-		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 $txt
 	}
@@ -4949,10 +5225,10 @@ Function OutputLookupZone
 
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date): `tProcessing $($DNSZone.ZoneName)"
+	Write-Verbose "$(Get-Date -Format G): `tProcessing $($DNSZone.ZoneName)"
 	
 	#General tab
-	Write-Verbose "$(Get-Date): `t`tGeneral"
+	Write-Verbose "$(Get-Date -Format G): `t`tGeneral"
 	
 	#set all the variable to N/A first since some of the variables/properties do not exist for all zones and zone types
 	
@@ -4992,21 +5268,21 @@ Function OutputLookupZone
 	
 	Switch ($DNSZone.ReplicationScope)
 	{
-		"Forest" {$Replication = "All DNS servers in this forest"; break}
-		"Domain" {$Replication = "All DNS servers in this domain"; break}
-		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"; break}
-		"None" {$Replication = "Not an Active-Directory-Integrated zone"; break}
-		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"; break}
+		"Forest" {$Replication = "All DNS servers in this forest"; Break}
+		"Domain" {$Replication = "All DNS servers in this domain"; Break}
+		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"; Break}
+		"None" {$Replication = "Not an Active-Directory-Integrated zone"; Break}
+		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"; Break}
 	}
 	
 	If( ( validObject $DNSZone DynamicUpdate ) )
 	{
 		Switch ($DNSZone.DynamicUpdate)
 		{
-			"Secure" {$DynamicUpdate = "Secure only"; break}
-			"NonsecureAndSecure" {$DynamicUpdate = "Nonsecure and secure"; break}
-			"None" {$DynamicUpdate = "None"; break}
-			Default {$DynamicUpdate = "Unknown: $($DNSZone.DynamicUpdate)"; break}
+			"Secure" {$DynamicUpdate = "Secure only"; Break}
+			"NonsecureAndSecure" {$DynamicUpdate = "Nonsecure and secure"; Break}
+			"None" {$DynamicUpdate = "None"; Break}
+			Default {$DynamicUpdate = "Unknown: $($DNSZone.DynamicUpdate)"; Break}
 		}
 	}
 	
@@ -5055,7 +5331,7 @@ Function OutputLookupZone
 				$ScavengeServers += $ZoneAging.ScavengeServers.IPAddressToString
 			}
 		}
-		Else
+		ElseIf($Null -ne $ZoneAging.ScavengeServers)
 		{
 			$ScavengeServers += $ZoneAging.ScavengeServers.IPAddressToString
 		}
@@ -5122,31 +5398,31 @@ Function OutputLookupZone
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
-		Line 0 "$($DNSZone.ZoneName) Properties"
-		Line 1 "General"
-		Line 2 "Status`t`t`t`t: " $Status
-		Line 2 "Type`t`t`t`t: " $ZoneType
-		Line 2 "Replication`t`t`t: " $Replication
+		Line 1 "$($DNSZone.ZoneName) Properties"
+		Line 2 "General"
+		Line 3 "Status`t`t`t`t: " $Status
+		Line 3 "Type`t`t`t`t: " $ZoneType
+		Line 3 "Replication`t`t`t: " $Replication
 		If($Null -ne $DNSZone.ZoneFile)
 		{
-			Line 2 "Zone file name`t`t`t: " $DNSZone.ZoneFile
+			Line 3 "Zone file name`t`t`t: " $DNSZone.ZoneFile
 		}
 		ElseIf($Null -eq $DNSZone.ZoneFile -and $DNSZone.IsDsIntegrated)
 		{
-			Line 2 "Data stored in Active Directory`t: " "Yes"
+			Line 3 "Data stored in Active Directory`t: " "Yes"
 		}
-		Line 2 "Dynamic updates`t`t`t: " $DynamicUpdate
+		Line 3 "Dynamic updates`t`t`t: " $DynamicUpdate
 		If($DNSZone.ZoneType -eq "Primary")
 		{
-			Line 2 "Scavenge stale resource records`t: " $EnableScavenging
+			Line 3 "Scavenge stale resource records`t: " $EnableScavenging
 			If($EnableScavenging -eq "Selected")
 			{
-				Line 2 "No-refresh interval`t`t: " $NorefreshInterval
-				Line 2 "Refresh interval`t`t: " $RefreshInterval
+				Line 3 "No-refresh interval`t`t: " $NorefreshInterval
+				Line 3 "Refresh interval`t`t: " $RefreshInterval
 			}
-			Line 2 "Scavenge servers`t`t: " $ScavengeServers[0]
+			Line 3 "Scavenge servers`t`t: " $ScavengeServers[0]
 			
 			$cnt = -1
 			ForEach($ScavengeServer in $ScavengeServers)
@@ -5155,13 +5431,13 @@ Function OutputLookupZone
 				
 				If($cnt -gt 0)
 				{
-					Line 6 "  " $ScavengeServer
+					Line 7 "  " $ScavengeServer
 				}
 			}
 		}
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 2 0 "$($DNSZone.ZoneName) Properties"
 		WriteHTMLLine 3 0 "General"
@@ -5208,7 +5484,7 @@ Function OutputLookupZone
 	}
 
 	#Start of Authority (SOA) tab
-	Write-Verbose "$(Get-Date): `t`tStart of Authority (SOA)"
+	Write-Verbose "$(Get-Date -Format G): `t`tStart of Authority (SOA)"
 
 	$Results = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype soa -ComputerName $DNSServerName -EA 0
 
@@ -5329,20 +5605,20 @@ Function OutputLookupZone
 			$Table = $Null
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
-			Line 1 "Start of Authority (SOA)"
-			Line 2 "Serial number`t`t`t: " $SOA.RecordData.SerialNumber.ToString()
-			Line 2 "Primary server`t`t`t: " $SOA.RecordData.PrimaryServer
-			Line 2 "Responsible person`t`t: " $SOA.RecordData.ResponsiblePerson
-			Line 2 "Refresh interval`t`t: " $RefreshInterval
-			Line 2 "Retry interval`t`t`t: " $RetryDelay
-			Line 2 "Expires after`t`t`t: " $ExpireLimit
-			Line 2 "Minimum (default) TTL`t`t: " $MinimumTTL
-			Line 2 "TTL for this record`t`t: " $SOA.TimeToLive.ToString()
+			Line 2 "Start of Authority (SOA)"
+			Line 3 "Serial number`t`t`t: " $SOA.RecordData.SerialNumber.ToString()
+			Line 3 "Primary server`t`t`t: " $SOA.RecordData.PrimaryServer
+			Line 3 "Responsible person`t`t: " $SOA.RecordData.ResponsiblePerson
+			Line 3 "Refresh interval`t`t: " $RefreshInterval
+			Line 3 "Retry interval`t`t`t: " $RetryDelay
+			Line 3 "Expires after`t`t`t: " $ExpireLimit
+			Line 3 "Minimum (default) TTL`t`t: " $MinimumTTL
+			Line 3 "TTL for this record`t`t: " $SOA.TimeToLive.ToString()
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 3 0 "Start of Authority (SOA)"
 			$rowdata = @()
@@ -5371,13 +5647,13 @@ Function OutputLookupZone
 			WriteWordLine 0 0 $txt2
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 $txt1
 			Line 0 $txt2
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 3 0 $txt1
 			WriteHTMLLine 0 0 $txt2
@@ -5386,12 +5662,11 @@ Function OutputLookupZone
 	}
 	
 	#Name Servers tab
-	Write-Verbose "$(Get-Date): `t`tName Servers"
+	Write-Verbose "$(Get-Date -Format G): `t`tName Servers"
 	$NameServers = Get-DnsServerResourceRecord -zonename $DNSZone.ZoneName -rrtype ns -node -ComputerName $DNSServerName -EA 0
 
 	If($? -and $Null -ne $NameServers)
 	{
-	
 		#Sort name servers added in V1.11
 		$NameServers = $NameServers.RecordData.NameServer
 		$NameServers = $NameServers | Sort-Object
@@ -5399,27 +5674,48 @@ Function OutputLookupZone
 		If($MSWord -or $PDF)
 		{
 			WriteWordLine 3 0 "Name Servers"
-			###[System.Collections.Hashtable[]] $NSWordTable = @();
 			$NSWordTable = New-Object System.Collections.ArrayList
 			## Create an array of hashtables to store references of cells that we wish to highlight after the table has been added
 			$HighlightedCells = New-Object System.Collections.ArrayList
 			## Seed the $Services row index from the second row
 			[int] $CurrentServiceIndex = 2;
-			ForEach($NS in $NameServers)
+		}
+		If($Text)
+		{
+			Line 2 "Name Servers:"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 3 0 "Name Servers"
+			$rowdata = @()
+		}
+
+		ForEach($NS in $NameServers)
+		{
+			# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
+			
+			Try
 			{
-				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
 				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
-				
-				If($?)
+			}
+			
+			Catch
+			{
+				$ipAddress = "Unable to retrieve an IP Address"
+			}
+			
+			If($?)
+			{
+				If($ipAddress -is [array])
 				{
-					If($ipAddress -is [array])
+					$cnt = -1
+					
+					ForEach($ip in $ipAddress)
 					{
-						$cnt = -1
+						$cnt++
 						
-						ForEach($ip in $ipAddress)
+						If($MSWord -or $PDF)
 						{
-							$cnt++
-							
 							If([String]::IsNullOrEmpty($ip))	#added in V1.12
 							{
 								$ip = "Unable to retrieve an IP Address"
@@ -5442,11 +5738,59 @@ Function OutputLookupZone
 								IPAddress = $ip;
 								}
 							}
-							## Add the hash to the array
-							$NSWordTable.Add($WordTableRowHash) > $Null
+						}
+						If($Text)
+						{
+							If([String]::IsNullOrEmpty($ip))	#added in V1.12
+							{
+								$ip = "***Unable to retrieve an IP Address***"
+							}
+
+							If($cnt -eq 0)
+							{
+								Line 3 "Server FQDN`t`t`t: " $NS
+								Line 4 "IP Address`t`t: " $ip
+							}
+							Else
+							{
+								Line 7 "  " $ip
+							}
+						}
+						If($HTML)
+						{
+							If([String]::IsNullOrEmpty($ip))	#added in V1.12
+							{
+								$ip = "Unable to retrieve an IP Address"
+								$HTMLHighlightedCells = $htmlred
+							}
+							Else
+							{
+								$HTMLHighlightedCells = $htmlwhite
+							}
+
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,(
+								$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+								$ip,$HTMLHighlightedCells))
+							}
+							Else
+							{
+								$rowdata += @(,(
+								$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+								$ip,$HTMLHighlightedCells))
+							}
 						}
 					}
-					Else
+					
+					If($Text)
+					{
+						Line 0 ""
+					}
+				}
+				Else
+				{
+					If($MSWord -or $PDF)
 					{
 						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
 						{
@@ -5461,8 +5805,38 @@ Function OutputLookupZone
 						IPAddress = $ipAddress;
 						}
 					}
+					If($Text)
+					{
+						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
+						{
+							$ipAddress = "***Unable to retrieve an IP Address***"
+						}
+
+						Line 3 "Server FQDN`t`t`t: " $NS
+						Line 4 "IP Address`t`t: " $ipAddress
+						Line 0 ""
+					}
+					If($HTML)
+					{
+						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
+						{
+							$ipAddress = "Unable to retrieve an IP Address"
+							$HTMLHighlightedCells = $htmlred
+						}
+						Else
+						{
+							$HTMLHighlightedCells = $htmlwhite
+						}
+
+						$rowdata += @(,(
+						$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+						$ipAddress,$HTMLHighlightedCells))
+					}
 				}
-				ElseIf(-not $?)
+			}
+			ElseIf(-not $?)
+			{
+				If($MSWord -or $PDF)
 				{
 					$ipAddress = "Unable to retrieve an IP Address"
 					$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
@@ -5472,11 +5846,35 @@ Function OutputLookupZone
 					$WordTableRowHash = @{ 
 					ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
 					IPAddress = $ipAddress;
-						}
+					}
 				}
+				If($Text)
+				{
+					$ipAddress = "***Unable to retrieve an IP Address***"
 
+					Line 3 "Server FQDN`t`t`t: " $NS
+					Line 4 "IP Address`t`t: " $ipAddress
+					Line 0 ""
+				}
+				If($HTML)
+				{
+					$ipAddress = "Unable to retrieve an IP Address"
+					$HTMLHighlightedCells = $htmlred
+
+					$rowdata += @(,(
+					$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
+					$ipAddress,$HTMLHighlightedCells))
+				}
+			}
+
+			If($MSWord -or $PDF)
+			{
+				## Add the hash to the array
 				$NSWordTable += $WordTableRowHash;
 			}
+		}
+		If($MSWord -or $PDF)
+		{
 			$Table = AddWordTable -Hashtable $NSWordTable `
 			-Columns ServerFQDN, IPAddress `
 			-Headers "Server Fully Qualified Domain Name (FQDN)", "IP Address" `
@@ -5486,7 +5884,10 @@ Function OutputLookupZone
 			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 			## IB - Set the required highlighted cells
-			SetWordCellFormat -Coordinates $HighlightedCells -Table $Table -Bold -BackgroundColor $wdColorRed -Solid;
+			If($HighlightedCells.Count -gt 0)
+			{
+				SetWordCellFormat -Coordinates $HighlightedCells -Table $Table -Bold -BackgroundColor $wdColorRed -Solid;
+			}
 			
 			$Table.Columns.Item(1).Width = 200;
 			$Table.Columns.Item(2).Width = 200;
@@ -5497,130 +5898,12 @@ Function OutputLookupZone
 			$Table = $Null
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
-			Line 1 "Name Servers:"
-			ForEach($NS in $NameServers)
-			{
-				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
-				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
-				
-				Line 2 "Server FQDN`t`t`t: " $NS	#removed in V1.11 .RecordData.NameServer;
-				
-				If($?)
-				{
-					If($ipAddress -is [array])
-					{
-						$cnt = -1
-						
-						ForEach($ip in $ipAddress)
-						{
-							$cnt++
-							
-							If([String]::IsNullOrEmpty($ip))	#added in V1.12
-							{
-								$ip = "***Unable to retrieve an IP Address***"
-							}
-
-							If($cnt -eq 0)
-							{
-								Line 2 "IP Address`t`t`t: " $ip
-							}
-							Else
-							{
-								Line 6 "  " $ip
-							}
-						}
-					}
-					Else
-					{
-						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
-						{
-							$ipAddress = "***Unable to retrieve an IP Address***"
-						}
-
-						Line 2 "IP Address`t`t`t: " $ipAddress
-					}
-				}
-				ElseIf(-not $?)
-				{
-					$ipAddress = "***Unable to retrieve an IP Address***"
-
-					Line 2 "IP Address`t`t`t: " $ipAddress
-				}
-				Line 0 ""
-			}
+			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
-			WriteHTMLLine 3 0 "Name Servers"
-			$rowdata = @()
-			ForEach($NS in $NameServers)
-			{
-				# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
-				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
-				
-				If($?)
-				{
-					If($ipAddress -is [array])
-					{
-						$cnt = -1
-						
-						ForEach($ip in $ipAddress)
-						{
-							$cnt++
-							
-							If([String]::IsNullOrEmpty($ip))	#added in V1.12
-							{
-								$ip = "Unable to retrieve an IP Address"
-								$HighlightedCells = $htmlred
-							}
-							Else
-							{
-								$HighlightedCells = $htmlwhite
-							}
-
-							If($cnt -eq 0)
-							{
-								$rowdata += @(,(
-								$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-								$ip,$HighlightedCells))
-							}
-							Else
-							{
-								$rowdata += @(,(
-								$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-								$ip,$HighlightedCells))
-							}
-						}
-					}
-					Else
-					{
-						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
-						{
-							$ipAddress = "Unable to retrieve an IP Address"
-							$HighlightedCells = $htmlred
-						}
-						Else
-						{
-							$HighlightedCells = $htmlwhite
-						}
-
-						$rowdata += @(,(
-						$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-						$ipAddress,$HighlightedCells))
-					}
-				}
-				ElseIf(-not $?)
-				{
-					$ipAddress = "Unable to retrieve an IP Address"
-					$HighlightedCells = $htmlred
-
-					$rowdata += @(,(
-					$NS,$HighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-					$ipAddress,$HighlightedCells))
-				}
-			}
 			$columnHeaders = @(
 			'Server Fully Qualified Domain Name (FQDN)',($htmlsilver -bor $htmlbold),
 			'IP Address',($htmlsilver -bor $htmlbold))
@@ -5641,13 +5924,13 @@ Function OutputLookupZone
 			WriteWordLine 0 0 $txt2
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 $txt1
 			Line 0 $txt2
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 3 0 $txt1
 			WriteHTMLLine 0 0 $txt2
@@ -5658,7 +5941,7 @@ Function OutputLookupZone
 	If($zType -eq "Forward")
 	{
 		#WINS tab
-		Write-Verbose "$(Get-Date): `t`tWINS"
+		Write-Verbose "$(Get-Date -Format G): `t`tWINS"
 		If( ( validObject $DNSZone IsWinsEnabled ) )
 		{
 			If($DNSZone.IsWinsEnabled)
@@ -5681,7 +5964,7 @@ Function OutputLookupZone
 					$ip = @()
 					ForEach($ipAddress in $WINS.RecordData.WinsServers)
 					{
-						$ip += "$ipAddress`r"
+						$ip += "$ipAddress"
 					}
 					
 					If($WINS.RecordData.CacheTimeout.Days -gt 0)
@@ -5732,7 +6015,19 @@ Function OutputLookupZone
 						[System.Collections.Hashtable[]] $ScriptInformation = @()
 						$ScriptInformation += @{ Data = "Use WINS forward lookup"; Value = $WINSEnabled; }
 						$ScriptInformation += @{ Data = "Do not replicate this record"; Value = $WINSReplicate; }
-						$ScriptInformation += @{ Data = "IP address"; Value = $ip; }
+						$First = $True
+						ForEach($ipa in $ip)
+						{
+							If($First)
+							{
+								$ScriptInformation += @{ Data = "IP address"; Value = $ipa; }
+							}
+							Else
+							{
+								$ScriptInformation += @{ Data = ""; Value = $ipa; }
+							}
+							$First = $False
+						}
 						$ScriptInformation += @{ Data = "Cache time-out"; Value = $CacheTimeout; }
 						$ScriptInformation += @{ Data = "Lookup time-out"; Value = $LookupTimeout; }
 						$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -5752,17 +6047,29 @@ Function OutputLookupZone
 						$Table = $Null
 						WriteWordLine 0 0 ""
 					}
-					ElseIf($Text)
+					If($Text)
 					{
-						Line 1 "WINS"
-						Line 2 "Use WINS forward lookup`t`t: " $WINSEnabled
-						Line 2 "Do not replicate this record`t: " $WINSReplicate
-						Line 2 "IP address`t`t`t: " $ip
-						Line 2 "Cache time-out`t`t`t: " $CacheTimeout
-						Line 2 "Lookup time-out`t`t`t: " $LookupTimeout
+						Line 2 "WINS"
+						Line 3 "Use WINS forward lookup`t`t: " $WINSEnabled
+						Line 3 "Do not replicate this record`t: " $WINSReplicate
+						$First = $True
+						ForEach($ipa in $ip)
+						{
+							If($First)
+							{
+								Line 3 "IP address`t`t`t: " $ipa
+							}
+							Else
+							{
+								Line 7 "  " $ipa
+							}
+							$First = $False
+						}
+						Line 3 "Cache time-out`t`t`t: " $CacheTimeout
+						Line 3 "Lookup time-out`t`t`t: " $LookupTimeout
 						Line 0 ""
 					}
-					ElseIf($HTML)
+					If($HTML)
 					{
 						WriteHTMLLine 3 0 "WINS"
 						$rowdata = @()
@@ -5802,14 +6109,14 @@ Function OutputLookupZone
 						WriteWordLine 0 0 $txt3
 						WriteWordLine 0 0 ""
 					}
-					ElseIf($Text)
+					If($Text)
 					{
 						Line 1 $txt1
 						Line 2 $txt2
 						Line 0 $txt3
 						Line 0 ""
 					}
-					ElseIf($HTML)
+					If($HTML)
 					{
 						WriteHTMLLine 3 0 $txt1
 						WriteHTMLLine 0 0 $txt2
@@ -5843,13 +6150,13 @@ Function OutputLookupZone
 					$Table = $Null
 					WriteWordLine 0 0 ""
 				}
-				ElseIf($Text)
+				If($Text)
 				{
-					Line 1 "WINS"
-					Line 2 "Use WINS forward lookup`t`t: " $WINSEnabled
+					Line 2 "WINS"
+					Line 3 "Use WINS forward lookup`t`t: " $WINSEnabled
 					Line 0 ""
 				}
-				ElseIf($HTML)
+				If($HTML)
 				{
 					WriteHTMLLine 3 0 "WINS"
 					$rowdata = @()
@@ -5866,7 +6173,7 @@ Function OutputLookupZone
 	ElseIf($zType -eq "Reverse")
 	{
 		#WINS-R tab
-		Write-Verbose "$(Get-Date): `t`tWINS-R"
+		Write-Verbose "$(Get-Date -Format G): `t`tWINS-R"
 
 		If( ( validObject $DNSZone IsWinsEnabled ) )
 		{
@@ -5934,7 +6241,7 @@ Function OutputLookupZone
 						WriteWordLine 3 0 "WINS-R"
 						[System.Collections.Hashtable[]] $ScriptInformation = @()
 						$ScriptInformation += @{ Data = "Use WINS-R lookup"; Value = $WINSEnabled; }
-						#$ScriptInformation += @{ Data = "Do not replicate this record"; Value = "Can't Find"; }
+						$ScriptInformation += @{ Data = "Do not replicate this record"; Value = $WINS.RecordData.Replicate.ToString(); }
 						$ScriptInformation += @{ Data = "Domain name to append to returned name"; Value = $WINS.RecordData.ResultDomain; }
 						$ScriptInformation += @{ Data = "Cache time-out"; Value = $CacheTimeout; }
 						$ScriptInformation += @{ Data = "Lookup time-out"; Value = $LookupTimeout; }
@@ -5956,23 +6263,23 @@ Function OutputLookupZone
 						$Table = $Null
 						WriteWordLine 0 0 ""
 					}
-					ElseIf($Text)
+					If($Text)
 					{
-						Line 1 "WINS-R"
-						Line 2 "Use WINS forward lookup`t`t: " $WINSEnabled
-						#Line 2 "Do not replicate this record`t: " "Can't Find"
-						Line 2 "Domain name to append`t`t: " $WINS.RecordData.ResultDomain
-						Line 2 "Cache time-out`t`t`t: " $CacheTimeout
-						Line 2 "Lookup time-out`t`t`t: " $LookupTimeout
-						Line 2 "Submit DNS domain as NetBIOS scope: " $WINSReplicate
+						Line 2 "WINS-R"
+						Line 3 "Use WINS forward lookup`t`t: " $WINSEnabled
+						Line 3 "Do not replicate this record`t: " $WINS.RecordData.Replicate.ToString()
+						Line 3 "Domain name to append`t`t: " $WINS.RecordData.ResultDomain
+						Line 3 "Cache time-out`t`t`t: " $CacheTimeout
+						Line 3 "Lookup time-out`t`t`t: " $LookupTimeout
+						Line 3 "Submit DNS domain as NetBIOS scope: " $WINSReplicate
 						Line 0 ""
 					}
-					ElseIf($HTML)
+					If($HTML)
 					{
 						WriteHTMLLine 3 0 "WINS-R"
 						$rowdata = @()
 						$columnHeaders = @("Use WINS forward lookup",($htmlsilver -bor $htmlbold),$WINSEnabled,$htmlwhite)
-						#$rowdata += @(,('Do not replicate this record',($htmlsilver -bor $htmlbold),"Can't Find",$htmlwhite))
+						$rowdata += @(,('Do not replicate this record',($htmlsilver -bor $htmlbold),$WINS.RecordData.Replicate.ToString(),$htmlwhite))
 						$rowdata += @(,('Domain name to append to returned name',($htmlsilver -bor $htmlbold),$WINS.RecordData.ResultDomain,$htmlwhite))
 						$rowdata += @(,('Cache time-out',($htmlsilver -bor $htmlbold),$CacheTimeout,$htmlwhite))
 						$rowdata += @(,('Lookup time-out',($htmlsilver -bor $htmlbold),$LookupTimeout,$htmlwhite))
@@ -5996,14 +6303,14 @@ Function OutputLookupZone
 						WriteWordLine 0 0 $txt3
 						WriteWordLine 0 0 ""
 					}
-					ElseIf($Text)
+					If($Text)
 					{
 						Line 1 $txt1
 						Line 2 $txt2
 						Line 0 $txt3
 						Line 0 ""
 					}
-					ElseIf($HTML)
+					If($HTML)
 					{
 						WriteHTMLLine 3 0 $txt1
 						WriteHTMLLine 0 0 $txt2
@@ -6037,13 +6344,13 @@ Function OutputLookupZone
 					$Table = $Null
 					WriteWordLine 0 0 ""
 				}
-				ElseIf($Text)
+				If($Text)
 				{
-					Line 1 "WINS-R"
-					Line 2 "Use WINS-R lookup`t`t: " $WINSEnabled
+					Line 2 "WINS-R"
+					Line 3 "Use WINS-R lookup`t`t: " $WINSEnabled
 					Line 0 ""
 				}
-				ElseIf($HTML)
+				If($HTML)
 				{
 					WriteHTMLLine 3 0 "WINS-R"
 					$rowdata = @()
@@ -6059,7 +6366,7 @@ Function OutputLookupZone
 	}
 	
 	#Zone Transfers tab
-	Write-Verbose "$(Get-Date): `t`tZone Transfers"
+	Write-Verbose "$(Get-Date -Format G): `t`tZone Transfers"
 	
 	If( ( validObject $DNSZone SecureSecondaries ) )
 	{
@@ -6087,7 +6394,7 @@ Function OutputLookupZone
 				$ipSecondaryServers = ""
 				ForEach($ipAddress in $DNSZone.SecondaryServers)
 				{
-					$ipSecondaryServers += "$ipAddress`r"
+					$ipSecondaryServers += "$ipAddress"
 				}
 			}
 
@@ -6096,7 +6403,7 @@ Function OutputLookupZone
 				$ipNotifyServers = ""
 				ForEach($ipAddress in $DNSZone.NotifyServers)
 				{
-					$ipNotifyServers += "$ipAddress`r"
+					$ipNotifyServers += "$ipAddress"
 				}
 			}
 			
@@ -6105,9 +6412,21 @@ Function OutputLookupZone
 				WriteWordLine 3 0 "Zone Transfers"
 				[System.Collections.Hashtable[]] $ScriptInformation = @()
 				$ScriptInformation += @{ Data = "Allow zone transfers"; Value = $ZoneTransfer; }
-				If($ZoneTransfer -eq "Only to the following servers")
+				If($ZoneTransfer -eq "")
 				{
-					$ScriptInformation += @{ Data = ""; Value = $ipSecondaryServers; }
+					$First = $True
+					ForEach($ipa in $ipSecondaryServers)
+					{
+						If($First)
+						{
+							$ScriptInformation += @{ Data = "Only to the following servers"; Value = $ipa; }
+						}
+						Else
+						{
+							$ScriptInformation += @{ Data = ""; Value = $ipa; }
+						}
+						$First = $False
+					}
 				}
 				If($DNSZone.Notify -eq "NoNotify")
 				{
@@ -6119,7 +6438,19 @@ Function OutputLookupZone
 				}
 				ElseIf($DNSZone.Notify -eq "NotifyServers")
 				{
-					$ScriptInformation += @{ Data = "Automatically notify the following servers"; Value = $ipNotifyServers; }
+					$First = $True
+					ForEach($ipa in $ipNotifyServers)
+					{
+						If($First)
+						{
+							$ScriptInformation += @{ Data = "Automatically notify the following servers"; Value = $ipa; }
+						}
+						Else
+						{
+							$ScriptInformation += @{ Data = ""; Value = $ipa; }
+						}
+						$First = $False
+					}
 				}
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -6138,45 +6469,54 @@ Function OutputLookupZone
 				$Table = $Null
 				WriteWordLine 0 0 ""
 			}
-			ElseIf($Text)
+			If($Text)
 			{
-				Line 1 "Zone Transfers"
-				Line 2 "Allow zone transfers`t`t: " $ZoneTransfer
+				Line 2 "Zone Transfers"
+				Line 3 "Allow zone transfers`t`t: " $ZoneTransfer
 				If($ZoneTransfer -eq "Only to the following servers")
 				{
 					ForEach($x in $ipSecondaryServers)
 					{
-						Line 6 "  " $x
+						Line 7 "  " $x
 					}
 				}
 				If($DNSZone.Notify -eq "NoNotify")
 				{
-					Line 2 "Automatically notify`t`t: Not selected"
+					Line 3 "Automatically notify`t`t: Not selected"
 				}
 				ElseIf($DNSZone.Notify -eq "Notify")
 				{
-					Line 2 "Automatically notify`t`t: Servers listed on the Name Servers tab"
+					Line 3 "Automatically notify`t`t: Servers listed on the Name Servers tab"
 				}
 				ElseIf($DNSZone.Notify -eq "NotifyServers")
 				{
-					Line 2 "Automatically notify`t`t: The following servers " 
+					Line 3 "Automatically notify`t`t: The following servers " 
 					ForEach($x in $ipNotifyServers)
 					{
-						Line 6 "  " $x
+						Line 7 "  " $x
 					}
 				}
 				Line 0 ""
 			}
-			ElseIf($HTML)
+			If($HTML)
 			{
 				WriteHTMLLine 3 0 "Zone Transfers"
 				$rowdata = @()
 				$columnHeaders = @("Allow zone transfers",($htmlsilver -bor $htmlbold),$ZoneTransfer,$htmlwhite)
 				If($ZoneTransfer -eq "Only to the following servers")
 				{
+					$First = $True
 					ForEach($ipa in $ipSecondaryServers)
 					{
-						$rowdata += @(,('',($htmlsilver -bor $htmlbold),$ipa,$htmlwhite))
+						If($First)
+						{
+							$rowdata += @(,('Only to the following servers',($htmlsilver -bor $htmlbold),$ipa,$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,('',($htmlsilver -bor $htmlbold),$ipa,$htmlwhite))
+						}
+						$First = $False
 					}
 				}
 				If($DNSZone.Notify -eq "NoNotify")
@@ -6234,13 +6574,13 @@ Function OutputLookupZone
 				$Table = $Null
 				WriteWordLine 0 0 ""
 			}
-			ElseIf($Text)
+			If($Text)
 			{
-				Line 1 "Zone Transfers"
-				Line 2 "Allow zone transfers`t`t: " $ZoneTransfer
+				Line 2 "Zone Transfers"
+				Line 3 "Allow zone transfers`t`t: " $ZoneTransfer
 				Line 0 ""
 			}
-			ElseIf($HTML)
+			If($HTML)
 			{
 				WriteHTMLLine 3 0 "Zone Transfers"
 				$rowdata = @()
@@ -6249,6 +6589,443 @@ Function OutputLookupZone
 				$msg = ""
 				$columnWidths = @("200","200")
 				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+		}
+	}
+
+	If($DNSZone.IsSigned -eq $True) #This is a DNSSEC Zone
+	{
+		Write-Verbose "$(Get-Date -Format G): `t`tDNSSEC Settings"
+	
+		$DNSSECSettings = Get-DnsServerDnsSecZoneSetting -ZoneName $DNSZone.ZoneName -ComputerName $DNSServerName -EA 0
+		
+		If($? -and $Null -ne $DNSSECSettings)
+		{
+			If($MSWord -or $PDF)
+			{
+				$Selection.InsertNewPage()
+				WriteWordLine 3 0 "DNSSEC properties for $($DNSZone.ZoneName) zone"
+			}
+			If($Text)
+			{
+				Line 2 "DNSSEC properties for $($DNSZone.ZoneName) zone"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 3 0 "DNSSEC properties for $($DNSZone.ZoneName) zone"
+			}
+
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Key Master"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				$ScriptInformation += @{ Data = "This DNS server is the Key Master"; Value = $DNSSECSettings.KeyMasterServer; }
+				$ScriptInformation += @{ Data = "Status"; Value = $DNSSECSettings.KeyMasterStatus; }
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Key Master"
+				Line 4 "This DNS server is the Key Master`t: " $DNSSECSettings.KeyMasterServer
+				Line 4 "Status`t`t`t`t`t: " $DNSSECSettings.KeyMasterStatus
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Key Master"
+				$rowdata = @()
+				$columnHeaders = @("This DNS server is the Key Master",($htmlsilver -bor $htmlbold),$DNSSECSettings.KeyMasterServer,$htmlwhite)
+				$rowdata += @(,('Status',($htmlsilver -bor $htmlbold),$DNSSECSettings.KeyMasterStatus,$htmlwhite))
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+
+			<# I can't find KSK or ZSK data
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "KSK"
+			}
+			If($Text)
+			{
+				Line 3 "KSK"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "KSK"
+			}
+
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "ZSK"
+			}
+			If($Text)
+			{
+				Line 3 "ZSK"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "ZSK"
+			}
+			#>
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Next Secure (NSEC)"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				If($DNSSECSettings.DenialOfExistence -eq "NSec3")
+				{
+					$ScriptInformation += @{ Data = "Use NSEC3"; Value = "True"; }
+					$ScriptInformation += @{ Data = "Iterations"; Value = $DNSSECSettings.NSec3Iterations.ToString(); }
+					If($DNSSECSettings.IsNSec3SaltConfigured -eq $True)
+					{
+						$ScriptInformation += @{ Data = "Use salt"; Value = "True"; }
+						If($DNSSECSettings.NSec3UserSalt -eq "-")
+						{
+							$ScriptInformation += @{ Data = "Generate a random salt of length"; Value = $DNSSECSettings.NSec3RandomSaltLength.ToString(); }
+						}
+						Else
+						{
+							$ScriptInformation += @{ Data = "User given salt"; Value = $DNSSECSettings.NSec3UserSalt; }
+						}
+					}
+					Else
+					{
+						$ScriptInformation += @{ Data = "Do not use salt"; Value = "True"; }
+					}
+				}
+				Else
+				{
+					$ScriptInformation += @{ Data = "Use NSEC"; Value = "True"; }
+				}
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Next Secure (NSEC)"
+				If($DNSSECSettings.DenialOfExistence -eq "NSec3")
+				{
+					Line 4 "Use NSEC3`t`t`t`t: " "True"
+					Line 4 "Iterations`t`t`t`t: " $DNSSECSettings.NSec3Iterations.ToString()
+					If($DNSSECSettings.IsNSec3SaltConfigured -eq $True)
+					{
+						Line 4 "Use salt`t`t`t`t: " "True"
+						If($DNSSECSettings.NSec3UserSalt -eq "-")
+						{
+							Line 4 "Generate a random salt of length`t: " $DNSSECSettings.NSec3RandomSaltLength.ToString()
+						}
+						Else
+						{
+							Line 4 "User given salt`t`t`t`t: " $DNSSECSettings.NSec3UserSalt
+						}
+					}
+					Else
+					{
+						Line 4 "Do not use salt`t`t`t`t: " "True"
+					}
+				}
+				Else
+				{
+					Line 4 "Use NSEC`t`t`t`t: " "True"
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Next Secure (NSEC)"
+				$rowdata = @()
+				If($DNSSECSettings.DenialOfExistence -eq "NSec3")
+				{
+					$columnHeaders = @("Use NSEC3",($htmlsilver -bor $htmlbold),"True",$htmlwhite)
+					$rowdata += @(,('Iterations',($htmlsilver -bor $htmlbold),$DNSSECSettings.NSec3Iterations.ToString(),$htmlwhite))
+					If($DNSSECSettings.IsNSec3SaltConfigured -eq $True)
+					{
+						$rowdata += @(,('Use salt',($htmlsilver -bor $htmlbold),"True",$htmlwhite))
+						If($DNSSECSettings.NSec3UserSalt -eq "-")
+						{
+							$rowdata += @(,('Generate a random salt of length',($htmlsilver -bor $htmlbold),$DNSSECSettings.NSec3RandomSaltLength.ToString(),$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,('User given salt',($htmlsilver -bor $htmlbold),$DNSSECSettings.NSec3UserSalt,$htmlwhite))
+						}
+					}
+					Else
+					{
+						$rowdata += @(,('Do not use salt',($htmlsilver -bor $htmlbold),"True",$htmlwhite))
+					}
+				}
+				Else
+				{
+					$columnHeaders = @("Use NSEC",($htmlsilver -bor $htmlbold),"True",$htmlwhite)
+				}
+
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Trust Anchor"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				If($DNSSECSettings.DistributeTrustAnchor -contains "None")
+				{
+					$ScriptInformation += @{ Data = "Enable the distribution of trust anchors for this zone"; Value = "False"; }
+				}
+				Else
+				{
+					$ScriptInformation += @{ Data = "Enable the distribution of trust anchors for this zone"; Value = "True"; }
+				}
+				If($DNSSECSettings.EnableRfc5011KeyRollover -eq $True)
+				{
+					$ScriptInformation += @{ Data = "Enable automatic update of trust anchors on key rollover (RFC 5011)"; Value = "True"; }
+				}
+				Else
+				{
+					$ScriptInformation += @{ Data = "Enable automatic update of trust anchors on key rollover (RFC 5011)"; Value = "False"; }
+				}
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Trust Anchor"
+				If($DNSSECSettings.DistributeTrustAnchor -contains "None")
+				{
+					Line 4 "Enable the distribution of trust "
+					Line 4 "anchors for this zone`t`t`t: " "False"
+				}
+				Else
+				{
+					Line 4 "Enable the distribution of trust "
+					Line 4 "anchors for this zone`t`t`t: " "True"
+				}
+				If($DNSSECSettings.EnableRfc5011KeyRollover -eq $True)
+				{
+					Line 4 "Enable automatic update of trust "
+					Line 4 "anchors on key rollover (RFC 5011)`t: " "True"
+				}
+				Else
+				{
+					Line 4 "Enable automatic update of trust "
+					Line 4 "anchors on key rollover (RFC 5011)`t: " "False"
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Trust Anchor"
+				$rowdata = @()
+				If($DNSSECSettings.DistributeTrustAnchor -contains "None")
+				{
+					$columnHeaders = @("Enable the distribution of trust anchors for this zone",($htmlsilver -bor $htmlbold),"False",$htmlwhite)
+				}
+				Else
+				{
+					$columnHeaders = @("Enable the distribution of trust anchors for this zone",($htmlsilver -bor $htmlbold),"True",$htmlwhite)
+				}
+				If($DNSSECSettings.EnableRfc5011KeyRollover -eq $True)
+				{
+					$rowdata += @(,('Enable automatic update of trust anchors on key rollover (RFC 5011)',($htmlsilver -bor $htmlbold),"True",$htmlwhite))
+				}
+				Else
+				{
+					$rowdata += @(,('Enable automatic update of trust anchors on key rollover (RFC 5011)',($htmlsilver -bor $htmlbold),"False",$htmlwhite))
+				}
+
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+
+			<#DSRecordGenerationAlgorithm   : 
+			{Sha1, Sha256, Sha384} = All
+			{Sha1, Sha256} = SHA-1 and SHA-256
+			{Sha1, Sha384} = SHA-1 and SHA-384
+			{None} = None
+			{Sha1} = SHA-1
+			{Sha256} = SHA-256
+			{Sha256, Sha384} = SHA-256 and SHA-384
+			{Sha384} = SHA-384#>
+
+			If($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = "All"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256")
+			{
+				 $DNSSECSettingslabel = " SHA-1 and SHA-256"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = " SHA-1 and SHA-384"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "None")
+			{
+				 $DNSSECSettingslabel = "None"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256" -and 
+			$DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = "SHA-256 and SHA-384"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha1")
+			{
+				 $DNSSECSettingslabel = "SHA-1"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha256")
+			{
+				 $DNSSECSettingslabel = "SHA-256"
+			} 
+			ElseIf($DNSSECSettings.DSRecordGenerationAlgorithm -contains "Sha384")
+			{
+				 $DNSSECSettingslabel = "SHA-384"
+			} 
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Advanced"
+				[System.Collections.Hashtable[]] $ScriptInformation = @()
+				$ScriptInformation += @{ Data = "Signing and polling parameters"; Value = ""; }
+				$ScriptInformation += @{ Data = "   DS record generation algorithm"; Value = $DNSSECSettingslabel; }
+				$ScriptInformation += @{ Data = "   DS record TTL (seconds)"; Value = $DNSSECSettings.DSRecordSetTTL.TotalSeconds.ToString(); }
+				$ScriptInformation += @{ Data = "   DNSKEY record TTL (seconds)"; Value = $DNSSECSettings.DnsKeyRecordSetTTL.TotalSeconds.ToString(); }
+				$ScriptInformation += @{ Data = "   Signature inception (hours)"; Value = $DNSSECSettings.SignatureInceptionOffset.Hours.ToString(); }
+				$ScriptInformation += @{ Data = "   Secure delegation polling pd (hours)"; Value = $DNSSECSettings.SecureDelegationPollingPeriod.Hours.ToString(); }
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Advanced"
+				Line 4 "Signing and polling parameters" 
+				Line 4 "   DS record generation algorithm`t: " $DNSSECSettingslabel
+				Line 4 "   DS record TTL (seconds)`t`t: " $DNSSECSettings.DSRecordSetTTL.TotalSeconds.ToString()
+				Line 4 "   DNSKEY record TTL (seconds)`t`t: " $DNSSECSettings.DnsKeyRecordSetTTL.TotalSeconds.ToString()
+				Line 4 "   Signature inception (hours)`t`t: " $DNSSECSettings.SignatureInceptionOffset.Hours.ToString()
+				Line 4 "   Secure delegation polling pd (hours)`t: " $DNSSECSettings.SecureDelegationPollingPeriod.Hours.ToString()
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "Advanced"
+				$rowdata = @()
+				$columnHeaders = @("Signing and polling parameters",($htmlsilver -bor $htmlbold),"",$htmlwhite)
+				$rowdata += @(,('   DS record generation algorithm',($htmlsilver -bor $htmlbold),$DNSSECSettingslabel,$htmlwhite))
+				$rowdata += @(,('   DS record TTL (seconds)',($htmlsilver -bor $htmlbold),$DNSSECSettings.DSRecordSetTTL.TotalSeconds.ToString(),$htmlwhite))
+				$rowdata += @(,('   DNSKEY record TTL (seconds)',($htmlsilver -bor $htmlbold),$DNSSECSettings.DnsKeyRecordSetTTL.TotalSeconds.ToString(),$htmlwhite))
+				$rowdata += @(,('   Signature inception (hours)',($htmlsilver -bor $htmlbold),$DNSSECSettings.SignatureInceptionOffset.Hours.ToString(),$htmlwhite))
+				$rowdata += @(,('   Secure delegation polling pd (hours)',($htmlsilver -bor $htmlbold),$DNSSECSettings.SecureDelegationPollingPeriod.Hours.ToString(),$htmlwhite))
+
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+				WriteHTMLLine 0 0 " "
+			}
+		}
+		ElseIf($? -and $Null -eq $DNSSECSettings)
+		{
+			$txt = "There are no DNSSEC settings for zone $($DNSZone.ZoneName)"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt
+				WriteHTMLLine 0 0 " "
+			}
+		}
+		Else
+		{
+			$txt = "DNSSEC settings for zone $($DNSZone.ZoneName) could not be retrieved"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt
 				WriteHTMLLine 0 0 " "
 			}
 		}
@@ -6263,10 +7040,7 @@ Function ProcessLookupZoneDetails
 
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date): `t`tProcessing details for zone $($DNSZone.ZoneName)"
-	
-#	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $ComputerName -EA 0 | `
-#	Where-Object {!($_.hostname -like "_*" -or $_.hostname -eq "DomainDNSZones" -or $_.hostname -eq "ForestDNSZones")}	
+	Write-Verbose "$(Get-Date -Format G): `t`tProcessing details for zone $($DNSZone.ZoneName)"
 	
 	$ZoneDetails = Get-DNSServerResourceRecord -ZoneName $DNSZone.ZoneName -ComputerName $DNSServerName -EA 0
 
@@ -6282,12 +7056,12 @@ Function ProcessLookupZoneDetails
 			WriteWordLine 0 0 $txt
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 0 $txt
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 0 $txt
 			WriteHTMLLine 0 0 " "
@@ -6301,12 +7075,12 @@ Function ProcessLookupZoneDetails
 			WriteWordLine 0 0 $txt
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 0 $txt
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 0 $txt
 			WriteHTMLLine 0 0 " "
@@ -6323,11 +7097,11 @@ Function OutputLookupZoneDetails
 		$Selection.InsertNewPage()
 		WriteWordLine 3 0 "Resource Records"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
-		Line 1 "Resource Records"
+		Line 2 "Resource Records"
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 3 0 "Resource Records"
 	}
@@ -6336,7 +7110,7 @@ Function OutputLookupZoneDetails
 	{
 		[System.Collections.Hashtable[]] $WordTable = @();
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		$rowdata = @()
 	}
@@ -6407,42 +7181,42 @@ Function OutputLookupZoneDetails
 		$tmpType = ""
 		Switch ($Detail.RecordType)
 		{
-			"A"				{$tmpType = "HOST (A)"; break}
-			"AAAA"			{$tmpType = "IPv6 HOST (AAAA)"; break}
-			"AFSDB"			{$tmpType = "AFS Database (AFSDB)"; break}
-			"ATMA"			{$tmpType = "ATM Address (ATMA)"; break}
-			"CNAME"			{$tmpType = "Alias (CNAME)"; break}
-			"DHCID"			{$tmpType = "DHCID"; break}
-			"DNAME"			{$tmpType = "Domain Alias (DNAME)"; break}
-			"DNSKEY"		{$tmpType = "DNS KEY (DNSKEY)"; break}
-			"DS"			{$tmpType = "Delegation Signer (DS)"; break}
-			"HINFO"			{$tmpType = "Host Information (HINFO)"; break}
-			"ISDN"			{$tmpType = "ISDN"; break}
-			"KEY"			{$tmpType = "Public Key (KEY)"; break}
-			"MB"			{$tmpType = "Mailbox (MB)"; break}
-			"MG"			{$tmpType = "Mail Group (MG)"; break}
-			"MINFO"			{$tmpType = "Mailbox Information (MINFO)"; break}
-			"MR"			{$tmpType = "Renamed Mailbox (MR)"; break}
-			"MX"			{$tmpType = "Mail Exchanger (MX)"; break}
-			"NAPTR"			{$tmpType = "Naming Authority Pointer (NAPTR)"; break}
-			"NS"			{$tmpType = "Name Server (NS)"; break}
-			"NSEC"			{$tmpType = "Next Secure (NSEC)"; break}
-			"NSEC3"			{$tmpType = "Next Secure 3 (NSEC3)"; break}
-			"NSEC3PARAM"	{$tmpType = "Next Secure 3 Parameters (NSEC3PARAM)"; break}
-			"NXT"			{$tmpType = "Next Domain (NXT)"; break}
-			"PTR"			{$tmpType = "Pointer (PTR)"; break}
-			"RP"			{$tmpType = "Responsible Person (RP)"; break}
-			"RRSIG"			{$tmpType = "RR Signature (RRSIG)"; break}
-			"RT"			{$tmpType = "Route Through (RT)"; break}
-			"SIG"			{$tmpType = "Signature (SIG)"; break}
-			"SOA"			{$tmpType = "Start of Authority (SOA)"; break}
-			"SRV"			{$tmpType = "Service Location (SRV)"; break}
-			"TXT"			{$tmpType = "Text (TXT)"; break}
-			"WINS"			{$tmpType = "WINS Lookup"; break}
-			"WINSR"			{$tmpType = "WINS Reverse Lookup (WINS-R_"; break}
-			"WKS"			{$tmpType = "Well Known Services (WKS)"; break}
-			"X25"			{$tmpType = "X.25"; break}
-			Default 		{$tmpType = "Unable to determine Record Type: $($Detail.RecordType)"; break}
+			"A"				{$tmpType = "HOST (A)"; Break}
+			"AAAA"			{$tmpType = "IPv6 HOST (AAAA)"; Break}
+			"AFSDB"			{$tmpType = "AFS Database (AFSDB)"; Break}
+			"ATMA"			{$tmpType = "ATM Address (ATMA)"; Break}
+			"CNAME"			{$tmpType = "Alias (CNAME)"; Break}
+			"DHCID"			{$tmpType = "DHCID"; Break}
+			"DNAME"			{$tmpType = "Domain Alias (DNAME)"; Break}
+			"DNSKEY"		{$tmpType = "DNS KEY (DNSKEY)"; Break}
+			"DS"			{$tmpType = "Delegation Signer (DS)"; Break}
+			"HINFO"			{$tmpType = "Host Information (HINFO)"; Break}
+			"ISDN"			{$tmpType = "ISDN"; Break}
+			"KEY"			{$tmpType = "Public Key (KEY)"; Break}
+			"MB"			{$tmpType = "Mailbox (MB)"; Break}
+			"MG"			{$tmpType = "Mail Group (MG)"; Break}
+			"MINFO"			{$tmpType = "Mailbox Information (MINFO)"; Break}
+			"MR"			{$tmpType = "Renamed Mailbox (MR)"; Break}
+			"MX"			{$tmpType = "Mail Exchanger (MX)"; Break}
+			"NAPTR"			{$tmpType = "Naming Authority Pointer (NAPTR)"; Break}
+			"NS"			{$tmpType = "Name Server (NS)"; Break}
+			"NSEC"			{$tmpType = "Next Secure (NSEC)"; Break}
+			"NSEC3"			{$tmpType = "Next Secure 3 (NSEC3)"; Break}
+			"NSEC3PARAM"	{$tmpType = "Next Secure 3 Parameters (NSEC3PARAM)"; Break}
+			"NXT"			{$tmpType = "Next Domain (NXT)"; Break}
+			"PTR"			{$tmpType = "Pointer (PTR)"; Break}
+			"RP"			{$tmpType = "Responsible Person (RP)"; Break}
+			"RRSIG"			{$tmpType = "RR Signature (RRSIG)"; Break}
+			"RT"			{$tmpType = "Route Through (RT)"; Break}
+			"SIG"			{$tmpType = "Signature (SIG)"; Break}
+			"SOA"			{$tmpType = "Start of Authority (SOA)"; Break}
+			"SRV"			{$tmpType = "Service Location (SRV)"; Break}
+			"TXT"			{$tmpType = "Text (TXT)"; Break}
+			"WINS"			{$tmpType = "WINS Lookup"; Break}
+			"WINSR"			{$tmpType = "WINS Reverse Lookup (WINS-R_"; Break}
+			"WKS"			{$tmpType = "Well Known Services (WKS)"; Break}
+			"X25"			{$tmpType = "X.25"; Break}
+			Default 		{$tmpType = "Unable to determine Record Type: $($Detail.RecordType)"; Break}
 		}
 			
 		If($zType -eq "Reverse")	#V1.09 fixed from = to -eq
@@ -6544,13 +7318,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.CryptoAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; break}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; Break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; Break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; Break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; Break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; Break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; Break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; Break}
 			}
 			
 			$DetailData = "[$($Detail.RecordData.KeyFlags)][DNSSEC][$($Crypto)][$($Detail.RecordData.KeyTag)]"
@@ -6560,22 +7334,22 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.CryptoAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; break}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; Break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; Break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; Break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; Break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; Break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; Break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; Break}
 			}
 			
 			$DigestType = ""
 			Switch ($Detail.RecordData.DigestType)
 			{
-				"Sha1"		{$DigestType = "SHA-1"; break}
-				"Sha256"	{$DigestType = "SHA-256"; break}
-				"Sha384"	{$DigestType = "SHA-384"; break}
-				Default		{$DigestType = "Unknown DigestType: $($Detail.RecordData.DigestType)"; break}
+				"Sha1"		{$DigestType = "SHA-1"; Break}
+				"Sha256"	{$DigestType = "SHA-256"; Break}
+				"Sha384"	{$DigestType = "SHA-384"; Break}
+				Default		{$DigestType = "Unknown DigestType: $($Detail.RecordData.DigestType)"; Break}
 			}
 			$DetailData = "[$($Detail.RecordData.KeyTag)][$($DigestType)][$($Crypto)][$($Detail.RecordData.Digest)]"
 		}
@@ -6634,13 +7408,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.HashAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"; break}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; Break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; Break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; Break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; Break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; Break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; Break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"; Break}
 			}
 
 			$OptOut = "NO Opt-Out"
@@ -6666,13 +7440,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.HashAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"; break}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; Break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; Break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; Break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; Break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; Break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; Break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.HashAlgorithm)"; Break}
 			}
 			
 			$Timestamp = ""
@@ -6705,13 +7479,13 @@ Function OutputLookupZoneDetails
 			$Crypto = ""
 			Switch ($Detail.RecordData.CryptoAlgorithm) 
 			{
-				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; break}
-				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; break}
-				"RsaSha1"			{$Crypto = "RSA/SHA-1"; break}
-				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; break}
-				"RsaSha256"			{$Crypto = "RSA/SHA-256"; break}
-				"RsaSha512"			{$Crypto = "RSA/SHA-512"; break}
-				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; break}
+				"ECDsaP256Sha256"	{$Crypto = "ECDSAP256/SHA-256"; Break}
+				"ECDsaP384Sha384"	{$Crypto = "ECDSAP384/SHA-384"; Break}
+				"RsaSha1"			{$Crypto = "RSA/SHA-1"; Break}
+				"RsaSha1NSec3"		{$Crypto = "RSA/SHA-1 (NSEC)"; Break}
+				"RsaSha256"			{$Crypto = "RSA/SHA-256"; Break}
+				"RsaSha512"			{$Crypto = "RSA/SHA-512"; Break}
+				Default 			{$Crypto = "Unknown CryptoAlgorithm: $($Detail.RecordData.CryptoAlgorithm)"; Break}
 			}
 			
 			$InceptionDate = $Detail.RecordData.SignatureInception.ToUniversalTime().ToShortDateString()
@@ -6787,15 +7561,15 @@ Function OutputLookupZoneDetails
 			}
 			$WordTable += $WordTableRowHash;
 		}
-		ElseIf($Text)
+		If($Text)
 		{
-			Line 2 "Name`t`t: " $xHostName
-			Line 2 "Type`t`t: " $tmpType
-			Line 2 "Data`t`t: " $DetailData
-			Line 2 "Timestamp`t: " $TimeStamp
+			Line 3 "Name`t`t: " $xHostName
+			Line 3 "Type`t`t: " $tmpType
+			Line 3 "Data`t`t: " $DetailData
+			Line 3 "Timestamp`t: " $TimeStamp
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			$rowdata += @(,(
 			$xHostName,$htmlwhite,
@@ -6813,7 +7587,7 @@ Function OutputLookupZoneDetails
 		-Format $wdTableGrid `
 		-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table -Size 9
+		SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
 		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 		$Table.Columns.Item(1).Width = 105;
@@ -6826,7 +7600,7 @@ Function OutputLookupZoneDetails
 		FindWordDocumentEnd
 		$Table = $Null
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		$columnHeaders = @(
 		'Name',($htmlsilver -bor $htmlbold),
@@ -6850,7 +7624,7 @@ Function ProcessReverseLookupZones
 	
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date): Processing Reverse Lookup Zones"
+	Write-Verbose "$(Get-Date -Format G): Processing Reverse Lookup Zones"
 	
 	$txt = "Reverse Lookup Zones"
 	If($MSWord -or $PDF)
@@ -6858,12 +7632,11 @@ Function ProcessReverseLookupZones
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 $txt
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 $txt
-		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 $txt
 	}
@@ -6883,7 +7656,7 @@ Function ProcessReverseLookupZones
 		OutputLookupZone "Reverse" $DNSZone $DNSServerName
 		If($Details)
 		{
-			ProcessLookupZoneDetails "Reverse" $DNSZone
+			ProcessLookupZoneDetails "Reverse" $DNSZone $DNSServerName
 		}
 		$First = $False
 	}
@@ -6897,7 +7670,7 @@ Function ProcessTrustPoints
 	
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date): Processing Trust Points"
+	Write-Verbose "$(Get-Date -Format G): Processing Trust Points"
 	
 	$txt = "Trust Points"
 	If($MSWord -or $PDF)
@@ -6905,12 +7678,11 @@ Function ProcessTrustPoints
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 $txt
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 $txt
-		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 $txt
 	}
@@ -6952,13 +7724,13 @@ Function ProcessTrustPoints
 			WriteWordLine 0 0 $txt2
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 $txt1
 			Line 0 $txt2
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 3 0 $txt1
 			WriteHTMLLine 0 0 $txt2
@@ -6975,13 +7747,13 @@ Function ProcessTrustPoints
 			WriteWordLine 0 0 $txt2
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 $txt1
 			Line 0 $txt2
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 3 0 $txt1
 			WriteHTMLLine 0 0 $txt2
@@ -6994,7 +7766,7 @@ Function OutputTrustPoint
 {
 	Param([object] $Trust, [object] $Anchor)
 
-	Write-Verbose "$(Get-Date): `tProcessing $Trust.TrustPointName"
+	Write-Verbose "$(Get-Date -Format G): `tProcessing $($Trust.TrustPointName)"
 	
 	If($Anchor.TrustAnchorData.ZoneKey)
 	{
@@ -7016,11 +7788,13 @@ Function OutputTrustPoint
 		$SEP = "Selected"
 		Switch ($Anchor.TrustAnchorData.CryptoAlgorithm)
 		{	
-			"RsaSha1"		{$SEPAlgorithm = "RSA/SHA-1"; break}
-			"RsaSha1NSec3"	{$SEPAlgorithm = "RSA/SHA-1 (NSEC3)"; break}
-			"RsaSha256"		{$SEPAlgorithm = "RSA/SHA-256"; break}
-			"RsaSha512"		{$SEPAlgorithm = "RSA/SHA-512"; break}
-			Default 		{$SEPAlgorithm = "Unknown: Algorithm = $($Anchor.TrustAnchorData.CryptoAlgorithm)"; break}
+			"RsaSha1"			{$SEPAlgorithm = "RSA/SHA-1"; Break}
+			"RsaSha1NSec3"		{$SEPAlgorithm = "RSA/SHA-1 (NSEC3)"; Break}
+			"RsaSha256"			{$SEPAlgorithm = "RSA/SHA-256"; Break}
+			"RsaSha512"			{$SEPAlgorithm = "RSA/SHA-512"; Break}
+			"ECDsaP256Sha256"	{$SEPAlgorithm = "ECDSA256/SHA-256"; Break} #added in V2.00
+			"ECDsaP384Sha384"	{$SEPAlgorithm = "ECDSAP384/SHA-384"; Break} #added in V2.00
+			Default 			{$SEPAlgorithm = "Unknown: Algorithm = $($Anchor.TrustAnchorData.CryptoAlgorithm)"; Break}
 		}
 	}
 	Else
@@ -7041,8 +7815,11 @@ Function OutputTrustPoint
 		}
 		[System.Collections.Hashtable[]] $ScriptInformation = @()
 		$ScriptInformation += @{ Data = "Name"; Value = "(Same as parent folder)"; }
-		$ScriptInformation += @{ Data = "Status"; Value = $Trust.TrustPointState; }
-		#$ScriptInformation += @{ Data = "Type"; Value = "Can't find"; }
+		$ScriptInformation += @{ Data = "Status"; Value = $Trust.TrustPointState; } # added in V2.00
+		If( $Trust.PSObject.Properties[ 'TrustPointType' ] )
+		{
+			$ScriptInformation += @{ Data = "Type"; Value = $Trust.TrustPointType; }
+		}
 		$ScriptInformation += @{ Data = "Valid From"; Value = $Trust.LastActiveRefreshTime; }
 		$ScriptInformation += @{ Data = "Valid To"; Value = $Trust.NextActiveRefreshTime; }
 		$ScriptInformation += @{ Data = "Fully qualified domain name (FQDN)"; Value = $Trust.TrustPointName; }
@@ -7052,7 +7829,7 @@ Function OutputTrustPoint
 		$ScriptInformation += @{ Data = "Secure Entry Point"; Value = $SEP; }
 		$ScriptInformation += @{ Data = "Algorithm"; Value = $SEPAlgorithm; }
 		#$ScriptInformation += @{ Data = "Delete this record when it becomes stale"; Value = "Can't find"; }
-		#$ScriptInformation += @{ Data = "Record time stamp"; Value = "Can't find"; }
+		#$ScriptInformation += @{ Data = "Record Timestamp"; Value = "Can't find"; }
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -7070,32 +7847,35 @@ Function OutputTrustPoint
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		If($Trust.TrustPointName -eq ".")
 		{
-			Line 0 "$($Trust.TrustPointName)(root) Properties"
+			Line 1 "$($Trust.TrustPointName)(root) Properties"
 		}
 		Else
 		{
-			Line 0 "$($Trust.TrustPointName) Properties"
+			Line 1 "$($Trust.TrustPointName) Properties"
 		}
-		Line 1 "Name`t`t`t`t`t`t: (Same as parent folder)"
-		Line 1 "Status`t`t`t`t`t`t: " $Trust.TrustPointState
-		#Line 1 "Type`t`t`t`t`t`t: " "Can't find"
-		Line 1 "Valid From`t`t`t`t`t: " $Trust.LastActiveRefreshTime
-		Line 1 "Valid To`t`t`t`t`t: " $Trust.NextActiveRefreshTime
-		Line 1 "Fully qualified domain name (FQDN)`t`t: " $Trust.TrustPointName
-		Line 1 "Key Tag`t`t`t`t`t`t: " $Anchor.TrustAnchorData.KeyTag
-		Line 1 "Zone Key`t`t`t`t`t: " $ZoneKey
-		Line 1 "Protocol`t`t`t`t`t: " $KeyProtocol
-		Line 1 "Secure Entry Point`t`t`t`t: " $SEP
-		Line 1 "Algorithm`t`t`t`t`t: " $SEPAlgorithm
-		#Line 1 "Delete this record when it becomes stale`t: " "Can't find"
-		#Line 1 "Record time stamp`t`t`t`t: " "Can't find"
+		Line 2 "Name`t`t`t`t`t`t: (Same as parent folder)"
+		Line 2 "Status`t`t`t`t`t`t: " $Trust.TrustPointState
+		If( $Trust.PSObject.Properties[ 'TrustPointType' ] )
+		{
+			Line 2 "Type`t`t`t`t`t`t: " $Trust.TrustPointType # added in V2.00
+		}
+		Line 2 "Valid From`t`t`t`t`t: " $Trust.LastActiveRefreshTime
+		Line 2 "Valid To`t`t`t`t`t: " $Trust.NextActiveRefreshTime
+		Line 2 "Fully qualified domain name (FQDN)`t`t: " $Trust.TrustPointName
+		Line 2 "Key Tag`t`t`t`t`t`t: " $Anchor.TrustAnchorData.KeyTag
+		Line 2 "Zone Key`t`t`t`t`t: " $ZoneKey
+		Line 2 "Protocol`t`t`t`t`t: " $KeyProtocol
+		Line 2 "Secure Entry Point`t`t`t`t: " $SEP
+		Line 2 "Algorithm`t`t`t`t`t: " $SEPAlgorithm
+		#Line 2 "Delete this record when it becomes stale`t: " "Can't find"
+		#Line 2 "Record Timestamp`t`t`t`t: " "Can't find"
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		If($Trust.TrustPointName -eq ".")
 		{
@@ -7108,7 +7888,10 @@ Function OutputTrustPoint
 		$rowdata = @()
 		$columnHeaders = @("Name",($htmlsilver -bor $htmlbold),"(Same as parent folder)",$htmlwhite)
 		$rowdata += @(,('Status',($htmlsilver -bor $htmlbold),$Trust.TrustPointState,$htmlwhite))
-		#$rowdata += @(,('Type',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
+		If( $Trust.PSObject.Properties[ 'TrustPointType' ] )
+		{
+			$rowdata += @(,('Type',($htmlsilver -bor $htmlbold),$Trust.TrustPointType,$htmlwhite)) # added in V2.00
+		}
 		$rowdata += @(,('Valid From',($htmlsilver -bor $htmlbold),$Trust.LastActiveRefreshTime,$htmlwhite))
 		$rowdata += @(,('Valid To',($htmlsilver -bor $htmlbold),$Trust.NextActiveRefreshTime,$htmlwhite))
 		$rowdata += @(,('Fully qualified domain name (FQDN)',($htmlsilver -bor $htmlbold),$Trust.TrustPointName,$htmlwhite))
@@ -7118,7 +7901,7 @@ Function OutputTrustPoint
 		$rowdata += @(,('Secure Entry Point',($htmlsilver -bor $htmlbold),$SEP,$htmlwhite))
 		$rowdata += @(,('Algorithm',($htmlsilver -bor $htmlbold),$SEPAlgorithm,$htmlwhite))
 		#$rowdata += @(,('Delete this record when it becomes stale',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
-		#$rowdata += @(,('Record time stamp',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
+		#$rowdata += @(,('Record Timestamp',($htmlsilver -bor $htmlbold),"Can't find",$htmlwhite))
 
 		$msg = ""
 		$columnWidths = @("200","200")
@@ -7131,7 +7914,7 @@ Function OutputTrustPoint
 #region ProcessConditionalForwarders
 Function ProcessConditionalForwarders
 {
-	Write-Verbose "$(Get-Date): Processing Conditional Forwarders"
+	Write-Verbose "$(Get-Date -Format G): Processing Conditional Forwarders"
 	
 	$txt = "Conditional Forwarders"
 	If($MSWord -or $PDF)
@@ -7139,12 +7922,11 @@ Function ProcessConditionalForwarders
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 $txt
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 $txt
-		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 $txt
 	}
@@ -7169,46 +7951,38 @@ Function ProcessConditionalForwarders
 	}
 	ElseIf($? -and $Null -eq $DNSZones)
 	{
-		$txt1 = "Conditional Forwarders"
 		$txt2 = "There is no Conditional Forwarders data"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 3 0 $txt1
 			WriteWordLine 0 0 $txt2
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
-			Line 1 $txt1
 			Line 0 $txt2
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
-			WriteHTMLLine 3 0 $txt1
 			WriteHTMLLine 0 0 $txt2
 			WriteHTMLLine 0 0 " "
 		}
 	}
 	Else
 	{
-		$txt1 = "Conditional Forwarders"
 		$txt2 = "Conditional Forwarders data could not be retrieved"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 3 0 $txt1
 			WriteWordLine 0 0 $txt2
 			WriteWordLine 0 0 ""
 		}
-		ElseIf($Text)
+		If($Text)
 		{
-			Line 1 $txt1
 			Line 0 $txt2
 			Line 0 ""
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
-			WriteHTMLLine 3 0 $txt1
 			WriteHTMLLine 0 0 $txt2
 			WriteHTMLLine 0 0 " "
 		}
@@ -7219,17 +7993,17 @@ Function OutputConditionalForwarder
 {
 	Param([object] $DNSZone)
 
-	Write-Verbose "$(Get-Date): `tProcessing $($DNSZone.ZoneName)"
+	Write-Verbose "$(Get-Date -Format G): `tProcessing $($DNSZone.ZoneName)"
 	
 	#General tab
-	Write-Verbose "$(Get-Date): `t`tGeneral"
+	Write-Verbose "$(Get-Date -Format G): `t`tGeneral"
 	Switch ($DNSZone.ReplicationScope)
 	{
-		"Forest" {$Replication = "All DNS servers in this forest"; break}
-		"Domain" {$Replication = "All DNS servers in this domain"; break}
-		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"; break}
-		"None" {$Replication = "Not an Active-Directory-Integrated zone"; break}
-		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"; break}
+		"Forest" {$Replication = "All DNS servers in this forest"; Break}
+		"Domain" {$Replication = "All DNS servers in this domain"; Break}
+		"Legacy" {$Replication = "All domain controllers in this domain (for Windows 2000 compatibility"; Break}
+		"None" {$Replication = "Not an Active-Directory-Integrated zone"; Break}
+		Default {$Replication = "Unknown: $($DNSZone.ReplicationScope)"; Break}
 	}
 	
 	$IPAddresses = $DNSZone.MasterServers
@@ -7259,13 +8033,52 @@ Function OutputConditionalForwarder
 		FindWordDocumentEnd
 		$Table = $Null
 		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 1 "$($DNSZone.ZoneName) Properties"
+		Line 2 "General"
+		Line 3 "Type`t`t`t`t`t`t: " "Conditional Forwarder"
+		Line 3 "Replication`t`t`t`t`t: " $Replication
+		Line 3 "# of seconds before forward queries time out`t: " $DNSZone.ForwarderTimeout
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 2 0 "$($DNSZone.ZoneName) Properties"
+		WriteHTMLLine 3 0 "General"
+		$rowdata = @()
+		$columnheaders = @('Type',($htmlsilver -bor $htmlbold),"Conditional Forwarder",$htmlwhite)
+		$rowdata += @(,('Replication',($htmlsilver -bor $htmlbold),$Replication,$htmlwhite))
+		$rowdata += @(,('Number of seconds before forward queries time out',($htmlsilver -bor $htmlbold),$DNSZone.ForwarderTimeout,$htmlwhite))
 
+		$msg = ""
+		$columnWidths = @("200","200")
+		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
+		WriteHTMLLine 0 0 " "
+	}
+
+	If($MSWord -or $PDF)
+	{
 		WriteWordLine 3 0 "Master Servers"
 		[System.Collections.Hashtable[]] $NSWordTable = @();
-		ForEach($ip in $IPAddresses)
+	}
+	If($Text)
+	{
+		Line 2 "Master Servers:"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 3 0 "Master Servers"
+		$rowdata = @()
+	}
+
+	ForEach($ip in $IPAddresses)
+	{
+		$Resolved = ResolveIPtoFQDN $IP
+		
+		If($MSWord -or $PDF)
 		{
-			$Resolved = ResolveIPtoFQDN $IP
-			
 			$WordTableRowHash = @{ 
 			IPAddress = $IP;
 			ServerFQDN = $Resolved;
@@ -7273,6 +8086,22 @@ Function OutputConditionalForwarder
 
 			$NSWordTable += $WordTableRowHash;
 		}
+		If($Text)
+		{
+			Line 3 "Server FQDN`t`t`t`t`t: " $Resolved
+			Line 3 "IP Address`t`t`t`t`t: " $ip.IPAddressToString
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			$rowdata += @(,(
+			$Resolved,$htmlwhite,
+			$IP,$htmlwhite))
+		}
+	}
+
+	If($MSWord -or $PDF)
+	{
 		$Table = AddWordTable -Hashtable $NSWordTable `
 		-Columns ServerFQDN, IPAddress `
 		-Headers "Server FQDN", "IP Address" `
@@ -7290,48 +8119,8 @@ Function OutputConditionalForwarder
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($Text)
+	If($HTML)
 	{
-		Line 0 "$($DNSZone.ZoneName) Properties"
-		Line 1 "General"
-		Line 2 "Type`t`t`t`t`t`t: " "Conditional Forwarder"
-		Line 2 "Replication`t`t`t`t`t: " $Replication
-		Line 2 "# of seconds before forward queries time out`t: " $DNSZone.ForwarderTimeout
-		Line 0 ""
-
-		Line 1 "Master Servers:"
-		ForEach($ip in $IPAddresses)
-		{
-			$Resolved = ResolveIPtoFQDN $IP.IPAddressToString
-			
-   			Line 2 "Server FQDN`t`t`t`t`t: " $Resolved
-			Line 2 "IP Address`t`t`t`t`t: " $ip.IPAddressToString
-			Line 0 ""
-		}
-	}
-	ElseIf($HTML)
-	{
-		WriteHTMLLine 2 0 "$($DNSZone.ZoneName) Properties"
-		WriteHTMLLine 3 0 "General"
-		$rowdata = @()
-		$columnheaders = @('Type',($htmlsilver -bor $htmlbold),"Conditional Forwarder",$htmlwhite)
-		$rowdata += @(,('Replication',($htmlsilver -bor $htmlbold),$Replication,$htmlwhite))
-		$rowdata += @(,('Number of seconds before forward queries time out',($htmlsilver -bor $htmlbold),$DNSZone.ForwarderTimeout,$htmlwhite))
-
-		$msg = ""
-		$columnWidths = @("200","200")
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "400"
-		WriteHTMLLine 0 0 " "
-
-		WriteHTMLLine 3 0 "Master Servers"
-		$rowdata = @()
-		ForEach($ip in $IPAddresses)
-		{
-			$Resolved = ResolveIPtoFQDN $IP
-			$rowdata += @(,(
-			$Resolved,$htmlwhite,
-			$IP,$htmlwhite))
-		}
 		$columnHeaders = @(
 		'Server FQDN',($htmlsilver -bor $htmlbold),
 		'IP Address',($htmlsilver -bor $htmlbold))
@@ -7344,6 +8133,523 @@ Function OutputConditionalForwarder
 }
 #endregion
 
+#region AppendixA
+Function ProcessAppendixA
+{
+	Write-Verbose "$(Get-Date -Format G): `tProcessing DNS Server Forwarders"
+	ForEach($DNSServer in $Script:DNSServerNames)
+	{
+		$Forwarders = Get-DNSServerForwarder -ComputerName $DNSServer -EA 0
+
+		If($? -and $null -ne $Forwarders)
+		{
+			ForEach($Forwarder in $Forwarders)
+			{
+				ForEach($Item in $Forwarder.IPAddress)
+				{
+					$obj1 = [PSCustomObject] @{
+						ComputerName = $DNSServer
+						DNSForwarder = $Item.IPAddressToString
+					}
+					$null = $Script:DNSForwarders.Add($obj1)
+				}
+			}
+		}
+		ElseIf($? -and $null -eq $Forwarders)
+		{
+			$txt2 = "There is no DNS Forwarders data for Server $DNSServer"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt2
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt2
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt2
+				WriteHTMLLine 0 0 " "
+			}
+		}
+		Else
+		{
+			$txt2 = "Unable to retrieve DNS Forwarders data for Server $DNSServer"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt2
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt2
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt2
+				WriteHTMLLine 0 0 " "
+			}
+		}
+	}
+
+	Write-Verbose "$(Get-Date -Format G): `tProcessing Zone Configuration"
+	ForEach($DNSServer in $Script:DNSServerNames)
+	{
+		$Zones = Get-DNSServerZone -ComputerName $DNSServer -EA 0
+
+		If($? -and $null -ne $Zones)
+		{
+			ForEach($Zone in $Zones)
+			{
+				$results = Get-DnsServerZoneAging -Name $Zone.ZoneName -ComputerName $DNSServer -EA 0
+				
+				If($? -and $null -ne $results)
+				{
+					$AgingEnabled      = $results.AgingEnabled.ToString()
+					$RefreshInterval   = $results.RefreshInterval.ToString()
+					$NoRefreshInterval = $results.NoRefreshInterval.ToString()
+					If($Null -ne $results.ScavengeServers)
+					{
+						$ScavengeServers = $results.ScavengeServers.ToString()
+					}
+					ElseIf($Zone.IsAutoCreated -eq $True)
+					{
+						$ScavengeServers = "N/A"
+					}
+					Else
+					{
+						$ScavengeServers = "Not Configured"
+					}
+				}
+				Else
+				{
+					$AgingEnabled      = "N/A"
+					$RefreshInterval   = "N/A"
+					$NoRefreshInterval = "N/A"
+					$ScavengeServers   = "N/A"
+				}
+				
+				$obj1 = [PSCustomObject] @{
+					ComputerName      = $DNSServer
+					ZoneName          = $Zone.ZoneName
+					ZoneType          = $Zone.ZoneType
+					IsDsIntegrated    = $Zone.IsDsIntegrated.ToString()
+					IsSigned          = $Zone.IsSigned.ToString()
+					DynamicUpdate     = $Zone.DynamicUpdate
+					ReplicationScope  = $Zone.ReplicationScope
+					AgingEnabled      = $AgingEnabled     
+					RefreshInterval   = $RefreshInterval  
+					NoRefreshInterval = $NoRefreshInterval
+					ScavengeServers   = $ScavengeServers
+				}
+				$null = $Script:DNSZones.Add($obj1)
+			}
+		}
+		ElseIf($? -and $null -eq $Zones)
+		{
+			#we shouldn't be here
+			$txt2 = "There is no DNS Zones data for Server $DNSServer"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt2
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt2
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt2
+				WriteHTMLLine 0 0 " "
+			}
+		}
+		Else
+		{
+			$txt2 = "Unable to retrieve DNS Zone data for Server $DNSServer"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 $txt2
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 0 $txt2
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 $txt2
+				WriteHTMLLine 0 0 " "
+			}
+		}
+	}
+
+}
+
+Function OutputAppendixA
+{
+	Write-Verbose "$(Get-Date -Format G): `tCreating Appendix A"
+	
+	$Script:DNSZones = $Script:DNSZones | Sort-Object ZoneName,ComputerName
+	
+	If($MSWord -or $PDF)
+	{
+		$selection.InsertNewPage()
+		WriteWordLine 1 0 "Appendix A - DNS Server Configuration Items"
+		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 0 "Appendix A - DNS Server Configuration Items"
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 1 0 "Appendix A - DNS Server Configuration Items"
+	}
+	
+	If($Script:DNSForwarders.Count -gt 0)
+	{
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput Server DNS Forwarders"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 2 0 "Forwarders"
+			$Save = ""
+			$First = $True
+			$AppendixWordTable = @()
+			ForEach($Item in $Script:DNSForwarders)
+			{
+				If(!$First -and $Save -ne "$($Item.ComputerName)")
+				{
+					$AppendixWordTable += @{ 
+					ComputerName = "";
+					Forwarder = "";
+					}
+				}
+
+				$AppendixWordTable += @{ 
+				ComputerName = $Item.ComputerName;
+				Forwarder = $Item.DNSForwarder
+				}
+				
+				$Save = "$($Item.ComputerName)"
+				If($First)
+				{
+					$First = $False
+				}
+			}
+			
+			$Table = AddWordTable -Hashtable $AppendixWordTable `
+			-Columns ComputerName, Forwarder `
+			-Headers "Computer Name", "Forwarders" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitContent;
+
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
+		If($Text)
+		{
+			Line 1 "Forwarders"
+			Line 2 "Computer Name                  Forwarders     " 
+			Line 2 "=============================================="
+			#       123456789012345678901234567890S123456789012345
+			#                                      255.255.255.255
+			$Save = ""
+			$First = $True
+			ForEach($Item in $Script:DNSForwarders)
+			{
+				If(!$First -and $Save -ne "$($Item.ComputerName)")
+				{
+					Line 0 ""
+				}
+
+				Line 2 ( "{0,-30} {1,-15}" -f `
+				$Item.ComputerName, $Item.DNSForwarder )
+				
+				$Save = "$($Item.ComputerName)"
+				If($First)
+				{
+					$First = $False
+				}
+			}
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 2 0 "Forwarders"
+			$Save = ""
+			$First = $True
+			$rowdata = @()
+			ForEach($Item in $Script:DNSForwarders)
+			{
+				If(!$First -and $Save -ne "$($Item.ComputerName)")
+				{
+					$rowdata += @(,(
+					"",$htmlwhite))
+				}
+
+				$rowdata += @(,(
+				$Item.ComputerName,$htmlwhite,
+				$Item.DNSForwarder,$htmlwhite))
+				
+				$Save = "$($Item.ComputerName)"
+				If($First)
+				{
+					$First = $False
+				}
+			}
+			$columnHeaders = @(
+			'Computer Name',($global:htmlsb),
+			'Forwarders',($global:htmlsb))
+
+			$msg = ""
+			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
+			WriteHTMLLine 0 0 ""
+		}
+	}
+	Else
+	{
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No DNS Forwarders found"
+		}
+		If($Text)
+		{
+			Line 0 "No DNS Forwarders found"
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No DNS Forwarders found"
+		}
+	}
+
+	If($Script:DNSZones.Count -gt 0)
+	{
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput Zone Configuration"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 2 0 "Zone Configuration Part 1"
+			$Save = ""
+			$First = $True
+			$AppendixWordTable = @()
+			ForEach($Item in $Script:DNSZones)
+			{
+				If(!$First -and $Save -ne "$($Item.ZoneName)")
+				{
+					$AppendixWordTable += @{ 
+						ComputerName     = "";
+						ZoneName         = "";
+						ZoneType         = "";
+						IsDsIntegrated   = "";
+						IsSigned         = "";
+						DynamicUpdate    = "";
+						ReplicationScope = "";
+					}
+				}
+
+				$AppendixWordTable += @{ 
+					ComputerName     = $Item.ComputerName;
+					ZoneName         = $Item.ZoneName;
+					ZoneType         = $Item.ZoneType;
+					IsDsIntegrated   = $Item.IsDsIntegrated;
+					IsSigned         = $Item.IsSigned;
+					DynamicUpdate    = $Item.DynamicUpdate;
+					ReplicationScope = $Item.ReplicationScope
+				}
+				
+				$Save = "$($Item.ZoneName)"
+				If($First)
+				{
+					$First = $False
+				}
+			}
+			
+			$Table = AddWordTable -Hashtable $AppendixWordTable `
+			-Columns ZoneName, ComputerName, ZoneType, IsDsIntegrated, IsSigned, DynamicUpdate, ReplicationScope `
+			-Headers "Zone Name", "Computer Name", "Zone Type", "AD Integrated", "Signed", "Dynamic Update", "Replication Scope" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitContent;
+
+			SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+
+			WriteWordLine 2 0 "Zone Configuration Part 2"
+			$Save = ""
+			$First = $True
+			$AppendixWordTable = @()
+			ForEach($Item in $Script:DNSZones)
+			{
+				If(!$First -and $Save -ne "$($Item.ZoneName)")
+				{
+					$AppendixWordTable += @{ 
+						ComputerName      = "";
+						ZoneName          = "";
+						AgingEnabled      = "";
+						RefreshInterval   = "";
+						NoRefreshInterval = "";
+						ScavengeServers   = "";
+					}
+				}
+
+				$AppendixWordTable += @{ 
+					ComputerName      = $Item.ComputerName;
+					ZoneName          = $Item.ZoneName;
+					AgingEnabled      = $Item.AgingEnabled;
+					RefreshInterval   = $Item.RefreshInterval;
+					NoRefreshInterval = $Item.NoRefreshInterval;
+					ScavengeServers   = $Item.ScavengeServers;
+				}
+				
+				$Save = "$($Item.ZoneName)"
+				If($First)
+				{
+					$First = $False
+				}
+			}
+			
+			$Table = AddWordTable -Hashtable $AppendixWordTable `
+			-Columns ZoneName, ComputerName, AgingEnabled, RefreshInterval, NoRefreshInterval, ScavengeServers `
+			-Headers "Zone Name", "Computer Name", "Aging Enabled", "Refresh Interval", "NoRefresh Interval", "Scavenge Servers" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitContent;
+
+			SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+			FindWordDocumentEnd
+			$Table = $Null
+		}
+		If($Text)
+		{
+			Line 1 "Zone Configuration"
+			Line 0 ""
+			Line 2 "Zone Name                      Computer Name                  Zone Type  AD         Signed Dynamic            Replication Aging    Refresh     NoRefresh   Scavenge       " 
+			Line 2 "                                                                         Integrated        Update             Scope       Enabled  Interval    Interval    Servers        "
+			Line 2 "=========================================================================================================================================================================="
+			#       123456789012345678901234567890S123456789012345678901234567890S1234567890S1234567890S123456S123456789012345678S12345678901S1234567SS12345678901S12345678901S123456789012345
+			#                                                                     Secondary  False      False  NonsecureAndSecure Forest      False    99:99:99:99 99:99:99:99 255.255.255.255
+			#       0                              1                              2          3          4      5                  6           7           8           9        10
+			$Save = ""
+			$First = $True
+			ForEach($Item in $Script:DNSZones)
+			{
+				If(!$First -and $Save -ne "$($Item.ZoneName)")
+				{
+					Line 0 ""
+				}
+
+				Line 2 ( "{0,-30} {1,-30} {2,-10} {3,-10} {4,-6} {5,-18} {6,-11} {7,-7}  {8,-11} {9,-11} {10, -15}" -f `
+				$Item.ZoneName,
+				$Item.ComputerName, 
+				$Item.ZoneType,
+				$Item.IsDsIntegrated,
+				$Item.IsSigned,
+				$Item.DynamicUpdate,
+				$Item.ReplicationScope,
+				$Item.AgingEnabled,
+				$Item.RefreshInterval,
+				$Item.NoRefreshInterval,
+				$Item.ScavengeServers
+				)
+				
+				$Save = "$($Item.ZoneName)"
+				If($First)
+				{
+					$First = $False
+				}
+			}
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 2 0 "Zone Configuration"
+			$Save = ""
+			$First = $True
+			$rowdata = @()
+			ForEach($Item in $Script:DNSZones)
+			{
+				If(!$First -and $Save -ne "$($Item.ZoneName)")
+				{
+					$rowdata += @(,(
+					"",$htmlwhite))
+				}
+
+				$rowdata += @(,(
+				$Item.ZoneName,$htmlwhite,
+				$Item.ComputerName,$htmlwhite,
+				$Item.ZoneType,$htmlwhite,
+				$Item.IsDsIntegrated,$htmlwhite,
+				$Item.IsSigned,$htmlwhite,
+				$Item.DynamicUpdate,$htmlwhite,
+				$Item.ReplicationScope,$htmlwhite,
+				$Item.AgingEnabled,$htmlwhite,
+				$Item.RefreshInterval,$htmlwhite,
+				$Item.NoRefreshInterval,$htmlwhite,
+				$Item.ScavengeServers))
+				
+				$Save = "$($Item.ZoneName)"
+				If($First)
+				{
+					$First = $False
+				}
+			}
+			$columnHeaders = @(
+			'Zone Name',($global:htmlsb),
+			'Computer Name',($global:htmlsb),
+			'Zone Type',($global:htmlsb),
+			'AD Integrated',($global:htmlsb),
+			'Signed',($global:htmlsb),
+			'Dynamic Update',($global:htmlsb),
+			'Replication Scope',($global:htmlsb),
+			'Aging Enabled',($global:htmlsb),
+			'Refresh Interval',($global:htmlsb),
+			'NoRefresh Interval',($global:htmlsb),
+			'Scavenge Servers',($global:htmlsb))
+
+			$msg = ""
+			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
+		}
+	}
+	Else
+	{
+		#we should never get here
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No DNS Zones found"
+		}
+		If($Text)
+		{
+			Line 0 "No DNS Zones found"
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No DNS Zones found"
+		}
+	}
+}
+
+#endregion
+
 #region script core
 #Script begins
 
@@ -7352,13 +8658,13 @@ ProcessScriptStart
 #V1.20, add support for the AllDNSServers parameter
 If($AllDNSServers -eq $False)
 {
-	[string]$Script:Title = "$($Script:RptDomain)_DNS"
-	SetFileName1andFileName2 "$($Script:RptDomain)_DNS"
+	[string]$Script:Title = "DNS Inventory Report for Server $ComputerName for the Domain $Script:RptDomain"
+	SetFileNames "DNS Inventory Report for Server $ComputerName for the Domain $Script:RptDomain"
 }
 Else
 {
-	[string]$Script:Title = "DNS Inventory Report for All DNS Servers"
-	SetFileName1andFileName2 "DNS Inventory for All DNS Servers"
+	[string]$Script:Title = "DNS Inventory Report for All DNS Servers for the Domain $Script:RptDomain"
+	SetFileNames "DNS Inventory for All DNS Servers for the Domain $Script:RptDomain"
 }
 
 ForEach($DNSServer in $Script:DNSServerNames)
@@ -7373,13 +8679,28 @@ ForEach($DNSServer in $Script:DNSServerNames)
 
 	ProcessConditionalForwarders $DNSServer
 }
+
+If($AllDNSServers -eq $True)
+{
+	#aded in V2.00
+	Write-Verbose "$(Get-Date -Format G): Processing Appendix A"
+	
+	$Script:DNSForwarders = New-Object System.Collections.ArrayList 
+	$Script:DNSZones      = New-Object System.Collections.ArrayList 
+	$Script:DNSScavening  = New-Object System.Collections.ArrayList 
+
+	ProcessAppendixA
+	OutputAppendixA
+	Write-Verbose "$(Get-Date -Format G): Finished Appendix A"
+	Write-Verbose "$(Get-Date -Format G): "
+}
 #endregion
 
 #region finish script
-Write-Verbose "$(Get-Date): Finishing up document"
+Write-Verbose "$(Get-Date -Format G): Finishing up document"
 #end of document processing
 
-$AbstractTitle = "Microsoft DNS Inventory Report"
+$AbstractTitle = "DNS Inventory Report"
 $SubjectTitle = "DNS Inventory Report"
 
 UpdateDocumentProperties $AbstractTitle $SubjectTitle
