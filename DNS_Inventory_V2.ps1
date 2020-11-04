@@ -8682,6 +8682,7 @@ ForEach($DNSServer in $Script:DNSServerNames)
 
 If($AllDNSServers -eq $True)
 {
+	#aded in V2.00
 	Write-Verbose "$(Get-Date -Format G): Processing Appendix A"
 	
 	$Script:DNSForwarders = New-Object System.Collections.ArrayList 
