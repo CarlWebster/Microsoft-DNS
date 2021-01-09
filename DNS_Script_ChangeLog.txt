@@ -5,6 +5,12 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 2.03 9-Jan-2021
+#	Fixed issue with invalid name servers not highlighting in red
+#	Reordered parameters in an order recommended by Guy Leech
+#	Updated help text
+#	Updated ReadMe file
+
 #Version 2.00 4-Nov-2020
 #	Added an Appendix A to give an overview of Several DNS server and zone configuration Items when using -AllDNSServers:
 #		DNS Forwarders

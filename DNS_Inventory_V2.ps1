@@ -45,21 +45,73 @@
 
 	To run the script from a workstation, RSAT is required.
 	
-	Remote Server Administration Tools for Windows 7 with Service Pack 1 (SP1)
-		http://www.microsoft.com/en-us/download/details.aspx?id=7887
-		
 	Remote Server Administration Tools for Windows 8 
-		http://www.microsoft.com/en-us/download/details.aspx?id=28972
+		https://carlwebster.sharefile.com/d-s791075d451fc415ca83ec8958b385a95
 		
 	Remote Server Administration Tools for Windows 8.1 
-		http://www.microsoft.com/en-us/download/details.aspx?id=39296
+		https://carlwebster.sharefile.com/d-s37209afb73dc48f497745924ed854226
 		
 	Remote Server Administration Tools for Windows 10
 		http://www.microsoft.com/en-us/download/details.aspx?id=45520
 		
+.PARAMETER ComputerName
+	Specifies a computer used to run the script against.
+	ComputerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
+	If entered as localhost, the actual computer name is determined and used.
+	If entered as an IP address, an attempt is made to determine and use the actual 
+	computer name.
+	
+	Default is localhost.
+	
+	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
+.PARAMETER AllDNSServers
+	The script will process all AD DNS servers that are online.
+	"DNS Inventory Report for All DNS Servers for the Domain <domain>" is used for the 
+	report title.
+	This parameter is disabled by default.
+	
+	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
+	This parameter has an alias of ALL.
+.PARAMETER Details
+	Include Resource Record data for both Forward and Reverse lookup zones.
+	
+	Using this parameter can create an extremely large report.
+	
+	Default is to not include Resource Record information.
 .PARAMETER HTML
 	Creates an HTML file with an .html extension.
 	This parameter is set True if no other output format is selected.
+.PARAMETER Text
+	Creates a formatted text file with a .txt extension.
+	This parameter is disabled by default.
+.PARAMETER AddDateTime
+	Adds a date Timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
+	June 1, 2021 at 6PM is 2021-06-01_1800.
+	The output filename will be either:
+		DNS Inventory Report for Server <server> for the Domain 
+		<domain>_2021-06-01_1800.html (or .txt or .docx or .pdf)
+		DNS Inventory for All DNS Servers for the Domain 
+		<domain>_2021-06-01_1800.html (or .txt or .docx or .pdf)
+	This parameter is disabled by default.
+.PARAMETER Dev
+	Clears errors at the beginning of the script.
+	Outputs all errors to a text file at the end of the script.
+	
+	This is used when the script developer requests more troubleshooting data.
+	The text file is placed in the same folder from where the script runs.
+	
+	This parameter is disabled by default.
+.PARAMETER Folder
+	Specifies the optional output folder to save the output report. 
+.PARAMETER Log
+	Generates a log file for troubleshooting.
+.PARAMETER ScriptInfo
+	Outputs information about the script to a text file.
+	The text file is placed in the same folder from where the script runs.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of SI.
 .PARAMETER MSWord
 	SaveAs DOCX file
 	This parameter is disabled by default.
@@ -69,27 +121,6 @@
 	The PDF file is roughly 5X to 10X larger than the DOCX file.
 	This parameter requires Microsoft Word to be installed.
 	This parameter uses the Word SaveAs PDF capability.
-.PARAMETER Text
-	Creates a formatted text file with a .txt extension.
-	This parameter is disabled by default.
-.PARAMETER AddDateTime
-	Adds a date Timestamp to the end of the file name.
-	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2020 at 6PM is 2020-06-01_1800.
-	The output filename will be either:
-		DNS Inventory Report for Server <server> for the Domain 
-		<domain>_2020-06-01_1800.html (or .txt or .docx or .pdf)
-		DNS Inventory for All DNS Servers for the Domain 
-		<domain>_2020-06-01_1800.html (or .txt or .docx or .pdf)
-	This parameter is disabled by default.
-.PARAMETER AllDNSServers
-	The script will process all AD DNS servers that are online.
-	"DNS Inventory Report for All DNS Servers for the Domain <domain>" is used for the 
-	report title.
-	This parameter is disabled by default.
-	
-	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
-	This parameter has an alias of ALL.
 .PARAMETER CompanyAddress
 	Company Address used for the Cover Page, if the Cover Page has the Address field.
 	
@@ -141,16 +172,6 @@
 	
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CPh.
-.PARAMETER ComputerName
-	Specifies a computer used to run the script against.
-	ComputerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
-	If entered as localhost, the actual computer name is determined and used.
-	If entered as an IP address, an attempt is made to determine and use the actual 
-	computer name.
-	
-	Default is localhost.
-	
-	If both ComputerName and AllDNSServers are used, AllDNSServers is used.
 .PARAMETER CoverPage
 	What Microsoft Word Cover Page to use.
 	Only Word 2010, 2013 and 2016 are supported.
@@ -199,30 +220,6 @@
 	Default value is Sideline.
 	This parameter has an alias of CP.
 	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER Details
-	Include Resource Record data for both Forward and Reverse lookup zones.
-	
-	Using this parameter can create an extremely large report.
-	
-	Default is to not include Resource Record information.
-.PARAMETER Dev
-	Clears errors at the beginning of the script.
-	Outputs all errors to a text file at the end of the script.
-	
-	This is used when the script developer requests more troubleshooting data.
-	The text file is placed in the same folder from where the script runs.
-	
-	This parameter is disabled by default.
-.PARAMETER Folder
-	Specifies the optional output folder to save the output report. 
-.PARAMETER Log
-	Generates a log file for troubleshooting.
-.PARAMETER ScriptInfo
-	Outputs information about the script to a text file.
-	The text file is placed in the same folder from where the script runs.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of SI.
 .PARAMETER Username
 	Username used for the Cover Page and Footer.
 	Default value is contained in $env:username
@@ -344,9 +341,9 @@
 	
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2020 at 6PM is 2020-07-25_1800.
+	July 25, 2021 at 6PM is 2021-07-25_1800.
 	The output filename is DNS Inventory Report for Server <server> for the Domain 
-	<domain>_2020-07-25_1800.html.
+	<domain>_2021-07-25_1800.html.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -PDF -AddDateTime
 	
@@ -362,9 +359,9 @@
 
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2020 at 6PM is 2020-07-25_1800.
+	July 25, 2021 at 6PM is 2021-07-25_1800.
 	The output filename is DNS Inventory Report for Server <server> for the Domain 
-	<domain>_2020-07-25_1800.pdf.
+	<domain>_2021-07-25_1800.pdf.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -Folder \\FileServer\ShareName
 	
@@ -500,9 +497,9 @@
 	formatted text document.
 .NOTES
 	NAME: DNS_Inventory_V2.ps1
-	VERSION: 2.00
+	VERSION: 2.01
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: November 4, 2020
+	LASTEDIT: January 9, 2021
 #>
 
 #endregion
@@ -513,18 +510,6 @@
 
 Param(
 	[parameter(Mandatory=$False)] 
-	[Switch]$HTML=$False,
-
-	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
-	[Switch]$MSWord=$False,
-
-	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
-	[Switch]$PDF=$False,
-
-	[parameter(Mandatory=$False)] 
-	[Switch]$Text=$False,
-
-	[parameter(Mandatory=$False)] 
 	[string]$ComputerName="LocalHost",
 
 	[parameter(Mandatory=$False)] 
@@ -532,8 +517,36 @@ Param(
 	[Switch]$AllDNSServers=$False,
 	
 	[parameter(Mandatory=$False)] 
+	[Switch]$Details=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$HTML=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Switch]$Text=$False,
+
+	[parameter(Mandatory=$False)] 
 	[Switch]$AddDateTime=$False,
 	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Dev=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[string]$Folder="",
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Log=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("SI")]
+	[Switch]$ScriptInfo=$False,
+	
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
+	[Switch]$MSWord=$False,
+
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
+	[Switch]$PDF=$False,
+
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CA")]
 	[ValidateNotNullOrEmpty()]
@@ -564,22 +577,6 @@ Param(
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
 
-	[parameter(Mandatory=$False)] 
-	[Switch]$Details=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Dev=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[string]$Folder="",
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Log=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("SI")]
-	[Switch]$ScriptInfo=$False,
-	
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("UN")]
 	[ValidateNotNullOrEmpty()]
@@ -611,6 +608,12 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
+#Version 2.03 9-Jan-2021
+#	Fixed issue with invalid name servers not highlighting in red
+#	Reordered parameters in an order recommended by Guy Leech
+#	Updated help text
+#	Updated ReadMe file
+#
 #Version 2.00 4-Nov-2020
 #	Added an Appendix A to give an overview of Several DNS server and zone configuration Items when using -AllDNSServers:
 #		DNS Forwarders
@@ -3590,18 +3593,16 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date -Format G): "
 	Write-Verbose "$(Get-Date -Format G): Add DateTime    : $AddDateTime"
 	Write-Verbose "$(Get-Date -Format G): All DNS Servers : $AllDNSServers"
-	If($MSWORD -or $PDF)
-	{
-		Write-Verbose "$(Get-Date -Format G): Company Name    : $Script:CoName"
-	}
 	Write-Verbose "$(Get-Date -Format G): Computer Name   : $ComputerName"
 	If($MSWORD -or $PDF)
 	{
+		Write-Verbose "$(Get-Date -Format G): Company Name    : $Script:CoName"
 		Write-Verbose "$(Get-Date -Format G): Company Address : $($CompanyAddress)"
 		Write-Verbose "$(Get-Date -Format G): Company Email   : $($CompanyEmail)"
 		Write-Verbose "$(Get-Date -Format G): Company Fax     : $($CompanyFax)"
 		Write-Verbose "$(Get-Date -Format G): Company Phone   : $($CompanyPhone)"
 		Write-Verbose "$(Get-Date -Format G): Cover Page      : $CoverPage"
+		Write-Verbose "$(Get-Date -Format G): Username        : $UserName"
 	}
 	Write-Verbose "$(Get-Date -Format G): Details         : $Details"
 	Write-Verbose "$(Get-Date -Format G): Dev             : $Dev"
@@ -3626,21 +3627,20 @@ Function ShowScriptOptions
 		Write-Verbose "$(Get-Date -Format G): Text FileName   : $($Script:TextFileName)"
 	}
 	Write-Verbose "$(Get-Date -Format G): Folder          : $Folder"
-	Write-Verbose "$(Get-Date -Format G): From            : $From"
 	Write-Verbose "$(Get-Date -Format G): Log             : $($Log)"
 	Write-Verbose "$(Get-Date -Format G): Save As HTML    : $HTML"
 	Write-Verbose "$(Get-Date -Format G): Save As PDF     : $PDF"
 	Write-Verbose "$(Get-Date -Format G): Save As Text    : $Text"
 	Write-Verbose "$(Get-Date -Format G): Save As Word    : $MSWord"
 	Write-Verbose "$(Get-Date -Format G): Script Info     : $ScriptInfo"
+	Write-Verbose "$(Get-Date -Format G): Title           : $Script:Title"
 	Write-Verbose "$(Get-Date -Format G): Smtp Port       : $SmtpPort"
 	Write-Verbose "$(Get-Date -Format G): Smtp Server     : $SmtpServer"
-	Write-Verbose "$(Get-Date -Format G): Title           : $Script:Title"
+	Write-Verbose "$(Get-Date -Format G): From            : $From"
 	Write-Verbose "$(Get-Date -Format G): To              : $To"
 	Write-Verbose "$(Get-Date -Format G): Use SSL         : $UseSSL"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date -Format G): Username        : $UserName"
 	}
 	Write-Verbose "$(Get-Date -Format G): "
 	Write-Verbose "$(Get-Date -Format G): OS Detected     : $Script:RunningOS"
@@ -4205,18 +4205,16 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime       : $AddDateTime" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "All DNS Servers    : $AllDNSServers" 4>$Null
-		If($MSWORD -or $PDF)
-		{
-			Out-File -FilePath $SIFile -Append -InputObject "Company Name       : $Script:CoName" 4>$Null		
-		}
 		Out-File -FilePath $SIFile -Append -InputObject "ComputerName       : $ComputerName" 4>$Null		
 		If($MSWORD -or $PDF)
 		{
+			Out-File -FilePath $SIFile -Append -InputObject "Company Name       : $Script:CoName" 4>$Null		
 			Out-File -FilePath $SIFile -Append -InputObject "Company Address    : $CompanyAddress" 4>$Null		
 			Out-File -FilePath $SIFile -Append -InputObject "Company Email      : $CompanyEmail" 4>$Null		
 			Out-File -FilePath $SIFile -Append -InputObject "Company Fax        : $CompanyFax" 4>$Null		
 			Out-File -FilePath $SIFile -Append -InputObject "Company Phone      : $CompanyPhone" 4>$Null		
 			Out-File -FilePath $SIFile -Append -InputObject "Cover Page         : $CoverPage" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Username           : $UserName" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "Details            : $Details" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Dev                : $Dev" 4>$Null
@@ -4252,10 +4250,6 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server        : $SmtpServer" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "To                 : $To" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Use SSL            : $UseSSL" 4>$Null
-		If($MSWORD -or $PDF)
-		{
-			Out-File -FilePath $SIFile -Append -InputObject "Username           : $UserName" 4>$Null
-		}
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "OS Detected        : $RunningOS" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture        : $PSUICulture" 4>$Null
@@ -5676,7 +5670,7 @@ Function OutputLookupZone
 			WriteWordLine 3 0 "Name Servers"
 			$NSWordTable = New-Object System.Collections.ArrayList
 			## Create an array of hashtables to store references of cells that we wish to highlight after the table has been added
-			$HighlightedCells = New-Object System.Collections.ArrayList
+			$WordHighlightedCells = New-Object System.Collections.ArrayList
 			## Seed the $Services row index from the second row
 			[int] $CurrentServiceIndex = 2;
 		}
@@ -5701,7 +5695,7 @@ Function OutputLookupZone
 			
 			Catch
 			{
-				$ipAddress = "Unable to retrieve an IP Address"
+				$ipAddress = ""
 			}
 			
 			If($?)
@@ -5718,24 +5712,29 @@ Function OutputLookupZone
 						{
 							If([String]::IsNullOrEmpty($ip))	#added in V1.12
 							{
-								$ip = "Unable to retrieve an IP Address"
-								$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
-								$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
+								$TmpIP = "Unable to retrieve an IP Address"
+								$WordHighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
+								$WordHighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
 							}
+							Else
+							{
+								$TmpIP = $ip
+							}
+							
 							$CurrentServiceIndex++;
 							
 							If($cnt -eq 0)
 							{
 								$WordTableRowHash = @{ 
 								ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
-								IPAddress = $ip;
+								IPAddress = $TmpIP;
 								}
 							}
 							Else
 							{
 								$WordTableRowHash = @{ 
 								ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
-								IPAddress = $ip;
+								IPAddress = $TmpIP;
 								}
 							}
 						}
@@ -5743,28 +5742,33 @@ Function OutputLookupZone
 						{
 							If([String]::IsNullOrEmpty($ip))	#added in V1.12
 							{
-								$ip = "***Unable to retrieve an IP Address***"
+								$TmpIP = "***Unable to retrieve an IP Address***"
+							}
+							Else
+							{
+								$TmpIP = $ip
 							}
 
 							If($cnt -eq 0)
 							{
 								Line 3 "Server FQDN`t`t`t: " $NS
-								Line 4 "IP Address`t`t: " $ip
+								Line 4 "IP Address`t`t: " $TmpIP
 							}
 							Else
 							{
-								Line 7 "  " $ip
+								Line 7 "  " $TmpIP
 							}
 						}
 						If($HTML)
 						{
 							If([String]::IsNullOrEmpty($ip))	#added in V1.12
 							{
-								$ip = "Unable to retrieve an IP Address"
+								$TmpIP = "Unable to retrieve an IP Address"
 								$HTMLHighlightedCells = $htmlred
 							}
 							Else
 							{
+								$TmpIP= $ip
 								$HTMLHighlightedCells = $htmlwhite
 							}
 
@@ -5772,13 +5776,13 @@ Function OutputLookupZone
 							{
 								$rowdata += @(,(
 								$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-								$ip,$HTMLHighlightedCells))
+								$TmpIP,$HTMLHighlightedCells))
 							}
 							Else
 							{
 								$rowdata += @(,(
 								$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-								$ip,$HTMLHighlightedCells))
+								$TmpIP,$HTMLHighlightedCells))
 							}
 						}
 					}
@@ -5794,43 +5798,52 @@ Function OutputLookupZone
 					{
 						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
 						{
-							$ipAddress = "Unable to retrieve an IP Address"
-							$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
-							$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
+							$TmpIP = "Unable to retrieve an IP Address"
+							$WordHighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
+							$WordHighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
+						}
+						Else
+						{
+							$TmpIP = $ipAddress
 						}
 						$CurrentServiceIndex++;
 							
 						$WordTableRowHash = @{ 
 						ServerFQDN = $NS	#removed in V1.11 .RecordData.NameServer;
-						IPAddress = $ipAddress;
+						IPAddress = $TmpIP;
 						}
 					}
 					If($Text)
 					{
 						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
 						{
-							$ipAddress = "***Unable to retrieve an IP Address***"
+							$TmpIP = "***Unable to retrieve an IP Address***"
+						}
+						Else
+						{
+							$TmpIP = $ipAddress
 						}
 
 						Line 3 "Server FQDN`t`t`t: " $NS
-						Line 4 "IP Address`t`t: " $ipAddress
+						Line 4 "IP Address`t`t: " $TmpIP
 						Line 0 ""
 					}
 					If($HTML)
 					{
 						If([String]::IsNullOrEmpty($ipAddress))	#added in V1.12
 						{
-							$ipAddress = "Unable to retrieve an IP Address"
+							$TmpIP = "Unable to retrieve an IP Address"
 							$HTMLHighlightedCells = $htmlred
 						}
 						Else
 						{
+							$TmpIP = $ipAddress
 							$HTMLHighlightedCells = $htmlwhite
 						}
 
 						$rowdata += @(,(
 						$NS,$HTMLHighlightedCells,	#removed in V1.11 .RecordData.NameServer;
-						$ipAddress,$HTMLHighlightedCells))
+						$TmpIP,$HTMLHighlightedCells))
 					}
 				}
 			}
@@ -5839,8 +5852,8 @@ Function OutputLookupZone
 				If($MSWord -or $PDF)
 				{
 					$ipAddress = "Unable to retrieve an IP Address"
-					$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
-					$HighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
+					$WordHighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 1; }) > $Null
+					$WordHighlightedCells.Add(@{ Row = $CurrentServiceIndex; Column = 2; }) > $Null
 					$CurrentServiceIndex++;
 						
 					$WordTableRowHash = @{ 
@@ -5884,9 +5897,9 @@ Function OutputLookupZone
 			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 			## IB - Set the required highlighted cells
-			If($HighlightedCells.Count -gt 0)
+			If($WordHighlightedCells.Count -gt 0)
 			{
-				SetWordCellFormat -Coordinates $HighlightedCells -Table $Table -Bold -BackgroundColor $wdColorRed -Solid;
+				SetWordCellFormat -Coordinates $WordHighlightedCells -Table $Table -Bold -BackgroundColor $wdColorRed -Solid;
 			}
 			
 			$Table.Columns.Item(1).Width = 200;
@@ -8137,6 +8150,7 @@ Function OutputConditionalForwarder
 Function ProcessAppendixA
 {
 	Write-Verbose "$(Get-Date -Format G): `tProcessing DNS Server Forwarders"
+	
 	ForEach($DNSServer in $Script:DNSServerNames)
 	{
 		$Forwarders = Get-DNSServerForwarder -ComputerName $DNSServer -EA 0
@@ -8195,6 +8209,7 @@ Function ProcessAppendixA
 		}
 	}
 
+	### For 2.01, ignore 0.in-addr.arpa, 127.in-addr.arpa, and 255.in-addr.arpa.
 	Write-Verbose "$(Get-Date -Format G): `tProcessing Zone Configuration"
 	ForEach($DNSServer in $Script:DNSServerNames)
 	{
