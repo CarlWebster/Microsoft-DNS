@@ -112,6 +112,26 @@
 	
 	This parameter is disabled by default.
 	This parameter has an alias of SI.
+.PARAMETER ReportFooter
+	Outputs a footer section at the end of the report.
+
+	This parameter has an alias of RF.
+	
+	Report Footer
+		Report information:
+			Created with: <Script Name> - Release Date: <Script Release Date>
+			Script version: <Script Version>
+			Started on <Date Time in Local Format>
+			Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+			Ran from domain <Domain Name> by user <Username>
+			Ran from the folder <Folder Name>
+
+	Script Name and Script Release date are script-specific variables.
+	Start Date Time in Local Format is a script variable.
+	Elapsed time is a calculated value.
+	Domain Name is $env:USERDNSDOMAIN.
+	Username is $env:USERNAME.
+	Folder Name is a script variable.
 .PARAMETER MSWord
 	SaveAs DOCX file
 	This parameter is disabled by default.
@@ -497,9 +517,9 @@
 	formatted text document.
 .NOTES
 	NAME: DNS_Inventory_V2.ps1
-	VERSION: 2.01
+	VERSION: 2.02
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: January 9, 2021
+	LASTEDIT: August 31, 2021
 #>
 
 #endregion
@@ -541,6 +561,10 @@ Param(
 	[Alias("SI")]
 	[Switch]$ScriptInfo=$False,
 	
+	[parameter(Mandatory=$False)] 
+	[Alias("RF")]
+	[Switch]$ReportFooter=$False,
+
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$MSWord=$False,
 
@@ -608,7 +632,23 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 2.03 9-Jan-2021
+#Version 2.02 31-Aug-2021
+#	Add array error checking for non-empty arrays before attempting to create the Word table for most Word tables
+#	Add Function OutputReportFooter
+#	Add Parameter ReportFooter
+#		Outputs a footer section at the end of the report.
+#		Report Footer
+#			Report information:
+#				Created with: <Script Name> - Release Date: <Script Release Date>
+#				Script version: <Script Version>
+#				Started on <Date Time in Local Format>
+#				Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+#				Ran from domain <Domain Name> by user <Username>
+#				Ran from the folder <Folder Name>
+#	Update Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
+#	Update Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
+#
+#Version 2.01 9-Jan-2021
 #	Fixed issue with invalid name servers not highlighting in red
 #	Reordered parameters in an order recommended by Guy Leech
 #	Updated help text
@@ -783,10 +823,14 @@ Set-StrictMode -Version Latest
 
 #force  on
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
-$SaveEAPreference = $ErrorActionPreference
-$ErrorActionPreference = 'SilentlyContinue'
-$global:emailCredentials = $Null
-$Script:RptDomain = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
+$SaveEAPreference         = $ErrorActionPreference
+$ErrorActionPreference    = 'SilentlyContinue'
+$global:emailCredentials  = $Null
+$Script:RptDomain         = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
+$script:MyVersion         = '2.02'
+$Script:ScriptName        = "DNS_Inventory_V2.ps1"
+$tmpdate                  = [datetime] "08/31/2021"
+$Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($ComputerName -eq "localhost")
 {
@@ -3628,6 +3672,7 @@ Function ShowScriptOptions
 	}
 	Write-Verbose "$(Get-Date -Format G): Folder          : $Folder"
 	Write-Verbose "$(Get-Date -Format G): Log             : $($Log)"
+	Write-Verbose "$(Get-Date -Format G): Report Footer   : $ReportFooter"
 	Write-Verbose "$(Get-Date -Format G): Save As HTML    : $HTML"
 	Write-Verbose "$(Get-Date -Format G): Save As PDF     : $PDF"
 	Write-Verbose "$(Get-Date -Format G): Save As Text    : $Text"
@@ -3755,12 +3800,16 @@ Function SetupText
 Function SaveandCloseTextDocument
 {
 	Write-Verbose "$(Get-Date -Format G): Saving Text file"
+	Line 0 ""
+	Line 0 "Report Complete"
 	Write-Output $global:Output.ToString() | Out-File $Script:TextFileName 4>$Null
 }
 
 Function SaveandCloseHTMLDocument
 {
 	Write-Verbose "$(Get-Date -Format G): Saving HTML file"
+	WriteHTMLLine 0 0 ""
+	WriteHTMLLine 0 0 "Report Complete"
 	Out-File -FilePath $Script:HTMLFileName -Append -InputObject "<p></p></body></html>" 4>$Null
 }
 
@@ -3970,6 +4019,71 @@ Function TestComputerName
 
 	Write-Verbose "$(Get-Date -Format G): "
 	Return $CName
+}
+
+Function OutputReportFooter
+{
+	#Added in 2.02
+	<#
+	Report Footer
+		Report information:
+			Created with: <Script Name> - Release Date: <Script Release Date>
+			Script version: <Script Version>
+			Started on <Date Time in Local Format>
+			Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+			Ran from domain <Domain Name> by user <Username>
+			Ran from the folder <Folder Name>
+
+	Script Name and Script Release date are script-specific variables.
+	Script version is a script variable.
+	Start Date Time in Local Format is a script variable.
+	Domain Name is $env:USERDNSDOMAIN.
+	Username is $env:USERNAME.
+	Folder Name is a script variable.
+	#>
+
+	$runtime = $(Get-Date) - $Script:StartTime
+	$Str = [string]::format("{0} days, {1} hours, {2} minutes, {3}.{4} seconds",
+		$runtime.Days,
+		$runtime.Hours,
+		$runtime.Minutes,
+		$runtime.Seconds,
+		$runtime.Milliseconds)
+
+	If($MSWORD -or $PDF)
+	{
+		$Script:selection.InsertNewPage()
+		WriteWordLine 1 0 "Report Footer"
+		WriteWordLine 2 0 "Report Information:"
+		WriteWordLine 0 1 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		WriteWordLine 0 1 "Script version: $Script:MyVersion"
+		WriteWordLine 0 1 "Started on $Script:StartTime"
+		WriteWordLine 0 1 "Elapsed time: $Str"
+		WriteWordLine 0 1 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		WriteWordLine 0 1 "Ran from the folder $Script:pwdpath"
+	}
+	If($Text)
+	{
+		Line 0 "///  Report Footer  \\\"
+		Line 1 "Report Information:"
+		Line 2 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		Line 2 "Script version: $Script:MyVersion"
+		Line 2 "Started on $Script:StartTime"
+		Line 2 "Elapsed time: $Str"
+		Line 2 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		Line 2 "Ran from the folder $Script:pwdpath"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 1 0 "///&nbsp;&nbsp;Report Footer&nbsp;&nbsp;\\\"
+		WriteHTMLLine 2 0 "Report Information:"
+		WriteHTMLLine 0 1 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		WriteHTMLLine 0 1 "Script version: $Script:MyVersion"
+		WriteHTMLLine 0 1 "Started on $Script:StartTime"
+		WriteHTMLLine 0 1 "Elapsed time: $Str"
+		WriteHTMLLine 0 1 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		WriteHTMLLine 0 1 "Ran from the folder $Script:pwdpath"
+	}
 }
 
 Function ProcessDocumentOutput
@@ -4241,6 +4355,7 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Folder             : $Folder" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "From               : $From" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Log                : $Log" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Report Footer      : $ReportFooter" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML       : $HTML" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF        : $PDF" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT       : $TEXT" 4>$Null
@@ -4662,23 +4777,25 @@ Function OutputDNSServer
 
 	If($MSWord -or $PDF)
 	{
-		$Table = AddWordTable -Hashtable $FwdWordTable `
-		-Columns ServerFQDN, IPAddress `
-		-Headers "Server FQDN", "IP Address" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($FwdWordTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $FwdWordTable `
+			-Columns ServerFQDN, IPAddress `
+			-Headers "Server FQDN", "IP Address" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 150;
-		
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 150;
+			
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
-
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
 	}
 	If($HTML)
 	{
@@ -5048,22 +5165,25 @@ Function OutputDNSServer
 
 	If($MSWord -or $PDF)
 	{
-		$Table = AddWordTable -Hashtable $RootWordTable `
-		-Columns ServerFQDN, IPAddress `
-		-Headers "Server Fully Qualified Domain Name (FQDN)", "IP Address" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($RootWordTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $RootWordTable `
+			-Columns ServerFQDN, IPAddress `
+			-Headers "Server Fully Qualified Domain Name (FQDN)", "IP Address" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 150;
-		
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 150;
+			
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
 	}
 	If($Text)
 	{
@@ -5888,28 +6008,31 @@ Function OutputLookupZone
 		}
 		If($MSWord -or $PDF)
 		{
-			$Table = AddWordTable -Hashtable $NSWordTable `
-			-Columns ServerFQDN, IPAddress `
-			-Headers "Server Fully Qualified Domain Name (FQDN)", "IP Address" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
-
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-			## IB - Set the required highlighted cells
-			If($WordHighlightedCells.Count -gt 0)
+			If($NSWordTable.Count -eq 0)
 			{
-				SetWordCellFormat -Coordinates $WordHighlightedCells -Table $Table -Bold -BackgroundColor $wdColorRed -Solid;
-			}
-			
-			$Table.Columns.Item(1).Width = 200;
-			$Table.Columns.Item(2).Width = 200;
-			
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table = AddWordTable -Hashtable $NSWordTable `
+				-Columns ServerFQDN, IPAddress `
+				-Headers "Server Fully Qualified Domain Name (FQDN)", "IP Address" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				## IB - Set the required highlighted cells
+				If($WordHighlightedCells.Count -gt 0)
+				{
+					SetWordCellFormat -Coordinates $WordHighlightedCells -Table $Table -Bold -BackgroundColor $wdColorRed -Solid;
+				}
+				
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 200;
+				
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 		}
 		If($Text)
 		{
@@ -7594,24 +7717,27 @@ Function OutputLookupZoneDetails
 	
 	If($MSWord -or $PDF)
 	{
-		$Table = AddWordTable -Hashtable $WordTable `
-		-Columns  DetailHostName, DetailType, DetailData, DetailTimeStamp `
-		-Headers  "Name", "Type", "Data", "Timestamp" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($WordTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $WordTable `
+			-Columns  DetailHostName, DetailType, DetailData, DetailTimeStamp `
+			-Headers  "Name", "Type", "Data", "Timestamp" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 105;
-		$Table.Columns.Item(2).Width = 105;
-		$Table.Columns.Item(3).Width = 155;
-		$Table.Columns.Item(4).Width = 110;
+			$Table.Columns.Item(1).Width = 105;
+			$Table.Columns.Item(2).Width = 105;
+			$Table.Columns.Item(3).Width = 155;
+			$Table.Columns.Item(4).Width = 110;
 
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
+			FindWordDocumentEnd
+			$Table = $Null
+		}
 	}
 	If($HTML)
 	{
@@ -8115,22 +8241,25 @@ Function OutputConditionalForwarder
 
 	If($MSWord -or $PDF)
 	{
-		$Table = AddWordTable -Hashtable $NSWordTable `
-		-Columns ServerFQDN, IPAddress `
-		-Headers "Server FQDN", "IP Address" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($NSWordTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $NSWordTable `
+			-Columns ServerFQDN, IPAddress `
+			-Headers "Server FQDN", "IP Address" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 200;
-		
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 200;
+			
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
 	}
 	If($HTML)
 	{
@@ -8359,19 +8488,22 @@ Function OutputAppendixA
 				}
 			}
 			
-			$Table = AddWordTable -Hashtable $AppendixWordTable `
-			-Columns ComputerName, Forwarder `
-			-Headers "Computer Name", "Forwarders" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			If($AppendixWordTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $AppendixWordTable `
+				-Columns ComputerName, Forwarder `
+				-Headers "Computer Name", "Forwarders" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitContent;
 
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 		}
 		If($Text)
 		{
@@ -8491,21 +8623,24 @@ Function OutputAppendixA
 				}
 			}
 			
-			$Table = AddWordTable -Hashtable $AppendixWordTable `
-			-Columns ZoneName, ComputerName, ZoneType, IsDsIntegrated, IsSigned, DynamicUpdate, ReplicationScope `
-			-Headers "Zone Name", "Computer Name", "Zone Type", "AD Integrated", "Signed", "Dynamic Update", "Replication Scope" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			If($AppendixWordTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $AppendixWordTable `
+				-Columns ZoneName, ComputerName, ZoneType, IsDsIntegrated, IsSigned, DynamicUpdate, ReplicationScope `
+				-Headers "Zone Name", "Computer Name", "Zone Type", "AD Integrated", "Signed", "Dynamic Update", "Replication Scope" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitContent;
 
-			SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
+				FindWordDocumentEnd
+				$Table = $Null
+			}
 			WriteWordLine 0 0 ""
-
+			
 			WriteWordLine 2 0 "Zone Configuration Part 2"
 			$Save = ""
 			$First = $True
@@ -8540,19 +8675,22 @@ Function OutputAppendixA
 				}
 			}
 			
-			$Table = AddWordTable -Hashtable $AppendixWordTable `
-			-Columns ZoneName, ComputerName, AgingEnabled, RefreshInterval, NoRefreshInterval, ScavengeServers `
-			-Headers "Zone Name", "Computer Name", "Aging Enabled", "Refresh Interval", "NoRefresh Interval", "Scavenge Servers" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			If($AppendixWordTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $AppendixWordTable `
+				-Columns ZoneName, ComputerName, AgingEnabled, RefreshInterval, NoRefreshInterval, ScavengeServers `
+				-Headers "Zone Name", "Computer Name", "Aging Enabled", "Refresh Interval", "NoRefresh Interval", "Scavenge Servers" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitContent;
 
-			SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
+				FindWordDocumentEnd
+				$Table = $Null
+			}
 		}
 		If($Text)
 		{
@@ -8593,6 +8731,7 @@ Function OutputAppendixA
 					$First = $False
 				}
 			}
+			Line 0 ""
 		}
 		If($HTML)
 		{
@@ -8719,6 +8858,11 @@ $AbstractTitle = "DNS Inventory Report"
 $SubjectTitle = "DNS Inventory Report"
 
 UpdateDocumentProperties $AbstractTitle $SubjectTitle
+
+If($ReportFooter)
+{
+	OutputReportFooter
+}
 
 ProcessDocumentOutput
 
