@@ -519,7 +519,7 @@
 	NAME: DNS_Inventory_V2.ps1
 	VERSION: 2.02
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: August 31, 2021
+	LASTEDIT: September 11, 2021
 #>
 
 #endregion
@@ -632,10 +632,10 @@ Param(
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
 
-#Version 2.02 31-Aug-2021
-#	Add array error checking for non-empty arrays before attempting to create the Word table for most Word tables
-#	Add Function OutputReportFooter
-#	Add Parameter ReportFooter
+#Version 2.02 11-Sep-2021
+#	Added array error checking for non-empty arrays before attempting to create the Word table for most Word tables
+#	Added Function OutputReportFooter
+#	Added Parameter ReportFooter
 #		Outputs a footer section at the end of the report.
 #		Report Footer
 #			Report information:
@@ -645,8 +645,10 @@ Param(
 #				Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
 #				Ran from domain <Domain Name> by user <Username>
 #				Ran from the folder <Folder Name>
-#	Update Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
-#	Update Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
+#	Updated Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
+#	Updated Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
+#	Updated the help text
+#	Updated the ReadMe file
 #
 #Version 2.01 9-Jan-2021
 #	Fixed issue with invalid name servers not highlighting in red
