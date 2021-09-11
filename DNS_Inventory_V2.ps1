@@ -831,7 +831,7 @@ $global:emailCredentials  = $Null
 $Script:RptDomain         = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
 $script:MyVersion         = '2.02'
 $Script:ScriptName        = "DNS_Inventory_V2.ps1"
-$tmpdate                  = [datetime] "08/31/2021"
+$tmpdate                  = [datetime] "09/11/2021"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($ComputerName -eq "localhost")
