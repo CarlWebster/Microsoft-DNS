@@ -45,14 +45,14 @@
 
 	To run the script from a workstation, RSAT is required.
 	
-	Remote Server Administration Tools for Windows 8 
-		https://carlwebster.sharefile.com/d-s791075d451fc415ca83ec8958b385a95
-		
-	Remote Server Administration Tools for Windows 8.1 
-		https://carlwebster.sharefile.com/d-s37209afb73dc48f497745924ed854226
-		
-	Remote Server Administration Tools for Windows 10
-		http://www.microsoft.com/en-us/download/details.aspx?id=45520
+    Remote Server Administration Tools for Windows 8
+        https://www.dropbox.com/scl/fi/gsko69f7wu7byrfcb27uk/Windows6.2-KB2693643-x64.msu?rlkey=0kutsi07hlkvvsapp28tbxh73&dl=0
+
+    Remote Server Administration Tools for Windows 8.1
+        https://www.dropbox.com/scl/fi/66g2nt8jmxod6qugv4m8t/Windows8.1-KB2693643-x64.msu?rlkey=zvialkxe9suixb9s7nyfggv8f&dl=0
+
+    Remote Server Administration Tools for Windows 10
+        https://www.dropbox.com/scl/fi/o6u3m2c37ydoeu5z0vc1u/WindowsTH-KB2693643-x64.msu?rlkey=6u02xwdn04djt1zn5tq1temvo&dl=0
 		
 .PARAMETER ComputerName
 	Specifies a computer used to run the script against.
@@ -87,12 +87,12 @@
 .PARAMETER AddDateTime
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
+	June 1, 2026 at 6PM is 2026-06-01_1800.
 	The output filename will be either:
 		DNS Inventory Report for Server <server> for the Domain 
-		<domain>_2021-06-01_1800.html (or .txt or .docx or .pdf)
+		<domain>_2026-06-01_1800.html (or .txt or .docx or .pdf)
 		DNS Inventory for All DNS Servers for the Domain 
-		<domain>_2021-06-01_1800.html (or .txt or .docx or .pdf)
+		<domain>_2026-06-01_1800.html (or .txt or .docx or .pdf)
 	This parameter is disabled by default.
 .PARAMETER Dev
 	Clears errors at the beginning of the script.
@@ -361,9 +361,9 @@
 	
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2021 at 6PM is 2021-07-25_1800.
+	July 25, 2026 at 6PM is 2026-07-25_1800.
 	The output filename is DNS Inventory Report for Server <server> for the Domain 
-	<domain>_2021-07-25_1800.html.
+	<domain>_2026-07-25_1800.html.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -PDF -AddDateTime
 	
@@ -379,9 +379,9 @@
 
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2021 at 6PM is 2021-07-25_1800.
+	July 25, 2026 at 6PM is 2026-07-25_1800.
 	The output filename is DNS Inventory Report for Server <server> for the Domain 
-	<domain>_2021-07-25_1800.pdf.
+	<domain>_2026-07-25_1800.pdf.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -Folder \\FileServer\ShareName
 	
@@ -517,9 +517,9 @@
 	formatted text document.
 .NOTES
 	NAME: DNS_Inventory_V2.ps1
-	VERSION: 2.03
+	VERSION: 2.04
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: February 18, 2022
+	LASTEDIT: April 10, 2026
 #>
 
 #endregion
@@ -631,6 +631,21 @@ Param(
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
+
+#Version 2.04 10-Apr-2026
+#	Added "Processing zone, count of total" to OutputLookupZone verbose message
+#   DynamicUpdate isn't present on some Zones. Put an "N/A" for it instead of generating an error.
+#   GetHostEntry() is slow. Add CacheHostEntry. Makes a huge speed difference on servers with lots of zones.
+#   Get-DnsServer can return FAILURE even when it succeeds (I noted this happening when roothints are incorrect).
+#		So, check only for output, not for $?.
+#   Get-DnsServer is SLOW. We don't need to call it multiple times for the same server. Write function GetDnsServer and cache it.
+#	If IsSigned isn't present on some Zones. Put an "N/A" for it instead of generating an error.
+#   It's possible for DNSForwarders.IPAddress to contain no values. Check for that situation and don't generate an error any more.
+#	Updated references of ShareFile to Dropbox
+#	Updated the help text
+#	Updated the ReadMe
+#	Wrapped GetHostEntry() in try/catch instead of treating it like a cmdlet.
+#	Wrapped OpenRemoteBaseKey() in try/catch instead of treating it like a cmdlet.
 
 #Version 2.03 18-Feb-2022
 #	Changed the date format for the transcript and error log files from yyyy-MM-dd_HHmm format to the FileDateTime format
@@ -899,7 +914,7 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 $global:emailCredentials  = $Null
 $Script:RptDomain         = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
-$script:MyVersion         = '2.03'
+$script:MyVersion         = '2.04'
 $Script:ScriptName        = "DNS_Inventory_V2.ps1"
 $tmpdate                  = [datetime] "02/18/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -2256,19 +2271,21 @@ Function Get-RegistryValue
 	Else
 	{
 		#path needed here is different for remote registry access
-		$path1 = $path.SubString(6)
-		$path2 = $path1.Replace('\','\\')
-		$Reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $ComputerName)
-		$RegKey= $Reg.OpenSubKey($path2)
-		$Results = $RegKey.GetValue($name)
-		If($Null -ne $Results)
+		$path1 = $path.SubString( 6 )
+		$path2 = $path1.Replace( '\', '\\' )
+		try
 		{
-			Return $Results
+			$Reg     = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey( 'LocalMachine', $ComputerName )
+			$RegKey  = $Reg.OpenSubKey( $path2 )
+			$Results = $RegKey.GetValue( $name )
 		}
-		Else
+		catch
 		{
-			Return $Null
+			Write-Host "Could not open remote registry on computer $ComputerName"
+			$Results = $null
 		}
+
+		Return $Results
 	}
 }
 #endregion
@@ -4012,6 +4029,26 @@ Function testPortsOnOneIP
 	$success
 }
 
+$script:DNSserverCache = @{}
+
+function GetDnsServer
+{
+	Param
+	(
+		[String] $dnshostname
+	)
+
+	if( $script:DNSserverCache.Contains( $dnshostname ) )
+	{
+		return $script:DNSserverCache[ $dnshostname ]
+	}
+
+	$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
+	$script:DNSserverCache[ $dnshostname ] = $results
+
+	return $results
+}
+
 Function TestComputerName
 {
 	Param([string]$Cname)
@@ -4041,21 +4078,21 @@ Function TestComputerName
 	$ip = $CName -as [System.Net.IpAddress]
 	If($ip)
 	{
-		$Result = [System.Net.Dns]::gethostentry($ip)
-		
-		If($? -and $Null -ne $Result)
+		$Result = CacheHostEntry $ip
+
+		If( $null -ne $Result )
 		{
 			$CName = $Result.HostName
 			Write-Verbose "$(Get-Date -Format G): Computer name has been changed from $ip to $CName"
 			Write-Verbose "$(Get-Date -Format G): Testing to see if $CName is a DNS Server"
-			$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
-			If($? -and $Null -ne $results)
+			$results = GetDnsServer $CName
+			If( $null -ne $results )
 			{
 				#the computer is a dns server
 				Write-Verbose "$(Get-Date -Format G): Computer $CName is a DNS Server"
 				Return $CName
 			}
-			ElseIf(!$? -or $Null -eq $results)
+			Else
 			{
 				#the computer is not a dns server
 				Write-Verbose "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
@@ -4073,14 +4110,14 @@ Function TestComputerName
 	Else
 	{
 		Write-Verbose "$(Get-Date -Format G): Testing to see if $CName is a DNS Server"
-		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
-		If($? -and $Null -ne $results)
+		$results = GetDnsServer $CName
+		If( $null -ne $results )
 		{
 			#the computer is a dns server
 			Write-Verbose "$(Get-Date -Format G): Computer $CName is a DNS Server"
 			Return $CName
 		}
-		ElseIf(!$? -or $Null -eq $results)
+		Else
 		{
 			#the computer is not a dns server
 			Write-Verbose "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
@@ -4591,7 +4628,7 @@ Function ProcessDNSServer
 	Write-Verbose "$(Get-Date -Format G): Processing DNS Server"
 	Write-Verbose "$(Get-Date -Format G): `tRetrieving DNS Server Information using Server $DNSServerName"
 	
-	$Script:DNSServerData = Get-DNSServer -ComputerName $DNSServerName -EA 0 2>$Null 3>$Null 4>$Null
+	$Script:DNSServerData = GetDnsServer $DNSServerName
 	
 	$DNSServerSettings    = $Script:DNSServerData.ServerSetting
 	$DNSForwarders        = $Script:DNSServerData.ServerForwarder
@@ -4682,7 +4719,7 @@ Function OutputDNSServer
 	#Interfaces tab
 	Write-Verbose "$(Get-Date -Format G): `t`t`tInterfaces"
 
-	#coutesy of MBS
+	#courtesy of MBS
 	#if the value does not exist, then All IP Addresses is selected
 	$AllIPs = Get-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\DNS\Parameters" "ListenAddresses" $DNSServerName
 	
@@ -4802,31 +4839,34 @@ Function OutputDNSServer
 		WriteHTMLLine 2 0 "Forwarders"
 		$rowdata = @()
 	}
-	
-	ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
+
+	if( $null -ne $DNSForwarders.IPAddress)
 	{
-		$Resolved = ResolveIPtoFQDN $IP
-
-		If($MSWord -or $PDF)
+		ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
 		{
-			$WordTableRowHash = @{ 
-			IPAddress = $IP;
-			ServerFQDN = $Resolved;
+			$Resolved = ResolveIPtoFQDN $IP
+
+			If($MSWord -or $PDF)
+			{
+				$WordTableRowHash = @{ 
+				IPAddress = $IP;
+				ServerFQDN = $Resolved;
+				}
+
+				$FwdWordTable += $WordTableRowHash;
 			}
-
-			$FwdWordTable += $WordTableRowHash;
-		}
-		If($Text)
-		{
-			Line 1 "IP Address`t: " $IP
-			Line 1 "Server FQDN`t: " $Resolved
-			Line 0 ""
-		}
-		If($HTML)
-		{
-			$rowdata += @(,(
-			$Resolved,$htmlwhite,
-			$IP,$htmlwhite))
+			If($Text)
+			{
+				Line 1 "IP Address`t: " $IP
+				Line 1 "Server FQDN`t: " $Resolved
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$Resolved,$htmlwhite,
+				$IP,$htmlwhite))
+			}
 		}
 	}
 
@@ -4854,14 +4894,17 @@ Function OutputDNSServer
 	}
 	If($HTML)
 	{
-		$columnHeaders = @(
-		'Server FQDN',($htmlsilver -bor $htmlbold),
-		'IP Address',($htmlsilver -bor $htmlbold))
+		if( $rowdata.Count -gt 0 )
+		{
+			$columnHeaders = @(
+			'Server FQDN',($htmlsilver -bor $htmlbold),
+			'IP Address',($htmlsilver -bor $htmlbold))
 
-		$msg = ""
-		$columnWidths = @("200","150")
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
-		WriteHTMLLine 0 0 " "
+			$msg = ""
+			$columnWidths = @("200","150")
+			FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
+			WriteHTMLLine 0 0 " "
+		}
 	}
 
 	If($MSWord -or $PDF)
@@ -5311,6 +5354,34 @@ Function OutputDNSServer
 
 }
 
+$script:IPCache = @{}
+
+Function CacheHostEntry
+{
+	Param
+	(
+		[String] $ip
+	)
+	## GetHostEntry() is slow, especially when the IP doesn't resolve.
+	## So cache the results.
+	if( $script:IPCache.Contains( $ip ) )
+	{
+		return $script:IPCache[ $ip ]
+	}
+
+	try
+	{
+		$Result = [System.Net.Dns]::GetHostEntry( $ip )
+		$script:IPCache[ $ip ] = $Result
+		return $Result
+	}
+	catch
+	{
+		$script:IPCache[ $ip ] = $null
+		return $null
+	}
+}
+
 Function ResolveIPtoFQDN
 {
 	Param([string]$cname)
@@ -5319,17 +5390,16 @@ Function ResolveIPtoFQDN
 	
 	$ip = $CName -as [System.Net.IpAddress]
 	
-	If($ip)
+	If( $ip )
 	{
-		$Result = [System.Net.Dns]::gethostentry($ip)
-		
-		If($? -and $Null -ne $Result)
-		{
-			$CName = $Result.HostName
-		}
-		Else
+		$Result = CacheHostEntry $ip
+		if( $null -eq $Result )
 		{
 			$CName = 'Unable to resolve'
+		}
+		else
+		{
+			$CName = $Result.HostName
 		}
 	}
 	Return $CName
@@ -5362,14 +5432,17 @@ Function ProcessForwardLookupZones
 
 	$First = $True
 	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {
-	$_.IsReverseLookupZone -eq $False -and (
-	$_.ZoneType -eq "Primary" -and 
-	$_.ZoneName -ne "TrustAnchors" -or 
-	$_.ZoneType -eq "Stub" -or 
-	$_.ZoneType -eq "Secondary")}
+		$_.IsReverseLookupZone -eq $False -and (
+		$_.ZoneType -eq "Primary" -and 
+		$_.ZoneName -ne "TrustAnchors" -or 
+		$_.ZoneType -eq "Stub" -or 
+		$_.ZoneType -eq "Secondary")}
 	
+	$total = $DNSZones.count
+	$count = 0
 	ForEach($DNSZone in $DNSZones)
 	{
+		$count++
 		If(!$First)
 		{
 			If($MSWord -or $PDF)
@@ -5377,7 +5450,7 @@ Function ProcessForwardLookupZones
 				$Selection.InsertNewPage()
 			}
 		}
-		OutputLookupZone "Forward" $DNSZone $DNSServerName
+		OutputLookupZone "Forward" $DNSZone $DNSServerName $count $total
 		If($Details)
 		{
 			ProcessLookupZoneDetails "Forward" $DNSZone $DNSServerName
@@ -5390,11 +5463,18 @@ Function ProcessForwardLookupZones
 #region process lookzone data
 Function OutputLookupZone
 {
-	Param([string] $zType, [object] $DNSZone, [string] $DNSServerName)
+	Param
+	(
+		[string] $zType, 
+		[object] $DNSZone, 
+		[string] $DNSServerName, 
+		[int] $count, 
+		[int] $total
+	)
 
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date -Format G): `tProcessing $($DNSZone.ZoneName)"
+	Write-Verbose "$(Get-Date -Format G): `tProcessing $($DNSZone.ZoneName), $count of $total"
 	
 	#General tab
 	Write-Verbose "$(Get-Date -Format G): `t`tGeneral"
@@ -5861,20 +5941,11 @@ Function OutputLookupZone
 
 		ForEach($NS in $NameServers)
 		{
-			# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
-			
-			Try
+			$result = CacheHostEntry $NS
+
+			If( $null -ne $result )
 			{
-				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
-			}
-			
-			Catch
-			{
-				$ipAddress = ""
-			}
-			
-			If($?)
-			{
+				$ipAddress = $result.Addresslist
 				If($ipAddress -is [array])
 				{
 					$cnt = -1
@@ -6022,7 +6093,7 @@ Function OutputLookupZone
 					}
 				}
 			}
-			ElseIf(-not $?)
+			Else ## $null -eq $ipAddress
 			{
 				If($MSWord -or $PDF)
 				{
@@ -7837,9 +7908,12 @@ Function ProcessReverseLookupZones
 
 	$First = $True
 	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {$_.IsReverseLookupZone -eq $True}
-	
+
+	$count = 0
+	$total = $DNSZones.Count
 	ForEach($DNSZone in $DNSZones)
 	{
+		$count++
 		If(!$First)
 		{
 			If($MSWord -or $PDF)
@@ -7847,7 +7921,7 @@ Function ProcessReverseLookupZones
 				$Selection.InsertNewPage()
 			}
 		}
-		OutputLookupZone "Reverse" $DNSZone $DNSServerName
+		OutputLookupZone "Reverse" $DNSZone $DNSServerName $count $total
 		If($Details)
 		{
 			ProcessLookupZoneDetails "Reverse" $DNSZone $DNSServerName
@@ -8430,14 +8504,31 @@ Function ProcessAppendixA
 					$NoRefreshInterval = "N/A"
 					$ScavengeServers   = "N/A"
 				}
-				
+				if( $null -ne ( Get-Member -Name IsSigned -InputObject $Zone ) )
+				{
+					$IsSigned = $Zone.IsSigned.ToString()
+				}
+				else
+				{
+					$IsSigned = 'N/A'
+				}
+
+				if( $null -ne ( Get-Member -Name DynamicUpdate -InputObject $Zone ) )
+				{
+					$DynamicUpdate = $Zone.DynamicUpdate
+				}
+				else
+				{
+					$DynamicUpdate = 'N/A'
+				}
+
 				$obj1 = [PSCustomObject] @{
 					ComputerName      = $DNSServer
 					ZoneName          = $Zone.ZoneName
 					ZoneType          = $Zone.ZoneType
 					IsDsIntegrated    = $Zone.IsDsIntegrated.ToString()
-					IsSigned          = $Zone.IsSigned.ToString()
-					DynamicUpdate     = $Zone.DynamicUpdate
+					IsSigned          = $IsSigned
+					DynamicUpdate     = $DynamicUpdate
 					ReplicationScope  = $Zone.ReplicationScope
 					AgingEnabled      = $AgingEnabled     
 					RefreshInterval   = $RefreshInterval  
