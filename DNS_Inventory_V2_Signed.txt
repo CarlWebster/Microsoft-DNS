@@ -45,14 +45,14 @@
 
 	To run the script from a workstation, RSAT is required.
 	
-	Remote Server Administration Tools for Windows 8 
-		https://carlwebster.sharefile.com/d-s791075d451fc415ca83ec8958b385a95
-		
-	Remote Server Administration Tools for Windows 8.1 
-		https://carlwebster.sharefile.com/d-s37209afb73dc48f497745924ed854226
-		
-	Remote Server Administration Tools for Windows 10
-		http://www.microsoft.com/en-us/download/details.aspx?id=45520
+    Remote Server Administration Tools for Windows 8
+        https://www.dropbox.com/scl/fi/gsko69f7wu7byrfcb27uk/Windows6.2-KB2693643-x64.msu?rlkey=0kutsi07hlkvvsapp28tbxh73&dl=0
+
+    Remote Server Administration Tools for Windows 8.1
+        https://www.dropbox.com/scl/fi/66g2nt8jmxod6qugv4m8t/Windows8.1-KB2693643-x64.msu?rlkey=zvialkxe9suixb9s7nyfggv8f&dl=0
+
+    Remote Server Administration Tools for Windows 10
+        https://www.dropbox.com/scl/fi/o6u3m2c37ydoeu5z0vc1u/WindowsTH-KB2693643-x64.msu?rlkey=6u02xwdn04djt1zn5tq1temvo&dl=0
 		
 .PARAMETER ComputerName
 	Specifies a computer used to run the script against.
@@ -87,12 +87,12 @@
 .PARAMETER AddDateTime
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
+	June 1, 2026 at 6PM is 2026-06-01_1800.
 	The output filename will be either:
 		DNS Inventory Report for Server <server> for the Domain 
-		<domain>_2021-06-01_1800.html (or .txt or .docx or .pdf)
+		<domain>_2026-06-01_1800.html (or .txt or .docx or .pdf)
 		DNS Inventory for All DNS Servers for the Domain 
-		<domain>_2021-06-01_1800.html (or .txt or .docx or .pdf)
+		<domain>_2026-06-01_1800.html (or .txt or .docx or .pdf)
 	This parameter is disabled by default.
 .PARAMETER Dev
 	Clears errors at the beginning of the script.
@@ -361,9 +361,9 @@
 	
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2021 at 6PM is 2021-07-25_1800.
+	July 25, 2026 at 6PM is 2026-07-25_1800.
 	The output filename is DNS Inventory Report for Server <server> for the Domain 
-	<domain>_2021-07-25_1800.html.
+	<domain>_2026-07-25_1800.html.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -PDF -AddDateTime
 	
@@ -379,9 +379,9 @@
 
 	Adds a date Timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	July 25, 2021 at 6PM is 2021-07-25_1800.
+	July 25, 2026 at 6PM is 2026-07-25_1800.
 	The output filename is DNS Inventory Report for Server <server> for the Domain 
-	<domain>_2021-07-25_1800.pdf.
+	<domain>_2026-07-25_1800.pdf.
 .EXAMPLE
 	PS C:\PSScript > .\DNS_Inventory_V2.ps1 -Folder \\FileServer\ShareName
 	
@@ -517,9 +517,9 @@
 	formatted text document.
 .NOTES
 	NAME: DNS_Inventory_V2.ps1
-	VERSION: 2.03
+	VERSION: 2.04
 	AUTHOR: Carl Webster and Michael B. Smith
-	LASTEDIT: February 18, 2022
+	LASTEDIT: April 10, 2026
 #>
 
 #endregion
@@ -631,6 +631,21 @@ Param(
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 #Version 1.00 released to the community on July 25, 2016
+
+#Version 2.04 10-Apr-2026
+#	Added "Processing zone, count of total" to OutputLookupZone verbose message
+#   DynamicUpdate isn't present on some Zones. Put an "N/A" for it instead of generating an error.
+#   GetHostEntry() is slow. Add CacheHostEntry. Makes a huge speed difference on servers with lots of zones.
+#   Get-DnsServer can return FAILURE even when it succeeds (I noted this happening when roothints are incorrect).
+#		So, check only for output, not for $?.
+#   Get-DnsServer is SLOW. We don't need to call it multiple times for the same server. Write function GetDnsServer and cache it.
+#	If IsSigned isn't present on some Zones. Put an "N/A" for it instead of generating an error.
+#   It's possible for DNSForwarders.IPAddress to contain no values. Check for that situation and don't generate an error any more.
+#	Updated references of ShareFile to Dropbox
+#	Updated the help text
+#	Updated the ReadMe
+#	Wrapped GetHostEntry() in try/catch instead of treating it like a cmdlet.
+#	Wrapped OpenRemoteBaseKey() in try/catch instead of treating it like a cmdlet.
 
 #Version 2.03 18-Feb-2022
 #	Changed the date format for the transcript and error log files from yyyy-MM-dd_HHmm format to the FileDateTime format
@@ -899,7 +914,7 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 $global:emailCredentials  = $Null
 $Script:RptDomain         = (Get-WmiObject -computername $ComputerName win32_computersystem).Domain
-$script:MyVersion         = '2.03'
+$script:MyVersion         = '2.04'
 $Script:ScriptName        = "DNS_Inventory_V2.ps1"
 $tmpdate                  = [datetime] "02/18/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -2256,19 +2271,21 @@ Function Get-RegistryValue
 	Else
 	{
 		#path needed here is different for remote registry access
-		$path1 = $path.SubString(6)
-		$path2 = $path1.Replace('\','\\')
-		$Reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $ComputerName)
-		$RegKey= $Reg.OpenSubKey($path2)
-		$Results = $RegKey.GetValue($name)
-		If($Null -ne $Results)
+		$path1 = $path.SubString( 6 )
+		$path2 = $path1.Replace( '\', '\\' )
+		try
 		{
-			Return $Results
+			$Reg     = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey( 'LocalMachine', $ComputerName )
+			$RegKey  = $Reg.OpenSubKey( $path2 )
+			$Results = $RegKey.GetValue( $name )
 		}
-		Else
+		catch
 		{
-			Return $Null
+			Write-Host "Could not open remote registry on computer $ComputerName"
+			$Results = $null
 		}
+
+		Return $Results
 	}
 }
 #endregion
@@ -4012,6 +4029,26 @@ Function testPortsOnOneIP
 	$success
 }
 
+$script:DNSserverCache = @{}
+
+function GetDnsServer
+{
+	Param
+	(
+		[String] $dnshostname
+	)
+
+	if( $script:DNSserverCache.Contains( $dnshostname ) )
+	{
+		return $script:DNSserverCache[ $dnshostname ]
+	}
+
+	$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
+	$script:DNSserverCache[ $dnshostname ] = $results
+
+	return $results
+}
+
 Function TestComputerName
 {
 	Param([string]$Cname)
@@ -4041,21 +4078,21 @@ Function TestComputerName
 	$ip = $CName -as [System.Net.IpAddress]
 	If($ip)
 	{
-		$Result = [System.Net.Dns]::gethostentry($ip)
-		
-		If($? -and $Null -ne $Result)
+		$Result = CacheHostEntry $ip
+
+		If( $null -ne $Result )
 		{
 			$CName = $Result.HostName
 			Write-Verbose "$(Get-Date -Format G): Computer name has been changed from $ip to $CName"
 			Write-Verbose "$(Get-Date -Format G): Testing to see if $CName is a DNS Server"
-			$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
-			If($? -and $Null -ne $results)
+			$results = GetDnsServer $CName
+			If( $null -ne $results )
 			{
 				#the computer is a dns server
 				Write-Verbose "$(Get-Date -Format G): Computer $CName is a DNS Server"
 				Return $CName
 			}
-			ElseIf(!$? -or $Null -eq $results)
+			Else
 			{
 				#the computer is not a dns server
 				Write-Verbose "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
@@ -4073,14 +4110,14 @@ Function TestComputerName
 	Else
 	{
 		Write-Verbose "$(Get-Date -Format G): Testing to see if $CName is a DNS Server"
-		$results = Get-DNSServer -ComputerName $CName -EA 0 2>$Null 3>$Null 4>$Null
-		If($? -and $Null -ne $results)
+		$results = GetDnsServer $CName
+		If( $null -ne $results )
 		{
 			#the computer is a dns server
 			Write-Verbose "$(Get-Date -Format G): Computer $CName is a DNS Server"
 			Return $CName
 		}
-		ElseIf(!$? -or $Null -eq $results)
+		Else
 		{
 			#the computer is not a dns server
 			Write-Verbose "$(Get-Date -Format G): Computer $CName is not a DNS Server or the Trust Points node is missing from the DNS console"
@@ -4591,7 +4628,7 @@ Function ProcessDNSServer
 	Write-Verbose "$(Get-Date -Format G): Processing DNS Server"
 	Write-Verbose "$(Get-Date -Format G): `tRetrieving DNS Server Information using Server $DNSServerName"
 	
-	$Script:DNSServerData = Get-DNSServer -ComputerName $DNSServerName -EA 0 2>$Null 3>$Null 4>$Null
+	$Script:DNSServerData = GetDnsServer $DNSServerName
 	
 	$DNSServerSettings    = $Script:DNSServerData.ServerSetting
 	$DNSForwarders        = $Script:DNSServerData.ServerForwarder
@@ -4682,7 +4719,7 @@ Function OutputDNSServer
 	#Interfaces tab
 	Write-Verbose "$(Get-Date -Format G): `t`t`tInterfaces"
 
-	#coutesy of MBS
+	#courtesy of MBS
 	#if the value does not exist, then All IP Addresses is selected
 	$AllIPs = Get-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\DNS\Parameters" "ListenAddresses" $DNSServerName
 	
@@ -4802,31 +4839,34 @@ Function OutputDNSServer
 		WriteHTMLLine 2 0 "Forwarders"
 		$rowdata = @()
 	}
-	
-	ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
+
+	if( $null -ne $DNSForwarders.IPAddress)
 	{
-		$Resolved = ResolveIPtoFQDN $IP
-
-		If($MSWord -or $PDF)
+		ForEach($IP in $DNSForwarders.IPAddress.IPAddressToString)
 		{
-			$WordTableRowHash = @{ 
-			IPAddress = $IP;
-			ServerFQDN = $Resolved;
+			$Resolved = ResolveIPtoFQDN $IP
+
+			If($MSWord -or $PDF)
+			{
+				$WordTableRowHash = @{ 
+				IPAddress = $IP;
+				ServerFQDN = $Resolved;
+				}
+
+				$FwdWordTable += $WordTableRowHash;
 			}
-
-			$FwdWordTable += $WordTableRowHash;
-		}
-		If($Text)
-		{
-			Line 1 "IP Address`t: " $IP
-			Line 1 "Server FQDN`t: " $Resolved
-			Line 0 ""
-		}
-		If($HTML)
-		{
-			$rowdata += @(,(
-			$Resolved,$htmlwhite,
-			$IP,$htmlwhite))
+			If($Text)
+			{
+				Line 1 "IP Address`t: " $IP
+				Line 1 "Server FQDN`t: " $Resolved
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$Resolved,$htmlwhite,
+				$IP,$htmlwhite))
+			}
 		}
 	}
 
@@ -4854,14 +4894,17 @@ Function OutputDNSServer
 	}
 	If($HTML)
 	{
-		$columnHeaders = @(
-		'Server FQDN',($htmlsilver -bor $htmlbold),
-		'IP Address',($htmlsilver -bor $htmlbold))
+		if( $rowdata.Count -gt 0 )
+		{
+			$columnHeaders = @(
+			'Server FQDN',($htmlsilver -bor $htmlbold),
+			'IP Address',($htmlsilver -bor $htmlbold))
 
-		$msg = ""
-		$columnWidths = @("200","150")
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
-		WriteHTMLLine 0 0 " "
+			$msg = ""
+			$columnWidths = @("200","150")
+			FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
+			WriteHTMLLine 0 0 " "
+		}
 	}
 
 	If($MSWord -or $PDF)
@@ -5311,6 +5354,34 @@ Function OutputDNSServer
 
 }
 
+$script:IPCache = @{}
+
+Function CacheHostEntry
+{
+	Param
+	(
+		[String] $ip
+	)
+	## GetHostEntry() is slow, especially when the IP doesn't resolve.
+	## So cache the results.
+	if( $script:IPCache.Contains( $ip ) )
+	{
+		return $script:IPCache[ $ip ]
+	}
+
+	try
+	{
+		$Result = [System.Net.Dns]::GetHostEntry( $ip )
+		$script:IPCache[ $ip ] = $Result
+		return $Result
+	}
+	catch
+	{
+		$script:IPCache[ $ip ] = $null
+		return $null
+	}
+}
+
 Function ResolveIPtoFQDN
 {
 	Param([string]$cname)
@@ -5319,17 +5390,16 @@ Function ResolveIPtoFQDN
 	
 	$ip = $CName -as [System.Net.IpAddress]
 	
-	If($ip)
+	If( $ip )
 	{
-		$Result = [System.Net.Dns]::gethostentry($ip)
-		
-		If($? -and $Null -ne $Result)
-		{
-			$CName = $Result.HostName
-		}
-		Else
+		$Result = CacheHostEntry $ip
+		if( $null -eq $Result )
 		{
 			$CName = 'Unable to resolve'
+		}
+		else
+		{
+			$CName = $Result.HostName
 		}
 	}
 	Return $CName
@@ -5362,14 +5432,17 @@ Function ProcessForwardLookupZones
 
 	$First = $True
 	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {
-	$_.IsReverseLookupZone -eq $False -and (
-	$_.ZoneType -eq "Primary" -and 
-	$_.ZoneName -ne "TrustAnchors" -or 
-	$_.ZoneType -eq "Stub" -or 
-	$_.ZoneType -eq "Secondary")}
+		$_.IsReverseLookupZone -eq $False -and (
+		$_.ZoneType -eq "Primary" -and 
+		$_.ZoneName -ne "TrustAnchors" -or 
+		$_.ZoneType -eq "Stub" -or 
+		$_.ZoneType -eq "Secondary")}
 	
+	$total = $DNSZones.count
+	$count = 0
 	ForEach($DNSZone in $DNSZones)
 	{
+		$count++
 		If(!$First)
 		{
 			If($MSWord -or $PDF)
@@ -5377,7 +5450,7 @@ Function ProcessForwardLookupZones
 				$Selection.InsertNewPage()
 			}
 		}
-		OutputLookupZone "Forward" $DNSZone $DNSServerName
+		OutputLookupZone "Forward" $DNSZone $DNSServerName $count $total
 		If($Details)
 		{
 			ProcessLookupZoneDetails "Forward" $DNSZone $DNSServerName
@@ -5390,11 +5463,18 @@ Function ProcessForwardLookupZones
 #region process lookzone data
 Function OutputLookupZone
 {
-	Param([string] $zType, [object] $DNSZone, [string] $DNSServerName)
+	Param
+	(
+		[string] $zType, 
+		[object] $DNSZone, 
+		[string] $DNSServerName, 
+		[int] $count, 
+		[int] $total
+	)
 
 	#V1.20, add support for the AllDNSServers parameter	
 	
-	Write-Verbose "$(Get-Date -Format G): `tProcessing $($DNSZone.ZoneName)"
+	Write-Verbose "$(Get-Date -Format G): `tProcessing $($DNSZone.ZoneName), $count of $total"
 	
 	#General tab
 	Write-Verbose "$(Get-Date -Format G): `t`tGeneral"
@@ -5861,20 +5941,11 @@ Function OutputLookupZone
 
 		ForEach($NS in $NameServers)
 		{
-			# fixed in V1.11 $ipAddress = ([System.Net.Dns]::gethostentry($NS.RecordData.NameServer)).AddressList.IPAddressToString
-			
-			Try
+			$result = CacheHostEntry $NS
+
+			If( $null -ne $result )
 			{
-				$ipAddress = ([System.Net.Dns]::gethostentry($NS)).AddressList.IPAddressToString
-			}
-			
-			Catch
-			{
-				$ipAddress = ""
-			}
-			
-			If($?)
-			{
+				$ipAddress = $result.Addresslist
 				If($ipAddress -is [array])
 				{
 					$cnt = -1
@@ -6022,7 +6093,7 @@ Function OutputLookupZone
 					}
 				}
 			}
-			ElseIf(-not $?)
+			Else ## $null -eq $ipAddress
 			{
 				If($MSWord -or $PDF)
 				{
@@ -7837,9 +7908,12 @@ Function ProcessReverseLookupZones
 
 	$First = $True
 	$DNSZones = $Script:DNSServerData.ServerZone | Where-Object {$_.IsReverseLookupZone -eq $True}
-	
+
+	$count = 0
+	$total = $DNSZones.Count
 	ForEach($DNSZone in $DNSZones)
 	{
+		$count++
 		If(!$First)
 		{
 			If($MSWord -or $PDF)
@@ -7847,7 +7921,7 @@ Function ProcessReverseLookupZones
 				$Selection.InsertNewPage()
 			}
 		}
-		OutputLookupZone "Reverse" $DNSZone $DNSServerName
+		OutputLookupZone "Reverse" $DNSZone $DNSServerName $count $total
 		If($Details)
 		{
 			ProcessLookupZoneDetails "Reverse" $DNSZone $DNSServerName
@@ -8430,14 +8504,31 @@ Function ProcessAppendixA
 					$NoRefreshInterval = "N/A"
 					$ScavengeServers   = "N/A"
 				}
-				
+				if( $null -ne ( Get-Member -Name IsSigned -InputObject $Zone ) )
+				{
+					$IsSigned = $Zone.IsSigned.ToString()
+				}
+				else
+				{
+					$IsSigned = 'N/A'
+				}
+
+				if( $null -ne ( Get-Member -Name DynamicUpdate -InputObject $Zone ) )
+				{
+					$DynamicUpdate = $Zone.DynamicUpdate
+				}
+				else
+				{
+					$DynamicUpdate = 'N/A'
+				}
+
 				$obj1 = [PSCustomObject] @{
 					ComputerName      = $DNSServer
 					ZoneName          = $Zone.ZoneName
 					ZoneType          = $Zone.ZoneType
 					IsDsIntegrated    = $Zone.IsDsIntegrated.ToString()
-					IsSigned          = $Zone.IsSigned.ToString()
-					DynamicUpdate     = $Zone.DynamicUpdate
+					IsSigned          = $IsSigned
+					DynamicUpdate     = $DynamicUpdate
 					ReplicationScope  = $Zone.ReplicationScope
 					AgingEnabled      = $AgingEnabled     
 					RefreshInterval   = $RefreshInterval  
@@ -8924,195 +9015,249 @@ ProcessDocumentOutput
 ProcessScriptEnd
 
 #endregion
+
 # SIG # Begin signature block
-# MIIjkQYJKoZIhvcNAQcCoIIjgjCCI34CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# MIIthQYJKoZIhvcNAQcCoIItdjCCLXICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5qnFBzu5CWr8yiwYupwd7F9K
-# 0PKggh3hMIIE/jCCA+agAwIBAgIQDUJK4L46iP9gQCHOFADw3TANBgkqhkiG9w0B
-# AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
-# VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
-# c3VyZWQgSUQgVGltZXN0YW1waW5nIENBMB4XDTIxMDEwMTAwMDAwMFoXDTMxMDEw
-# NjAwMDAwMFowSDELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMu
-# MSAwHgYDVQQDExdEaWdpQ2VydCBUaW1lc3RhbXAgMjAyMTCCASIwDQYJKoZIhvcN
-# AQEBBQADggEPADCCAQoCggEBAMLmYYRnxYr1DQikRcpja1HXOhFCvQp1dU2UtAxQ
-# tSYQ/h3Ib5FrDJbnGlxI70Tlv5thzRWRYlq4/2cLnGP9NmqB+in43Stwhd4CGPN4
-# bbx9+cdtCT2+anaH6Yq9+IRdHnbJ5MZ2djpT0dHTWjaPxqPhLxs6t2HWc+xObTOK
-# fF1FLUuxUOZBOjdWhtyTI433UCXoZObd048vV7WHIOsOjizVI9r0TXhG4wODMSlK
-# XAwxikqMiMX3MFr5FK8VX2xDSQn9JiNT9o1j6BqrW7EdMMKbaYK02/xWVLwfoYer
-# vnpbCiAvSwnJlaeNsvrWY4tOpXIc7p96AXP4Gdb+DUmEvQECAwEAAaOCAbgwggG0
-# MA4GA1UdDwEB/wQEAwIHgDAMBgNVHRMBAf8EAjAAMBYGA1UdJQEB/wQMMAoGCCsG
-# AQUFBwMIMEEGA1UdIAQ6MDgwNgYJYIZIAYb9bAcBMCkwJwYIKwYBBQUHAgEWG2h0
-# dHA6Ly93d3cuZGlnaWNlcnQuY29tL0NQUzAfBgNVHSMEGDAWgBT0tuEgHf4prtLk
-# YaWyoiWyyBc1bjAdBgNVHQ4EFgQUNkSGjqS6sGa+vCgtHUQ23eNqerwwcQYDVR0f
-# BGowaDAyoDCgLoYsaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL3NoYTItYXNzdXJl
-# ZC10cy5jcmwwMqAwoC6GLGh0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNvbS9zaGEyLWFz
-# c3VyZWQtdHMuY3JsMIGFBggrBgEFBQcBAQR5MHcwJAYIKwYBBQUHMAGGGGh0dHA6
-# Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBPBggrBgEFBQcwAoZDaHR0cDovL2NhY2VydHMu
-# ZGlnaWNlcnQuY29tL0RpZ2lDZXJ0U0hBMkFzc3VyZWRJRFRpbWVzdGFtcGluZ0NB
-# LmNydDANBgkqhkiG9w0BAQsFAAOCAQEASBzctemaI7znGucgDo5nRv1CclF0CiNH
-# o6uS0iXEcFm+FKDlJ4GlTRQVGQd58NEEw4bZO73+RAJmTe1ppA/2uHDPYuj1UUp4
-# eTZ6J7fz51Kfk6ftQ55757TdQSKJ+4eiRgNO/PT+t2R3Y18jUmmDgvoaU+2QzI2h
-# F3MN9PNlOXBL85zWenvaDLw9MtAby/Vh/HUIAHa8gQ74wOFcz8QRcucbZEnYIpp1
-# FUL1LTI4gdr0YKK6tFL7XOBhJCVPst/JKahzQ1HavWPWH1ub9y4bTxMd90oNcX6X
-# t/Q/hOvB46NJofrOp79Wz7pZdmGJX36ntI5nePk2mOHLKNpbh6aKLzCCBTEwggQZ
-# oAMCAQICEAqhJdbWMht+QeQF2jaXwhUwDQYJKoZIhvcNAQELBQAwZTELMAkGA1UE
-# BhMCVVMxFTATBgNVBAoTDERpZ2lDZXJ0IEluYzEZMBcGA1UECxMQd3d3LmRpZ2lj
-# ZXJ0LmNvbTEkMCIGA1UEAxMbRGlnaUNlcnQgQXNzdXJlZCBJRCBSb290IENBMB4X
-# DTE2MDEwNzEyMDAwMFoXDTMxMDEwNzEyMDAwMFowcjELMAkGA1UEBhMCVVMxFTAT
-# BgNVBAoTDERpZ2lDZXJ0IEluYzEZMBcGA1UECxMQd3d3LmRpZ2ljZXJ0LmNvbTEx
-# MC8GA1UEAxMoRGlnaUNlcnQgU0hBMiBBc3N1cmVkIElEIFRpbWVzdGFtcGluZyBD
-# QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL3QMu5LzY9/3am6gpnF
-# OVQoV7YjSsQOB0UzURB90Pl9TWh+57ag9I2ziOSXv2MhkJi/E7xX08PhfgjWahQA
-# OPcuHjvuzKb2Mln+X2U/4Jvr40ZHBhpVfgsnfsCi9aDg3iI/Dv9+lfvzo7oiPhis
-# EeTwmQNtO4V8CdPuXciaC1TjqAlxa+DPIhAPdc9xck4Krd9AOly3UeGheRTGTSQj
-# MF287DxgaqwvB8z98OpH2YhQXv1mblZhJymJhFHmgudGUP2UKiyn5HU+upgPhH+f
-# MRTWrdXyZMt7HgXQhBlyF/EXBu89zdZN7wZC/aJTKk+FHcQdPK/P2qwQ9d2srOlW
-# /5MCAwEAAaOCAc4wggHKMB0GA1UdDgQWBBT0tuEgHf4prtLkYaWyoiWyyBc1bjAf
-# BgNVHSMEGDAWgBRF66Kv9JLLgjEtUYunpyGd823IDzASBgNVHRMBAf8ECDAGAQH/
-# AgEAMA4GA1UdDwEB/wQEAwIBhjATBgNVHSUEDDAKBggrBgEFBQcDCDB5BggrBgEF
-# BQcBAQRtMGswJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBD
-# BggrBgEFBQcwAoY3aHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0
-# QXNzdXJlZElEUm9vdENBLmNydDCBgQYDVR0fBHoweDA6oDigNoY0aHR0cDovL2Ny
-# bDQuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0QXNzdXJlZElEUm9vdENBLmNybDA6oDig
-# NoY0aHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0QXNzdXJlZElEUm9v
-# dENBLmNybDBQBgNVHSAESTBHMDgGCmCGSAGG/WwAAgQwKjAoBggrBgEFBQcCARYc
-# aHR0cHM6Ly93d3cuZGlnaWNlcnQuY29tL0NQUzALBglghkgBhv1sBwEwDQYJKoZI
-# hvcNAQELBQADggEBAHGVEulRh1Zpze/d2nyqY3qzeM8GN0CE70uEv8rPAwL9xafD
-# DiBCLK938ysfDCFaKrcFNB1qrpn4J6JmvwmqYN92pDqTD/iy0dh8GWLoXoIlHsS6
-# HHssIeLWWywUNUMEaLLbdQLgcseY1jxk5R9IEBhfiThhTWJGJIdjjJFSLK8pieV4
-# H9YLFKWA1xJHcLN11ZOFk362kmf7U2GJqPVrlsD0WGkNfMgBsbkodbeZY4UijGHK
-# eZR+WfyMD+NvtQEmtmyl7odRIeRYYJu6DC0rbaLEfrvEJStHAgh8Sa4TtuF8QkIo
-# xhhWz0E0tmZdtnR79VYzIi8iNrJLokqV2PWmjlIwggWQMIIDeKADAgECAhAFmxtX
-# no4hMuI5B72nd3VcMA0GCSqGSIb3DQEBDAUAMGIxCzAJBgNVBAYTAlVTMRUwEwYD
-# VQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xITAf
-# BgNVBAMTGERpZ2lDZXJ0IFRydXN0ZWQgUm9vdCBHNDAeFw0xMzA4MDExMjAwMDBa
-# Fw0zODAxMTUxMjAwMDBaMGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2Vy
-# dCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lD
-# ZXJ0IFRydXN0ZWQgUm9vdCBHNDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoC
-# ggIBAL/mkHNo3rvkXUo8MCIwaTPswqclLskhPfKK2FnC4SmnPVirdprNrnsbhA3E
-# MB/zG6Q4FutWxpdtHauyefLKEdLkX9YFPFIPUh/GnhWlfr6fqVcWWVVyr2iTcMKy
-# unWZanMylNEQRBAu34LzB4TmdDttceItDBvuINXJIB1jKS3O7F5OyJP4IWGbNOsF
-# xl7sWxq868nPzaw0QF+xembud8hIqGZXV59UWI4MK7dPpzDZVu7Ke13jrclPXuU1
-# 5zHL2pNe3I6PgNq2kZhAkHnDeMe2scS1ahg4AxCN2NQ3pC4FfYj1gj4QkXCrVYJB
-# MtfbBHMqbpEBfCFM1LyuGwN1XXhm2ToxRJozQL8I11pJpMLmqaBn3aQnvKFPObUR
-# WBf3JFxGj2T3wWmIdph2PVldQnaHiZdpekjw4KISG2aadMreSx7nDmOu5tTvkpI6
-# nj3cAORFJYm2mkQZK37AlLTSYW3rM9nF30sEAMx9HJXDj/chsrIRt7t/8tWMcCxB
-# YKqxYxhElRp2Yn72gLD76GSmM9GJB+G9t+ZDpBi4pncB4Q+UDCEdslQpJYls5Q5S
-# UUd0viastkF13nqsX40/ybzTQRESW+UQUOsxxcpyFiIJ33xMdT9j7CFfxCBRa2+x
-# q4aLT8LWRV+dIPyhHsXAj6KxfgommfXkaS+YHS312amyHeUbAgMBAAGjQjBAMA8G
-# A1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgGGMB0GA1UdDgQWBBTs1+OC0nFd
-# ZEzfLmc/57qYrhwPTzANBgkqhkiG9w0BAQwFAAOCAgEAu2HZfalsvhfEkRvDoaIA
-# jeNkaA9Wz3eucPn9mkqZucl4XAwMX+TmFClWCzZJXURj4K2clhhmGyMNPXnpbWvW
-# VPjSPMFDQK4dUPVS/JA7u5iZaWvHwaeoaKQn3J35J64whbn2Z006Po9ZOSJTROvI
-# XQPK7VB6fWIhCoDIc2bRoAVgX+iltKevqPdtNZx8WorWojiZ83iL9E3SIAveBO6M
-# m0eBcg3AFDLvMFkuruBx8lbkapdvklBtlo1oepqyNhR6BvIkuQkRUNcIsbiJeoQj
-# YUIp5aPNoiBB19GcZNnqJqGLFNdMGbJQQXE9P01wI4YMStyB0swylIQNCAmXHE/A
-# 7msgdDDS4Dk0EIUhFQEI6FUy3nFJ2SgXUE3mvk3RdazQyvtBuEOlqtPDBURPLDab
-# 4vriRbgjU2wGb2dVf0a1TD9uKFp5JtKkqGKX0h7i7UqLvBv9R0oN32dmfrJbQdA7
-# 5PQ79ARj6e/CVABRoIoqyc54zNXqhwQYs86vSYiv85KZtrPmYQ/ShQDnUBrkG5Wd
-# GaG5nLGbsQAe79APT0JsyQq87kP6OnGlyE0mpTX9iV28hWIdMtKgK1TtmlfB2/oQ
-# zxm3i0objwG2J5VT6LaJbVu8aNQj6ItRolb58KaAoNYes7wPD1N1KarqE3fk3oyB
-# Ia0HEEcRrYc9B9F1vM/zZn4wggawMIIEmKADAgECAhAIrUCyYNKcTJ9ezam9k67Z
-# MA0GCSqGSIb3DQEBDAUAMGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2Vy
-# dCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lD
-# ZXJ0IFRydXN0ZWQgUm9vdCBHNDAeFw0yMTA0MjkwMDAwMDBaFw0zNjA0MjgyMzU5
-# NTlaMGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8G
-# A1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBT
-# SEEzODQgMjAyMSBDQTEwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDV
-# tC9C0CiteLdd1TlZG7GIQvUzjOs9gZdwxbvEhSYwn6SOaNhc9es0JAfhS0/TeEP0
-# F9ce2vnS1WcaUk8OoVf8iJnBkcyBAz5NcCRks43iCH00fUyAVxJrQ5qZ8sU7H/Lv
-# y0daE6ZMswEgJfMQ04uy+wjwiuCdCcBlp/qYgEk1hz1RGeiQIXhFLqGfLOEYwhrM
-# xe6TSXBCMo/7xuoc82VokaJNTIIRSFJo3hC9FFdd6BgTZcV/sk+FLEikVoQ11vku
-# nKoAFdE3/hoGlMJ8yOobMubKwvSnowMOdKWvObarYBLj6Na59zHh3K3kGKDYwSNH
-# R7OhD26jq22YBoMbt2pnLdK9RBqSEIGPsDsJ18ebMlrC/2pgVItJwZPt4bRc4G/r
-# JvmM1bL5OBDm6s6R9b7T+2+TYTRcvJNFKIM2KmYoX7BzzosmJQayg9Rc9hUZTO1i
-# 4F4z8ujo7AqnsAMrkbI2eb73rQgedaZlzLvjSFDzd5Ea/ttQokbIYViY9XwCFjyD
-# KK05huzUtw1T0PhH5nUwjewwk3YUpltLXXRhTT8SkXbev1jLchApQfDVxW0mdmgR
-# QRNYmtwmKwH0iU1Z23jPgUo+QEdfyYFQc4UQIyFZYIpkVMHMIRroOBl8ZhzNeDhF
-# MJlP/2NPTLuqDQhTQXxYPUez+rbsjDIJAsxsPAxWEQIDAQABo4IBWTCCAVUwEgYD
-# VR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQUaDfg67Y7+F8Rhvv+YXsIiGX0TkIw
-# HwYDVR0jBBgwFoAU7NfjgtJxXWRM3y5nP+e6mK4cD08wDgYDVR0PAQH/BAQDAgGG
-# MBMGA1UdJQQMMAoGCCsGAQUFBwMDMHcGCCsGAQUFBwEBBGswaTAkBggrBgEFBQcw
-# AYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29tMEEGCCsGAQUFBzAChjVodHRwOi8v
-# Y2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRUcnVzdGVkUm9vdEc0LmNydDBD
-# BgNVHR8EPDA6MDigNqA0hjJodHRwOi8vY3JsMy5kaWdpY2VydC5jb20vRGlnaUNl
-# cnRUcnVzdGVkUm9vdEc0LmNybDAcBgNVHSAEFTATMAcGBWeBDAEDMAgGBmeBDAEE
-# ATANBgkqhkiG9w0BAQwFAAOCAgEAOiNEPY0Idu6PvDqZ01bgAhql+Eg08yy25nRm
-# 95RysQDKr2wwJxMSnpBEn0v9nqN8JtU3vDpdSG2V1T9J9Ce7FoFFUP2cvbaF4HZ+
-# N3HLIvdaqpDP9ZNq4+sg0dVQeYiaiorBtr2hSBh+3NiAGhEZGM1hmYFW9snjdufE
-# 5BtfQ/g+lP92OT2e1JnPSt0o618moZVYSNUa/tcnP/2Q0XaG3RywYFzzDaju4Imh
-# vTnhOE7abrs2nfvlIVNaw8rpavGiPttDuDPITzgUkpn13c5UbdldAhQfQDN8A+KV
-# ssIhdXNSy0bYxDQcoqVLjc1vdjcshT8azibpGL6QB7BDf5WIIIJw8MzK7/0pNVwf
-# iThV9zeKiwmhywvpMRr/LhlcOXHhvpynCgbWJme3kuZOX956rEnPLqR0kq3bPKSc
-# hh/jwVYbKyP/j7XqiHtwa+aguv06P0WmxOgWkVKLQcBIhEuWTatEQOON8BUozu3x
-# GFYHKi8QxAwIZDwzj64ojDzLj4gLDb879M4ee47vtevLt/B3E+bnKD+sEq6lLyJs
-# QfmCXBVmzGwOysWGw/YmMwwHS6DTBwJqakAwSEs0qFEgu60bhQjiWQ1tygVQK+pK
-# HJ6l/aCnHwZ05/LWUpD9r4VIIflXO7ScA+2GRfS0YW6/aOImYIbqyK+p/pQd52Mb
-# OoZWeE4wggdeMIIFRqADAgECAhAFulYuS3p29y1ilWIrK5dmMA0GCSqGSIb3DQEB
-# CwUAMGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8G
-# A1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBT
-# SEEzODQgMjAyMSBDQTEwHhcNMjExMjAxMDAwMDAwWhcNMjMxMjA3MjM1OTU5WjBj
-# MQswCQYDVQQGEwJVUzESMBAGA1UECBMJVGVubmVzc2VlMRIwEAYDVQQHEwlUdWxs
-# YWhvbWExFTATBgNVBAoTDENhcmwgV2Vic3RlcjEVMBMGA1UEAxMMQ2FybCBXZWJz
-# dGVyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA98Xfb+rSvcKK6oXU
-# 0jjumwlQCG2EltgTWqBp3yIWVJvPgbbryZB0JNT3vWbZUOnqZxENFG/YxDdR88By
-# ukOAeveRE1oeYNva7kbEpQ7vH9sTNiVFsglOQRtSyBch3353BZ51gIESO1sxW9dw
-# 41rMdUw6AhxoMxwhX0RTV25mUVAadNzDEuZzTP3zXpWuoAeYpppe8yptyw8OR79A
-# d83ttDPLr6o/SwXYH2EeaQu195FFq7Fn6Yp/kLYAgOrpJFJpRxd+b2kWxnOaF5RI
-# /EcbLH+/20xTDOho3V7VGWTiRs18QNLb1u14wiBTUnHvLsLBT1g5fli4RhL7rknp
-# 8DHksuISIIQVMWVfgFmgCsV9of4ymf4EmyzIJexXcdFHDw2x/bWFqXti/TPV8wYK
-# lEaLa2MrSMH1Jrnqt/vcP/DP2IUJa4FayoY2l8wvGOLNjYvfQ6c6RThd1ju7d62r
-# 9EJI8aPXPvcrlyZ3y6UH9tiuuPzsyNVnXKyDphJm5I57tLsN8LSBNVo+I227VZfX
-# q3MUuhz0oyErzFeKnLsPB1afLLfBzCSeYWOMjWpLo+PufKgh0X8OCRSfq6Iigpj9
-# q5KzjQ29L9BVnOJuWt49fwWFfmBOrcaR9QaN4gAHSY9+K7Tj3kUo0AHl66QaGWet
-# R7XYTel+ydst/fzYBq6SafVOt1kCAwEAAaOCAgYwggICMB8GA1UdIwQYMBaAFGg3
-# 4Ou2O/hfEYb7/mF7CIhl9E5CMB0GA1UdDgQWBBQ5WnsIlilu682kqvRMmUxb5DHu
-# gTAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwMwgbUGA1UdHwSB
-# rTCBqjBToFGgT4ZNaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1
-# c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNBMS5jcmwwU6BRoE+G
-# TWh0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRHNENvZGVT
-# aWduaW5nUlNBNDA5NlNIQTM4NDIwMjFDQTEuY3JsMD4GA1UdIAQ3MDUwMwYGZ4EM
-# AQQBMCkwJwYIKwYBBQUHAgEWG2h0dHA6Ly93d3cuZGlnaWNlcnQuY29tL0NQUzCB
-# lAYIKwYBBQUHAQEEgYcwgYQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2lj
-# ZXJ0LmNvbTBcBggrBgEFBQcwAoZQaHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29t
-# L0RpZ2lDZXJ0VHJ1c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNB
-# MS5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAgEAGcm1xuESCj6Y
-# VIf55C/gtmnsRJWtf7zEyqUtXhYU+PMciHnjnUbOmuF1+jKTA6j9FN0Ktv33fVxt
-# WQ+ZisNssZbfwaUd3goBQatFF2TmUc1KVsRUj/VU+uVPcL++tzaYkDydowhiP+9D
-# IEOXOYxunjlwFppOGrk3edKRj8p7puv9sZZTdPiUHmJ1GvideoXTAJ1Db6Jmn6ee
-# tnl4m6zx9CCDJF9z8KexKS1bSpJBbdKz71H1PlgI7Tu4ntLyyaRVOpan8XYWmu9k
-# 35TOfHHl8Cvbg6itg0fIJgvqnLJ4Huc+y6o/zrvj6HrFSOK6XowdQLQshrMZ2ceT
-# u8gVkZsKZtu0JeMpkbVKmKi/7RXIZdh9bn0NhzslioXEX+s70d60kntMsBAQX0Ar
-# OpKmrqZZJuxNMGAIXpEwSTeyqu0ujZI9eE1AU7EcZsYkZawdyLmilZdw1qwEQlAv
-# EqyjbjY81qtpkORAeJSpnPelUlyyQelJPLWFR0syKsUyROqg5OFXINxkHaJcuWLW
-# RPFJOEooSWPEid4rHMftaG2gOPg35o7yPzzHd8Y9pCX2v55NYjLrjUkz9JCjQ/g0
-# LiOo3a+yvot+7izsaJEs8SAdhG7RZ/fdsyv+SyyoEzsd1iO/mZ2DQ0rKaU/fiCXJ
-# pvrNmEwg+pbeIOCOgS0x5pQ0dyMlBZoxggUaMIIFFgIBATB9MGkxCzAJBgNVBAYT
-# AlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQg
-# VHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTEC
-# EAW6Vi5Lenb3LWKVYisrl2YwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgor
-# BgEEAYI3AgEEMCMGCSqGSIb3DQEJBDEWBBRWK0Le4HnCFfgd6LrfdmGS20/YrDAN
-# BgkqhkiG9w0BAQEFAASCAgDCrJS6oIdPZvpE1kcmlCpTNOo4xMEMjMAo+ukOqJhI
-# Eah0mxfh41OdfBmaTnfav8K36Cifb9azFw3VoUyR7cFTMqE+5XpqnFHFPcAxg/lR
-# BrX5N8l9can11tXpb6vKhhJW9k+3Uz1TbTYYc0V+u4AA/hVExFUT0EbGaa2yDqRD
-# jLE2hXaaNt7R7iHZFpZXGIS4sTTiTRqnAo44uy/4ocabOe4WQpeDwp63UaxI29XW
-# S+Zbygfbfz9ckqolL0NkEj5ody7Bg/6uODxe5ZuCvHi1+lUU1NiGKiRysnYNniAH
-# RlOZTCDks9EQJODB/2nezkBUf6PbHrjXMwT5u1fdvOAQmTo6N5F3X+YpygorF09D
-# q0tkBqNWtXtBrFJUMfydD2MDRbCYvAMEBnPkWp+UMVQuBz3jv4pNkRFpx9HcNbvM
-# LZIjMuCZ5kXSjksIG9V7lM4S53PoVpGd3pmFniUmjS09UWjNVac9AEI4gMO5ivf/
-# xn5swSvPZaGJ7TQktxmbdiOEp2y6CKN0FKomny9QifGQ4WxYIEu8fdXpNBkCcQX7
-# EU6IUlPUPTVdSno2QqwdlNoyBdfrHk4burzYwYg2HSKsNjhLU7atTPLNazjDs18N
-# YDBhr4druOwaPgUo22LXRjga/HB+oQ62AG8DuMZjoVjA+fTBEaWn2OZmhL38Q29V
-# F6GCAjAwggIsBgkqhkiG9w0BCQYxggIdMIICGQIBATCBhjByMQswCQYDVQQGEwJV
-# UzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQu
-# Y29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFzc3VyZWQgSUQgVGltZXN0YW1w
-# aW5nIENBAhANQkrgvjqI/2BAIc4UAPDdMA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZI
-# hvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjIwMjE4MTI0ODQ2
-# WjAvBgkqhkiG9w0BCQQxIgQg57YnvBSxufoXUM382clF+Peju3JYgTiGeEViwyo8
-# J5AwDQYJKoZIhvcNAQEBBQAEggEAICc8d17OraRAf+pnyOG6MSqdsasm7f7DgMPb
-# mrIzzLQq2MPop1ak+EX7HA3Ydtmbf9izccIxg2SiPvVcwPAZV4aGXaOZjz3zMzDy
-# oV/ZzbN69kcz9aDHotDQ4U5Mj/DdfW/WtNgu9v03Gx5fhYQ+3Ly7yhyOu1iiFfJz
-# VYJznep4/smGhMUgZ1druXMIfgg6mz+baeMQoCdtWO/5v8Jls31+8NosV35/ml7c
-# QlwEQTKCV5hE24MazEZwei52Az8rGudxlMeF2fyax9aySPwVQ4x+Jxk+RYGJChyn
-# l8MsxODq86+C3UzG79gW7YiStOQICH30SthEOrhQqFBdxi+FJA==
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUv91K0MlBLaaWkLBmTNMempWq
+# XAWggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
+# VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
+# IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
+# CQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cu
+# ZGlnaWNlcnQuY29tMSEwHwYDVQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQw
+# ggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC/5pBzaN675F1KPDAiMGkz
+# 7MKnJS7JIT3yithZwuEppz1Yq3aaza57G4QNxDAf8xukOBbrVsaXbR2rsnnyyhHS
+# 5F/WBTxSD1Ifxp4VpX6+n6lXFllVcq9ok3DCsrp1mWpzMpTREEQQLt+C8weE5nQ7
+# bXHiLQwb7iDVySAdYyktzuxeTsiT+CFhmzTrBcZe7FsavOvJz82sNEBfsXpm7nfI
+# SKhmV1efVFiODCu3T6cw2Vbuyntd463JT17lNecxy9qTXtyOj4DatpGYQJB5w3jH
+# trHEtWoYOAMQjdjUN6QuBX2I9YI+EJFwq1WCQTLX2wRzKm6RAXwhTNS8rhsDdV14
+# Ztk6MUSaM0C/CNdaSaTC5qmgZ92kJ7yhTzm1EVgX9yRcRo9k98FpiHaYdj1ZXUJ2
+# h4mXaXpI8OCiEhtmmnTK3kse5w5jrubU75KSOp493ADkRSWJtppEGSt+wJS00mFt
+# 6zPZxd9LBADMfRyVw4/3IbKyEbe7f/LVjHAsQWCqsWMYRJUadmJ+9oCw++hkpjPR
+# iQfhvbfmQ6QYuKZ3AeEPlAwhHbJUKSWJbOUOUlFHdL4mrLZBdd56rF+NP8m800ER
+# ElvlEFDrMcXKchYiCd98THU/Y+whX8QgUWtvsauGi0/C1kVfnSD8oR7FwI+isX4K
+# Jpn15GkvmB0t9dmpsh3lGwIDAQABo4IBOjCCATYwDwYDVR0TAQH/BAUwAwEB/zAd
+# BgNVHQ4EFgQU7NfjgtJxXWRM3y5nP+e6mK4cD08wHwYDVR0jBBgwFoAUReuir/SS
+# y4IxLVGLp6chnfNtyA8wDgYDVR0PAQH/BAQDAgGGMHkGCCsGAQUFBwEBBG0wazAk
+# BggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29tMEMGCCsGAQUFBzAC
+# hjdodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkSURS
+# b290Q0EuY3J0MEUGA1UdHwQ+MDwwOqA4oDaGNGh0dHA6Ly9jcmwzLmRpZ2ljZXJ0
+# LmNvbS9EaWdpQ2VydEFzc3VyZWRJRFJvb3RDQS5jcmwwEQYDVR0gBAowCDAGBgRV
+# HSAAMA0GCSqGSIb3DQEBDAUAA4IBAQBwoL9DXFXnOF+go3QbPbYW1/e/Vwe9mqyh
+# hyzshV6pGrsi+IcaaVQi7aSId229GhT0E0p6Ly23OO/0/4C5+KH38nLeJLxSA8hO
+# 0Cre+i1Wz/n096wwepqLsl7Uz9FDRJtDIeuWcqFItJnLnU+nBgMTdydE1Od/6Fmo
+# 8L8vC6bp8jQ87PcDx4eo0kxAGTVGamlUsLihVo7spNU96LHc/RzY9HdaXFSMb++h
+# UD38dglohJ9vytsgjTVgHAIDyyCwrFigDkBjxZgiwbJZ9VVrzyerbHbObyMt9H5x
+# aiNrIv8SuFQtJ37YOtnwtoeW/VvRXKwYw02fc7cBqZ9Xql4o4rmUMIIFkDCCA3ig
+# AwIBAgIQBZsbV56OITLiOQe9p3d1XDANBgkqhkiG9w0BAQwFADBiMQswCQYDVQQG
+# EwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNl
+# cnQuY29tMSEwHwYDVQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwHhcNMTMw
+# ODAxMTIwMDAwWhcNMzgwMTE1MTIwMDAwWjBiMQswCQYDVQQGEwJVUzEVMBMGA1UE
+# ChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYD
+# VQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwggIiMA0GCSqGSIb3DQEBAQUA
+# A4ICDwAwggIKAoICAQC/5pBzaN675F1KPDAiMGkz7MKnJS7JIT3yithZwuEppz1Y
+# q3aaza57G4QNxDAf8xukOBbrVsaXbR2rsnnyyhHS5F/WBTxSD1Ifxp4VpX6+n6lX
+# FllVcq9ok3DCsrp1mWpzMpTREEQQLt+C8weE5nQ7bXHiLQwb7iDVySAdYyktzuxe
+# TsiT+CFhmzTrBcZe7FsavOvJz82sNEBfsXpm7nfISKhmV1efVFiODCu3T6cw2Vbu
+# yntd463JT17lNecxy9qTXtyOj4DatpGYQJB5w3jHtrHEtWoYOAMQjdjUN6QuBX2I
+# 9YI+EJFwq1WCQTLX2wRzKm6RAXwhTNS8rhsDdV14Ztk6MUSaM0C/CNdaSaTC5qmg
+# Z92kJ7yhTzm1EVgX9yRcRo9k98FpiHaYdj1ZXUJ2h4mXaXpI8OCiEhtmmnTK3kse
+# 5w5jrubU75KSOp493ADkRSWJtppEGSt+wJS00mFt6zPZxd9LBADMfRyVw4/3IbKy
+# Ebe7f/LVjHAsQWCqsWMYRJUadmJ+9oCw++hkpjPRiQfhvbfmQ6QYuKZ3AeEPlAwh
+# HbJUKSWJbOUOUlFHdL4mrLZBdd56rF+NP8m800ERElvlEFDrMcXKchYiCd98THU/
+# Y+whX8QgUWtvsauGi0/C1kVfnSD8oR7FwI+isX4KJpn15GkvmB0t9dmpsh3lGwID
+# AQABo0IwQDAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBhjAdBgNVHQ4E
+# FgQU7NfjgtJxXWRM3y5nP+e6mK4cD08wDQYJKoZIhvcNAQEMBQADggIBALth2X2p
+# bL4XxJEbw6GiAI3jZGgPVs93rnD5/ZpKmbnJeFwMDF/k5hQpVgs2SV1EY+CtnJYY
+# ZhsjDT156W1r1lT40jzBQ0CuHVD1UvyQO7uYmWlrx8GnqGikJ9yd+SeuMIW59mdN
+# Oj6PWTkiU0TryF0Dyu1Qen1iIQqAyHNm0aAFYF/opbSnr6j3bTWcfFqK1qI4mfN4
+# i/RN0iAL3gTujJtHgXINwBQy7zBZLq7gcfJW5GqXb5JQbZaNaHqasjYUegbyJLkJ
+# EVDXCLG4iXqEI2FCKeWjzaIgQdfRnGTZ6iahixTXTBmyUEFxPT9NcCOGDErcgdLM
+# MpSEDQgJlxxPwO5rIHQw0uA5NBCFIRUBCOhVMt5xSdkoF1BN5r5N0XWs0Mr7QbhD
+# parTwwVETyw2m+L64kW4I1NsBm9nVX9GtUw/bihaeSbSpKhil9Ie4u1Ki7wb/UdK
+# Dd9nZn6yW0HQO+T0O/QEY+nvwlQAUaCKKsnOeMzV6ocEGLPOr0mIr/OSmbaz5mEP
+# 0oUA51Aa5BuVnRmhuZyxm7EAHu/QD09CbMkKvO5D+jpxpchNJqU1/YldvIViHTLS
+# oCtU7ZpXwdv6EM8Zt4tKG48BtieVU+i2iW1bvGjUI+iLUaJW+fCmgKDWHrO8Dw9T
+# dSmq6hN35N6MgSGtBxBHEa2HPQfRdbzP82Z+MIIGsDCCBJigAwIBAgIQCK1AsmDS
+# nEyfXs2pvZOu2TANBgkqhkiG9w0BAQwFADBiMQswCQYDVQQGEwJVUzEVMBMGA1UE
+# ChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYD
+# VQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwHhcNMjEwNDI5MDAwMDAwWhcN
+# MzYwNDI4MjM1OTU5WjBpMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQs
+# IEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRydXN0ZWQgRzQgQ29kZSBTaWduaW5n
+# IFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExMIICIjANBgkqhkiG9w0BAQEFAAOCAg8A
+# MIICCgKCAgEA1bQvQtAorXi3XdU5WRuxiEL1M4zrPYGXcMW7xIUmMJ+kjmjYXPXr
+# NCQH4UtP03hD9BfXHtr50tVnGlJPDqFX/IiZwZHMgQM+TXAkZLON4gh9NH1MgFcS
+# a0OamfLFOx/y78tHWhOmTLMBICXzENOLsvsI8IrgnQnAZaf6mIBJNYc9URnokCF4
+# RS6hnyzhGMIazMXuk0lwQjKP+8bqHPNlaJGiTUyCEUhSaN4QvRRXXegYE2XFf7JP
+# hSxIpFaENdb5LpyqABXRN/4aBpTCfMjqGzLmysL0p6MDDnSlrzm2q2AS4+jWufcx
+# 4dyt5Big2MEjR0ezoQ9uo6ttmAaDG7dqZy3SvUQakhCBj7A7CdfHmzJawv9qYFSL
+# ScGT7eG0XOBv6yb5jNWy+TgQ5urOkfW+0/tvk2E0XLyTRSiDNipmKF+wc86LJiUG
+# soPUXPYVGUztYuBeM/Lo6OwKp7ADK5GyNnm+960IHnWmZcy740hQ83eRGv7bUKJG
+# yGFYmPV8AhY8gyitOYbs1LcNU9D4R+Z1MI3sMJN2FKZbS110YU0/EpF23r9Yy3IQ
+# KUHw1cVtJnZoEUETWJrcJisB9IlNWdt4z4FKPkBHX8mBUHOFECMhWWCKZFTBzCEa
+# 6DgZfGYczXg4RTCZT/9jT0y7qg0IU0F8WD1Hs/q27IwyCQLMbDwMVhECAwEAAaOC
+# AVkwggFVMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFGg34Ou2O/hfEYb7
+# /mF7CIhl9E5CMB8GA1UdIwQYMBaAFOzX44LScV1kTN8uZz/nupiuHA9PMA4GA1Ud
+# DwEB/wQEAwIBhjATBgNVHSUEDDAKBggrBgEFBQcDAzB3BggrBgEFBQcBAQRrMGkw
+# JAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBBBggrBgEFBQcw
+# AoY1aHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZFJv
+# b3RHNC5jcnQwQwYDVR0fBDwwOjA4oDagNIYyaHR0cDovL2NybDMuZGlnaWNlcnQu
+# Y29tL0RpZ2lDZXJ0VHJ1c3RlZFJvb3RHNC5jcmwwHAYDVR0gBBUwEzAHBgVngQwB
+# AzAIBgZngQwBBAEwDQYJKoZIhvcNAQEMBQADggIBADojRD2NCHbuj7w6mdNW4AIa
+# pfhINPMstuZ0ZveUcrEAyq9sMCcTEp6QRJ9L/Z6jfCbVN7w6XUhtldU/SfQnuxaB
+# RVD9nL22heB2fjdxyyL3WqqQz/WTauPrINHVUHmImoqKwba9oUgYftzYgBoRGRjN
+# YZmBVvbJ43bnxOQbX0P4PpT/djk9ntSZz0rdKOtfJqGVWEjVGv7XJz/9kNF2ht0c
+# sGBc8w2o7uCJob054ThO2m67Np375SFTWsPK6Wrxoj7bQ7gzyE84FJKZ9d3OVG3Z
+# XQIUH0AzfAPilbLCIXVzUstG2MQ0HKKlS43Nb3Y3LIU/Gs4m6Ri+kAewQ3+ViCCC
+# cPDMyu/9KTVcH4k4Vfc3iosJocsL6TEa/y4ZXDlx4b6cpwoG1iZnt5LmTl/eeqxJ
+# zy6kdJKt2zyknIYf48FWGysj/4+16oh7cGvmoLr9Oj9FpsToFpFSi0HASIRLlk2r
+# REDjjfAVKM7t8RhWByovEMQMCGQ8M4+uKIw8y4+ICw2/O/TOHnuO77Xry7fwdxPm
+# 5yg/rBKupS8ibEH5glwVZsxsDsrFhsP2JjMMB0ug0wcCampAMEhLNKhRILutG4UI
+# 4lkNbcoFUCvqShyepf2gpx8GdOfy1lKQ/a+FSCH5Vzu0nAPthkX0tGFuv2jiJmCG
+# 6sivqf6UHedjGzqGVnhOMIIGtDCCBJygAwIBAgIQDcesVwX/IZkuQEMiDDpJhjAN
+# BgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQg
+# SW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYDVQQDExhEaWdpQ2Vy
+# dCBUcnVzdGVkIFJvb3QgRzQwHhcNMjUwNTA3MDAwMDAwWhcNMzgwMTE0MjM1OTU5
+# WjBpMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNV
+# BAMTOERpZ2lDZXJ0IFRydXN0ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hB
+# MjU2IDIwMjUgQ0ExMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtHgx
+# 0wqYQXK+PEbAHKx126NGaHS0URedTa2NDZS1mZaDLFTtQ2oRjzUXMmxCqvkbsDpz
+# 4aH+qbxeLho8I6jY3xL1IusLopuW2qftJYJaDNs1+JH7Z+QdSKWM06qchUP+AbdJ
+# gMQB3h2DZ0Mal5kYp77jYMVQXSZH++0trj6Ao+xh/AS7sQRuQL37QXbDhAktVJMQ
+# bzIBHYJBYgzWIjk8eDrYhXDEpKk7RdoX0M980EpLtlrNyHw0Xm+nt5pnYJU3Gmq6
+# bNMI1I7Gb5IBZK4ivbVCiZv7PNBYqHEpNVWC2ZQ8BbfnFRQVESYOszFI2Wv82wnJ
+# RfN20VRS3hpLgIR4hjzL0hpoYGk81coWJ+KdPvMvaB0WkE/2qHxJ0ucS638ZxqU1
+# 4lDnki7CcoKCz6eum5A19WZQHkqUJfdkDjHkccpL6uoG8pbF0LJAQQZxst7VvwDD
+# jAmSFTUms+wV/FbWBqi7fTJnjq3hj0XbQcd8hjj/q8d6ylgxCZSKi17yVp2NL+cn
+# T6Toy+rN+nM8M7LnLqCrO2JP3oW//1sfuZDKiDEb1AQ8es9Xr/u6bDTnYCTKIsDq
+# 1BtmXUqEG1NqzJKS4kOmxkYp2WyODi7vQTCBZtVFJfVZ3j7OgWmnhFr4yUozZtqg
+# PrHRVHhGNKlYzyjlroPxul+bgIspzOwbtmsgY1MCAwEAAaOCAV0wggFZMBIGA1Ud
+# EwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFO9vU0rp5AZ8esrikFb2L9RJ7MtOMB8G
+# A1UdIwQYMBaAFOzX44LScV1kTN8uZz/nupiuHA9PMA4GA1UdDwEB/wQEAwIBhjAT
+# BgNVHSUEDDAKBggrBgEFBQcDCDB3BggrBgEFBQcBAQRrMGkwJAYIKwYBBQUHMAGG
+# GGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBBBggrBgEFBQcwAoY1aHR0cDovL2Nh
+# Y2VydHMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZFJvb3RHNC5jcnQwQwYD
+# VR0fBDwwOjA4oDagNIYyaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0
+# VHJ1c3RlZFJvb3RHNC5jcmwwIAYDVR0gBBkwFzAIBgZngQwBBAIwCwYJYIZIAYb9
+# bAcBMA0GCSqGSIb3DQEBCwUAA4ICAQAXzvsWgBz+Bz0RdnEwvb4LyLU0pn/N0IfF
+# iBowf0/Dm1wGc/Do7oVMY2mhXZXjDNJQa8j00DNqhCT3t+s8G0iP5kvN2n7Jd2E4
+# /iEIUBO41P5F448rSYJ59Ib61eoalhnd6ywFLerycvZTAz40y8S4F3/a+Z1jEMK/
+# DMm/axFSgoR8n6c3nuZB9BfBwAQYK9FHaoq2e26MHvVY9gCDA/JYsq7pGdogP8HR
+# trYfctSLANEBfHU16r3J05qX3kId+ZOczgj5kjatVB+NdADVZKON/gnZruMvNYY2
+# o1f4MXRJDMdTSlOLh0HCn2cQLwQCqjFbqrXuvTPSegOOzr4EWj7PtspIHBldNE2K
+# 9i697cvaiIo2p61Ed2p8xMJb82Yosn0z4y25xUbI7GIN/TpVfHIqQ6Ku/qjTY6hc
+# 3hsXMrS+U0yy+GWqAXam4ToWd2UQ1KYT70kZjE4YtL8Pbzg0c1ugMZyZZd/BdHLi
+# Ru7hAWE6bTEm4XYRkA6Tl4KSFLFk43esaUeqGkH/wyW4N7OigizwJWeukcyIPbAv
+# jSabnf7+Pu0VrFgoiovRDiyx3zEdmcif/sYQsfch28bZeUz2rtY/9TCA6TD8dC3J
+# E3rYkrhLULy7Dc90G6e8BlqmyIjlgp2+VqsS9/wQD7yFylIz0scmbKvFoW2jNrbM
+# 1pD2T7m3XDCCBu0wggTVoAMCAQICEAqA7xhLjfEFgtHEdqeVdGgwDQYJKoZIhvcN
+# AQELBQAwaTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEw
+# PwYDVQQDEzhEaWdpQ2VydCBUcnVzdGVkIEc0IFRpbWVTdGFtcGluZyBSU0E0MDk2
+# IFNIQTI1NiAyMDI1IENBMTAeFw0yNTA2MDQwMDAwMDBaFw0zNjA5MDMyMzU5NTla
+# MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UE
+# AxMyRGlnaUNlcnQgU0hBMjU2IFJTQTQwOTYgVGltZXN0YW1wIFJlc3BvbmRlciAy
+# MDI1IDEwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDQRqwtEsae0Oqu
+# YFazK1e6b1H/hnAKAd/KN8wZQjBjMqiZ3xTWcfsLwOvRxUwXcGx8AUjni6bz52fG
+# Tfr6PHRNv6T7zsf1Y/E3IU8kgNkeECqVQ+3bzWYesFtkepErvUSbf+EIYLkrLKd6
+# qJnuzK8Vcn0DvbDMemQFoxQ2Dsw4vEjoT1FpS54dNApZfKY61HAldytxNM89PZXU
+# P/5wWWURK+IfxiOg8W9lKMqzdIo7VA1R0V3Zp3DjjANwqAf4lEkTlCDQ0/fKJLKL
+# kzGBTpx6EYevvOi7XOc4zyh1uSqgr6UnbksIcFJqLbkIXIPbcNmA98Oskkkrvt6l
+# PAw/p4oDSRZreiwB7x9ykrjS6GS3NR39iTTFS+ENTqW8m6THuOmHHjQNC3zbJ6nJ
+# 6SXiLSvw4Smz8U07hqF+8CTXaETkVWz0dVVZw7knh1WZXOLHgDvundrAtuvz0D3T
+# +dYaNcwafsVCGZKUhQPL1naFKBy1p6llN3QgshRta6Eq4B40h5avMcpi54wm0i2e
+# PZD5pPIssoszQyF4//3DoK2O65Uck5Wggn8O2klETsJ7u8xEehGifgJYi+6I03Uu
+# T1j7FnrqVrOzaQoVJOeeStPeldYRNMmSF3voIgMFtNGh86w3ISHNm0IaadCKCkUe
+# 2LnwJKa8TIlwCUNVwppwn4D3/Pt5pwIDAQABo4IBlTCCAZEwDAYDVR0TAQH/BAIw
+# ADAdBgNVHQ4EFgQU5Dv88jHt/f3X85FxYxlQQ89hjOgwHwYDVR0jBBgwFoAU729T
+# SunkBnx6yuKQVvYv1Ensy04wDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoG
+# CCsGAQUFBwMIMIGVBggrBgEFBQcBAQSBiDCBhTAkBggrBgEFBQcwAYYYaHR0cDov
+# L29jc3AuZGlnaWNlcnQuY29tMF0GCCsGAQUFBzAChlFodHRwOi8vY2FjZXJ0cy5k
+# aWdpY2VydC5jb20vRGlnaUNlcnRUcnVzdGVkRzRUaW1lU3RhbXBpbmdSU0E0MDk2
+# U0hBMjU2MjAyNUNBMS5jcnQwXwYDVR0fBFgwVjBUoFKgUIZOaHR0cDovL2NybDMu
+# ZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZEc0VGltZVN0YW1waW5nUlNBNDA5
+# NlNIQTI1NjIwMjVDQTEuY3JsMCAGA1UdIAQZMBcwCAYGZ4EMAQQCMAsGCWCGSAGG
+# /WwHATANBgkqhkiG9w0BAQsFAAOCAgEAZSqt8RwnBLmuYEHs0QhEnmNAciH45PYi
+# T9s1i6UKtW+FERp8FgXRGQ/YAavXzWjZhY+hIfP2JkQ38U+wtJPBVBajYfrbIYG+
+# Dui4I4PCvHpQuPqFgqp1PzC/ZRX4pvP/ciZmUnthfAEP1HShTrY+2DE5qjzvZs7J
+# IIgt0GCFD9ktx0LxxtRQ7vllKluHWiKk6FxRPyUPxAAYH2Vy1lNM4kzekd8oEARz
+# FAWgeW3az2xejEWLNN4eKGxDJ8WDl/FQUSntbjZ80FU3i54tpx5F/0Kr15zW/mJA
+# xZMVBrTE2oi0fcI8VMbtoRAmaaslNXdCG1+lqvP4FbrQ6IwSBXkZagHLhFU9HCrG
+# /syTRLLhAezu/3Lr00GrJzPQFnCEH1Y58678IgmfORBPC1JKkYaEt2OdDh4GmO0/
+# 5cHelAK2/gTlQJINqDr6JfwyYHXSd+V08X1JUPvB4ILfJdmL+66Gp3CSBXG6IwXM
+# ZUXBhtCyIaehr0XkBoDIGMUG1dUtwq1qmcwbdUfcSYCn+OwncVUXf53VJUNOaMWM
+# ts0VlRYxe5nK+At+DI96HAlXHAL5SlfYxJ7La54i71McVWRP66bW+yERNpbJCjyC
+# YG2j+bdpxo/1Cy4uPcU3AWVPGrbn5PhDBf3Froguzzhk++ami+r3Qrx5bIbY3TVz
+# giFI7Gq3zWcwggdZMIIFQaADAgECAhALbN+2Z4EOKufLWhG6HUlwMA0GCSqGSIb3
+# DQEBCwUAMGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
+# MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5
+# NiBTSEEzODQgMjAyMSBDQTEwHhcNMjQwODEzMDAwMDAwWhcNMjYxMDE4MjM1OTU5
+# WjBhMQswCQYDVQQGEwJVUzESMBAGA1UECBMJVGVubmVzc2VlMRAwDgYDVQQHEwdM
+# ZWJhbm9uMRUwEwYDVQQKEwxDYXJsIFdlYnN0ZXIxFTATBgNVBAMTDENhcmwgV2Vi
+# c3RlcjCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANObiSjT83zRuTfB
+# koOFsUj74a/sVI6pDCmQpc4uC8XNvrEoZzqKL5mPQD5E7un43xWCwqijpwu9BdOG
+# jmb1Re8XZ0RbJNMKGOTADgLxDAzTXmpCrcfLkQOzhPHmV6biEP6iOGHrC9DGXRkg
+# PUMrElexmeEaN1/9moLgh42klfJPpzlFgiJngFLNCG4mZGvzqcYvkkCkatHxly75
+# G/RTm+uQnss4yclcnSwDKFwIIME1TDM6+kdJfBHdOBONr0jAcxekKNfkA4bG9QIb
+# MphHpbYWgNrdmCqILuHpIyHq0nLWMg8pJNhxjFnHfbiutYQOC0wkRVku1VC6W/rx
+# a/KGxAIURL5M7BrmTwS92SVkr9Y9HDP8lFSZdLT3ZHdLA2fDqE1ryfQ5c23O+WjY
+# IByIvOlGvIRHnXrHP8MgRge+mTKGvBfiIComl8QWyydmvEfQ+xQEgKP7mRePZdGd
+# SiAOkmf9cwe9UDCLaHxzZeqJulGHI6a3gyLgGLv79BtZ0CgW9ehExT32jLtKP0Kf
+# hOgvR4fSC0EymydVWyszSBEcuzxROCebBcNMhN0sjnowrkDrqMwbfDi64IDQJnZ6
+# G+0xpjeM20uWaw+T3A8yGevpFu5fsaCz8huJFaPErXQCEHYNpXUXQrxBgmO+C7W3
+# rzLtmlQwnSOwdx6j9B4EvDIR3+W9AgMBAAGjggIDMIIB/zAfBgNVHSMEGDAWgBRo
+# N+Drtjv4XxGG+/5hewiIZfROQjAdBgNVHQ4EFgQUjXWpkPG7S6X9XiykjcFP7U4f
+# mDUwPgYDVR0gBDcwNTAzBgZngQwBBAEwKTAnBggrBgEFBQcCARYbaHR0cDovL3d3
+# dy5kaWdpY2VydC5jb20vQ1BTMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggr
+# BgEFBQcDAzCBtQYDVR0fBIGtMIGqMFOgUaBPhk1odHRwOi8vY3JsMy5kaWdpY2Vy
+# dC5jb20vRGlnaUNlcnRUcnVzdGVkRzRDb2RlU2lnbmluZ1JTQTQwOTZTSEEzODQy
+# MDIxQ0ExLmNybDBToFGgT4ZNaHR0cDovL2NybDQuZGlnaWNlcnQuY29tL0RpZ2lD
+# ZXJ0VHJ1c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNBMS5jcmww
+# gZQGCCsGAQUFBwEBBIGHMIGEMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdp
+# Y2VydC5jb20wXAYIKwYBBQUHMAKGUGh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNv
+# bS9EaWdpQ2VydFRydXN0ZWRHNENvZGVTaWduaW5nUlNBNDA5NlNIQTM4NDIwMjFD
+# QTEuY3J0MAkGA1UdEwQCMAAwDQYJKoZIhvcNAQELBQADggIBAELxe271+0s/f2L4
+# jS+stPNIV7xullhe392MKZQTh3kMuGwxhydNNN4+jHZ0kPk3m3HdQCGWirDSWo09
+# TUReBftt0Hof8pxZN5EbmmwiZI7Bjyw2UPlCs34X1kCjsFgiBILJsdkGtxDJvzSw
+# 22fUqrblVVqguvm/NiVoPBIbeodYiWzJwNzLbjPGbohynYynU4vNaXkOwkbunpPJ
+# 435mRKPHefXBVgPBxDOEv5OH97tf4Yx5EwN+Oq/sH9w7EyZfv4w4kA40wvFBdcET
+# EydMiVEJb4VGKhchCDpzCbchD8nxK/T+O/+JCK9v4kDJ7fBQ8/52by8WA2lYwf37
+# xS7LNtsBCl+LWefZ1+2Nb1wNGJOQcONHqBjM+l0kLivwo8e6ChwCYY9+9HpnPNRU
+# ib5Sb9SVXYuIlIX5+i31XHNNYuSHLhEKfIqRlake9AKdxymSt4b3FEEfm85rdB/b
+# Sw9So9iCWax2uUhcobuwEcpsvKqIailleOQ8efp2SL43obD0+SwJh6286TUYtuh9
+# wIiRB/dIwfvuVypwKDfSBROM4+k34+Jrnb8PhMQ4tuP815ITZ/MjmbkneKJ0/yDd
+# RMwO38fazCnXCyQKfbcrr0XLEg4l0usjaRLvyecV3QW4jg2qDMkXcnUyl1vXbybM
+# wlYzaY5hV3xrBtxgBA5Kx0vpwkevMYIGEDCCBgwCAQEwfTBpMQswCQYDVQQGEwJV
+# UzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRy
+# dXN0ZWQgRzQgQ29kZSBTaWduaW5nIFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExAhAL
+# bN+2Z4EOKufLWhG6HUlwMAkGBSsOAwIaBQCgQDAZBgkqhkiG9w0BCQMxDAYKKwYB
+# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUbsR0TDt+qEb3EF62pQhk4TUBdFwwDQYJ
+# KoZIhvcNAQEBBQAEggIANgPh9v+faek+wFgMAi+T1Gw9mITk5mZCf0zXFdkOAt+k
+# /3N7AwdqPKQQMPN9wvv5yk8OqDsUjeCzhlHo6N8jWD07AQWAXX8x66D/qce8E7RA
+# 8fzncvDHtbjgLUu8RINV25V+iY4xNJKNW9IPVo53E9J2VAzhqF4juA33A+tTkjHO
+# +rnyKPEbQahqtTJtI9n+696RVVbLvCY7EJHh9go5dQZvtdhfWk3l5acUQK68SoZt
+# PtCUQsVrIrs7JnSPiXR4hbNdjiMdqhY+hPVR97ws/TQRwcabzBk+tVMr7pLaf6MH
+# 8/51zF53v8t2x2lRav2FqEuT0xgO+92GJyJjV0uRALGvuLRbn17vruIWEGVvYm63
+# geIBog/bQHthEb1TRAErMFpHfptAkymht4QN64tNZe9tYYn8NEs3ym2Es2vd2H97
+# eT9mTfhcbpFEuDLugFZ2MC46mrZ3XfYDd/AbsDKxVbHkJubvmz4vxZiUEwTg0tm3
+# jY8OdCXWuxzNWlaklgUINikylnMC+rIzYnQ2fkw0Vx4T4WIl+FRzDNTROgRwfuh9
+# ssbxu+Y/T5GOyHC3kybtGQ3JoQBG8hRy+fcs7IbAJypOl074CbY7CtFQ/Xav7o9o
+# AieewOFVZJjIiCHpvxiAASyMYCeMco8BaeEdGcmAidjEMy3bGR4XAZjN7CopyMih
+# ggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEwfTBpMQswCQYDVQQGEwJVUzEX
+# MBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRydXN0
+# ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hBMjU2IDIwMjUgQ0ExAhAKgO8Y
+# S43xBYLRxHanlXRoMA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqG
+# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwNDEwMTUzMjUzWjAvBgkqhkiG9w0B
+# CQQxIgQg3EJGRa2EiT08uxfge02vkv8SM/1I3I2LX65GL3Rtrh4wDQYJKoZIhvcN
+# AQEBBQAEggIAhNj/+6GCuL3xYKQU313qfE4Wswipc4wVP3BRwjuYhCwgI9DMU+uz
+# yNb4hf6NcOthsHXbA63RoQ1q9XQM6S5rPfPh1NcFSoqFrdrDyF78+hOm2j4U0Azf
+# TTqNfTCBS9V+m5QfKew1dm2w54y+ucspQsMa7TOA98I8eAoCF0A3U5Fxxr2Qi+JT
+# Hj24Tvl/b3+9meNK3rpCmEotoz7wKpF0qorwCLhqB9GfzMiKvlq/IQvew6stQhGL
+# STNohIjfZc322wmrtLVc6Bp3p3NjjCcSEg/iQuyem4aVVyZ620/atWgIBe77sKpa
+# L8G1j3aHj9mq3XnUVpXMc1A7VAUUB5pStbC/JZR37NAK0A2R8yHh8xHQ+q2jZ0F8
+# nIXEj2QChQI756SC16K6ZORZ6UdudMoFZKuiasJtZkvOiG0X2yXd31fhWtYGdirT
+# CFNvB1Hn7+YNLZUw0Iav7tSjx1QOzvPh83juczbCaFIDnIlRb3K5Fy+aM77wJZhj
+# FroX84jBRjj/9PDV6BewYqcQsSddWMhcm2IJxz2dfbifxZpgBG4ycjGPHfKm1QMU
+# 3NdEwNSPQmCXwi9SX017KzhPM64OXekiaE6s3nRiZsLfBPlVtEaFxbg4YG44+ZmO
+# vYR5lEpUBgrbMINgsXT/DUtu7tS9ulBSAh7RJT4K1w0Wnuw41W5+y9U=
 # SIG # End signature block

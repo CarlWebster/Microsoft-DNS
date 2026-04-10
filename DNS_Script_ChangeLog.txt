@@ -5,6 +5,21 @@
 #http://www.CarlWebster.com
 #Created on February 10, 2016
 
+#Version 2.04 10-Apr-2026
+#	Added "Processing zone, count of total" to OutputLookupZone verbose message
+#   DynamicUpdate isn't present on some Zones. Put an "N/A" for it instead of generating an error.
+#   GetHostEntry() is slow. Add CacheHostEntry. Makes a huge speed difference on servers with lots of zones.
+#   Get-DnsServer can return FAILURE even when it succeeds (I noted this happening when roothints are incorrect).
+#		So, check only for output, not for $?.
+#   Get-DnsServer is SLOW. We don't need to call it multiple times for the same server. Write function GetDnsServer and cache it.
+#	If IsSigned isn't present on some Zones. Put an "N/A" for it instead of generating an error.
+#   It's possible for DNSForwarders.IPAddress to contain no values. Check for that situation and don't generate an error any more.
+#	Updated references of ShareFile to Dropbox
+#	Updated the help text
+#	Updated the ReadMe
+#	Wrapped GetHostEntry() in try/catch instead of treating it like a cmdlet.
+#	Wrapped OpenRemoteBaseKey() in try/catch instead of treating it like a cmdlet.
+
 #Version 2.03 18-Feb-2022
 #	Changed the date format for the transcript and error log files from yyyy-MM-dd_HHmm format to the FileDateTime format
 #		The format is yyyyMMddTHHmmssffff (case-sensitive, using a 4-digit year, 2-digit month, 2-digit day, 
